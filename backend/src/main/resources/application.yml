@@ -2,15 +2,17 @@ spring:
     application:
         name: backend
     datasource:
-        url: jdbc:mysql://localhost:3306/backend
-        username: root
-        password: 1234
+        url: jdbc:postgresql://localhost:5432/travelingdog
+        username: travelingdog_naru
+        password: travelingdog_naru1234
+        driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:
             ddl-auto: update
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
+                "[format_sql]": true
 
 server:
     port: 8080
