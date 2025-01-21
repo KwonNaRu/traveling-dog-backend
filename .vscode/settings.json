@@ -2,5 +2,6 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "always"
-    }
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
 }
