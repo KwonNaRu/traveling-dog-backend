@@ -1,8 +1,10 @@
 ![logo](./logo.PNG)
 
-# 트래블링독 프로젝트
+## 트래블링독 백엔드 서버
 
-## 프로젝트 구조
+-   Dockerfile로 빌드 및 이미지 생성
+-   docker-compose.yml로 컨테이너 실행
 
--   backend: 백엔드 서버
--   frontend: 프론트엔드
+```bash
+docker-compose up -d --build
+```
