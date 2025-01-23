@@ -1,0 +1,37 @@
+version: "3.8"
+name: travelingdog-backend
+services:
+    app:
+        build: # Dockerfile을 사용하여 이미지 빌드
+            context: . # 현재 디렉토리에서 Dockerfile을 찾음
+            dockerfile: Dockerfile
+        image: travelingdog-backend:latest # 생성할 이미지 이름
+        container_name: app
+        environment:
+            SPRING_PROFILES_ACTIVE: local-docker
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        networks:
+            - travelingdog-network
+
+    db:
+        image: postgres:15
+        container_name: postgresql
+        environment:
+            POSTGRES_USER: travelingdog_naru
+            POSTGRES_PASSWORD: travelingdog_naru1234
+            POSTGRES_DB: travelingdog
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres-data:/var/lib/postgresql/data # 데이터 영구 저장
+
+volumes:
+    postgres-data:
+        driver: local
+
+networks:
+    travelingdog-network:
+        external: true
