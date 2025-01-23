@@ -1,0 +1,7 @@
+spring:
+    config:
+        import: optional:configserver:http://host.docker.internal:8888
+    cloud:
+        config:
+            name: travelingdog
+            profile: local-docker

@@ -1,11 +1,18 @@
 spring:
     application:
         name: backend
+
+    config:
+        import: optional:configserver:http://localhost:8888
+
+    cloud:
+        config:
+            name: travelingdog
+            profile: local
+
     datasource:
-        url: jdbc:postgresql://db:5432/travelingdog
-        username: travelingdog_naru
-        password: travelingdog_naru1234
         driver-class-name: org.postgresql.Driver
+
     jpa:
         hibernate:
             ddl-auto: update
@@ -13,6 +20,3 @@ spring:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 "[format_sql]": true
-
-server:
-    port: 8080

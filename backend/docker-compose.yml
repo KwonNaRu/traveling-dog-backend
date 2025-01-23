@@ -7,10 +7,14 @@ services:
             dockerfile: Dockerfile
         image: travelingdog-backend:latest # 생성할 이미지 이름
         container_name: app
+        environment:
+            SPRING_PROFILES_ACTIVE: local-docker
         ports:
             - "8080:8080"
         depends_on:
             - db
+        networks:
+            - travelingdog-network
 
     db:
         image: postgres:15
@@ -27,3 +31,7 @@ services:
 volumes:
     postgres-data:
         driver: local
+
+networks:
+    travelingdog-network:
+        external: true
