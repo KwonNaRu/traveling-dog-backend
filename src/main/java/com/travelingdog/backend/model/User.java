@@ -62,4 +62,14 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void addTravelPlan(TravelPlan travelPlan) {
+        this.travelPlans.add(travelPlan);
+        travelPlan.setUser(this);
+    }
+
+    public void removeTravelPlan(TravelPlan travelPlan) {
+        this.travelPlans.remove(travelPlan);
+        travelPlan.setUser(null);
+    }
+
 }

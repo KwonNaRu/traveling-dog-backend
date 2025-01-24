@@ -27,6 +27,9 @@ public class TravelLocation {
     @Column(length = 500)
     private String description; // 장소 설명
 
+    @Column(name = "location_order", nullable = false)
+    private int locationOrder; // 여행 계획 내 순서
+
     @ManyToOne
     @JoinColumn(name = "travel_plan_id", nullable = false)
     private TravelPlan travelPlan; // 여행 계획과의 관계
