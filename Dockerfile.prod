@@ -5,7 +5,7 @@ COPY . .
 # gradlew 파일에 실행 권한 추가
 RUN chmod +x ./gradlew
 
-RUN SPRING_PROFILES_ACTIVE=build ./gradlew bootJar
+RUN SPRING_PROFILES_ACTIVE=prod ./gradlew build
 
 FROM openjdk:21-jdk-slim
 WORKDIR /app
