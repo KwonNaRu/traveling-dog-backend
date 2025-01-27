@@ -1,9 +1,9 @@
 name: travelingdog-backend
 services:
     app:
-        build: # Dockerfile을 사용하여 이미지 빌드
-            context: . # 현재 디렉토리에서 Dockerfile을 찾음
-            dockerfile: Dockerfile.prod
+        # build: # Dockerfile을 사용하여 이미지 빌드
+        #     context: . # 현재 디렉토리에서 Dockerfile을 찾음
+        #     dockerfile: Dockerfile.prod
         image: dmdmdm1322/travelingdog-backend:latest # 생성할 이미지 이름
         container_name: travelingdog-backend
         environment:
