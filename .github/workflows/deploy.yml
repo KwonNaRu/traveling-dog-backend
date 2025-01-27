@@ -19,6 +19,12 @@ jobs:
                   git clone https://${{ secrets.CONFIG_REPO_PAT }}@${{ secrets.CONFIG_REPO_URL }} config-repo
                   cp -r config-repo/travelingdog-prod.yml ./src/main/resources/application-build.yml
 
+            - name: Set up JDK 21
+              uses: actions/setup-java@v3
+              with:
+                  distribution: "corretto"
+                  java-version: "21"
+
             - name: Setup SSH agent
               uses: webfactory/ssh-agent@v0.5.3
               with:
