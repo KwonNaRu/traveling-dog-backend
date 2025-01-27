@@ -33,4 +33,4 @@ volumes:
 
 networks:
     travelingdog-network:
-        external: true
+        driver: bridge
