@@ -38,13 +38,13 @@ jobs:
               run: |
                   docker push dmdmdm1322/travelingdog-backend:latest
 
-            - name: Run docker-compose on Oracle instance
+            - name: Run docker compose on GCP instance
               run: |
                   ssh -o StrictHostKeyChecking=no dmdmdm1322@35.196.99.220 "
                     export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
                     export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
                     cd ~/traveling-dog-backend
                     git pull
-                    docker-compose -f docker-compose.prod.yml pull
-                    docker-compose -f docker-compose.prod.yml up --build -d
+                    docker compose -f docker-compose.prod.yml pull
+                    docker compose -f docker-compose.prod.yml up --build -d
                   "
