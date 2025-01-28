@@ -44,6 +44,14 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<TravelLocation> travelLocations = new ArrayList<>(); // 여행 위치 리스트
 
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PlanLike> likes = new ArrayList<>();
+
+    @Column(name = "view_count")
+    @Builder.Default
+    private int viewCount = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
