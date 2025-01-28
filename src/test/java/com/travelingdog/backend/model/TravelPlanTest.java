@@ -10,14 +10,19 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 
 @DataJpaTest
+@ActiveProfiles("test")
 public class TravelPlanTest {
 
         @Autowired
@@ -119,8 +124,8 @@ public class TravelPlanTest {
         public void testDeleteTravelLocation() {
                 TravelLocation travelLocation = TravelLocation.builder()
                                 .placeName("Test Travel Location")
-                                .latitude(123.456)
-                                .longitude(78.901)
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description")
                                 .locationOrder(1)
                                 .build();
@@ -156,8 +161,8 @@ public class TravelPlanTest {
         public void testUpdateTravelLocation() {
                 TravelLocation travelLocation = TravelLocation.builder()
                                 .placeName("Test Travel Location")
-                                .latitude(123.456)
-                                .longitude(78.901)
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description")
                                 .locationOrder(1)
                                 .build();

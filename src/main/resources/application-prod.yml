@@ -9,14 +9,3 @@ spring:
         config:
             name: travelingdog
             profile: prod
-
-    datasource:
-        driver-class-name: org.postgresql.Driver
-
-    jpa:
-        hibernate:
-            ddl-auto: update
-        properties:
-            hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-                "[format_sql]": true

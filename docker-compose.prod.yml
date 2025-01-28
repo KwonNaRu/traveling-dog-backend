@@ -16,7 +16,7 @@ services:
             - travelingdog-network
 
     db:
-        image: postgres:15
+        image: postgis/postgis:latest
         container_name: postgresql
         environment:
             POSTGRES_USER: "${POSTGRES_USER}"

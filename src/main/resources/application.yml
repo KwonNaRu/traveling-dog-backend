@@ -10,9 +10,6 @@ spring:
             name: travelingdog
             profile: local
 
-    datasource:
-        driver-class-name: org.postgresql.Driver
-
     jpa:
         hibernate:
             ddl-auto: update
