@@ -1,6 +1,7 @@
 package com.travelingdog.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 @Entity
@@ -28,6 +29,7 @@ public class TravelLocation {
     private String description; // 장소 설명
 
     @Column(name = "location_order", nullable = false)
+    @PositiveOrZero(message = "Order must be positive number")
     private int locationOrder; // 여행 계획 내 순서
 
     @ManyToOne
