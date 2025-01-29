@@ -57,6 +57,19 @@ public class UserUnitTest {
     }
 
     /**
+     * ✅ User 엔티티가 정상적으로 수정되는지 검증합니다.
+     * - 필드 값이 기대한 값과 동일한지 확인합니다.
+     */
+    @Test
+    void whenUserIsUpdated_thenFieldsAreUpdatedCorrectly() {
+        user.setUsername("updatedUser");
+        user.setPassword("updatedPassword123");
+
+        assertThat(user.getUsername()).isEqualTo("updatedUser");
+        assertThat(user.getPassword()).isEqualTo("updatedPassword123");
+    }
+
+    /**
      * ✅ TravelPlan을 User에 추가하면, 올바르게 연관이 설정되는지 검증합니다.
      * - addTravelPlan()을 호출하면 travelPlans 리스트에 추가되어야 합니다.
      * - travelPlan의 user 필드가 현재 user를 가리켜야 합니다.
