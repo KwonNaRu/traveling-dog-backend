@@ -3,6 +3,7 @@ package com.travelingdog.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -25,17 +26,21 @@ public class TravelPlan extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(nullable = false, length = 100)
     private String title; // 여행 계획 제목
 
+    @NotNull
     @Column(name = "start_date", nullable = false)
     @FutureOrPresent(message = "Start date must be in the present or future")
     private LocalDate startDate; // 여행 시작 날짜
 
+    @NotNull
     @Column(name = "end_date", nullable = false)
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자와의 관계
@@ -74,4 +79,19 @@ public class TravelPlan extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
         this.status = PlanStatus.DELETED;
     }
+
+    public void addLike(PlanLike planLike) {
+        likes.add(planLike);
+        planLike.setTravelPlan(this);
+    }
+
+    public void removeLike(PlanLike planLike) {
+        likes.remove(planLike);
+        planLike.setTravelPlan(null);
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
 }
