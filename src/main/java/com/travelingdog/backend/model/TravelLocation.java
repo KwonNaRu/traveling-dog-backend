@@ -5,6 +5,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
@@ -20,9 +21,11 @@ public class TravelLocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(nullable = false)
     private String placeName; // 장소 이름
 
+    @NotNull
     @Column(columnDefinition = "GEOMETRY(Point, 4326)")
     private Point coordinates;
 
@@ -33,6 +36,7 @@ public class TravelLocation {
     @PositiveOrZero(message = "Order must be positive number")
     private int locationOrder; // 여행 계획 내 순서
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "travel_plan_id", nullable = false)
     private TravelPlan travelPlan; // 여행 계획과의 관계
