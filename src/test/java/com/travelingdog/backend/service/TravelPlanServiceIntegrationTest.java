@@ -20,7 +20,7 @@ import com.travelingdog.backend.repository.UserRepository;
 
 @DataJpaTest
 @ActiveProfiles("test")
-public class TravelPlanServiceTest {
+public class TravelPlanServiceIntegrationTest {
 
         @Autowired
         private UserRepository userRepository;

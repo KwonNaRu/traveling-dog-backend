@@ -22,7 +22,7 @@ import com.travelingdog.backend.repository.UserRepository;
 
 @DataJpaTest
 @ActiveProfiles("test")
-public class TravelLocationTest {
+public class TravelLocationIntegrationTest {
 
         @Autowired
         private TravelLocationRepository travelLocationRepository;

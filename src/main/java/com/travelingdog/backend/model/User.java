@@ -1,13 +1,23 @@
 package com.travelingdog.backend.model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.travelingdog.backend.auditing.BaseTimeEntity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,13 +37,16 @@ public class User extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
+    @NotNull
     private String username;
 
     @Column(nullable = false)
+    @NotNull
     private String password;
 
     @Column(nullable = false, unique = true)
     @Email(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$") // 이메일 형식 검증
+    @NotNull
     private String email;
 
     @Column(name = "preferred_travel_style")

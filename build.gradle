@@ -56,5 +56,21 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform {
+        includeTags 'unit', 'integration'
+    }
+}
+
+// 단위 테스트를 위한 태스크 추가
+tasks.register('unitTest', Test) {
+    useJUnitPlatform {
+        includeTags 'unit'
+    }
+}
+
+// 통합 테스트를 위한 태스크 추가
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
 }

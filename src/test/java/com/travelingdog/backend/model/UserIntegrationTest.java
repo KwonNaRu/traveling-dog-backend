@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -17,9 +18,10 @@ import org.springframework.test.context.ActiveProfiles;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 
+@Tag("integration")
 @DataJpaTest
 @ActiveProfiles("test")
-public class UserTest {
+public class UserIntegrationTest {
 
         @Autowired
         private UserRepository userRepository;
@@ -27,6 +29,9 @@ public class UserTest {
         @Autowired
         private TravelPlanRepository travelPlanRepository;
 
+        /**
+         * User 생성 테스트
+         */
         @Test
         public void whenSaveUser_thenFindById() {
                 User user = User.builder()
