@@ -35,7 +35,7 @@ public class UserIntegrationTest {
         @Test
         public void whenSaveUser_thenFindById() {
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .preferredTravelStyle("Adventure")
@@ -46,14 +46,14 @@ public class UserIntegrationTest {
 
                 User foundUser = userRepository.findById(user.getId()).orElse(null);
                 assertThat(foundUser).isNotNull();
-                assertThat(foundUser.getUsername()).isEqualTo("testuser");
+                assertThat(foundUser.getNickname()).isEqualTo("testuser");
                 assertThat(foundUser.getFavoriteDestinations()).containsExactly("Paris", "New York");
         }
 
         @Test
         public void whenUpdateUser_thenUpdatedAtChanges() throws InterruptedException {
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .preferredTravelStyle("Adventure")
@@ -65,19 +65,19 @@ public class UserIntegrationTest {
                 // 충분한 시간 차이를 주기 위해 대기
                 Thread.sleep(100);
 
-                user.setUsername("updatedUser");
+                user.setNickname("updatedUser");
                 userRepository.saveAndFlush(user);
 
                 User updatedUser = userRepository.findById(user.getId()).orElse(null);
                 assertThat(updatedUser).isNotNull();
-                assertThat(updatedUser.getUsername()).isEqualTo("updatedUser");
+                assertThat(updatedUser.getNickname()).isEqualTo("updatedUser");
                 assertThat(updatedUser.getUpdatedAt()).isAfter(initialUpdatedAt);
         }
 
         @Test
         public void whenCreateUser_thenCreatedAtAndUpdatedAtAreSet() {
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .build();
@@ -98,7 +98,7 @@ public class UserIntegrationTest {
                 initialDestinations.add("Paris");
                 initialDestinations.add("New York");
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .preferredTravelStyle("Adventure")
@@ -125,7 +125,7 @@ public class UserIntegrationTest {
         @Test
         public void whenDeleteUser_thenTravelPlansDeleted() {
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .build();
@@ -155,7 +155,7 @@ public class UserIntegrationTest {
         @Test
         public void whenUpdateTravelPlan_thenUserUpdated() {
                 User user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .build();

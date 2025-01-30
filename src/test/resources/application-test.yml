@@ -12,3 +12,7 @@ spring:
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.H2Dialect
+
+jwt:
+    secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
+    accessTokenValidityInSeconds: 86400 # 24시간

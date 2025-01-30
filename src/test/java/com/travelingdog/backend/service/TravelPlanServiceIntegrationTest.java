@@ -33,7 +33,7 @@ public class TravelPlanServiceIntegrationTest {
         @BeforeEach
         public void setUp() {
                 user = User.builder()
-                                .username("testuser")
+                                .nickname("testuser")
                                 .password("password")
                                 .email("test@example.com")
                                 .preferredTravelStyle("Adventure")

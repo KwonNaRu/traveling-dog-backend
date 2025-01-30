@@ -28,7 +28,7 @@ public class UserUnitTest {
     void setUp() {
         java.util.Locale.setDefault(java.util.Locale.ENGLISH); // 기본 로케일 영어 설정
         user = User.builder()
-                .username("testUser")
+                .nickname("testUser")
                 .password("securePassword123")
                 .email("test@example.com")
                 .preferredTravelStyle("Adventure")
@@ -48,7 +48,7 @@ public class UserUnitTest {
     @Test
     void whenUserIsCreated_thenFieldsAreSetCorrectly() {
         assertThat(user).isNotNull();
-        assertThat(user.getUsername()).isEqualTo("testUser");
+        assertThat(user.getNickname()).isEqualTo("testUser");
         assertThat(user.getPassword()).isEqualTo("securePassword123");
         assertThat(user.getEmail()).isEqualTo("test@example.com");
         assertThat(user.getPreferredTravelStyle()).isEqualTo("Adventure");
@@ -62,10 +62,10 @@ public class UserUnitTest {
      */
     @Test
     void whenUserIsUpdated_thenFieldsAreUpdatedCorrectly() {
-        user.setUsername("updatedUser");
+        user.setNickname("updatedUser");
         user.setPassword("updatedPassword123");
 
-        assertThat(user.getUsername()).isEqualTo("updatedUser");
+        assertThat(user.getNickname()).isEqualTo("updatedUser");
         assertThat(user.getPassword()).isEqualTo("updatedPassword123");
     }
 
@@ -138,7 +138,7 @@ public class UserUnitTest {
     @Test
     void whenPasswordIsNull_thenValidationFails() {
         User invalidUser = User.builder()
-                .username("testUser")
+                .nickname("testUser")
                 .email("test@example.com")
                 .build();
 
@@ -154,7 +154,7 @@ public class UserUnitTest {
     @Test
     void whenEmailIsNull_thenValidationFails() {
         User invalidUser = User.builder()
-                .username("testUser")
+                .nickname("testUser")
                 .password("securePassword123")
                 .build();
 
@@ -170,7 +170,7 @@ public class UserUnitTest {
     @Test
     void whenEmailIsInvalid_thenValidationFails() {
         User invalidUser = User.builder()
-                .username("testUser")
+                .nickname("testUser")
                 .password("securePassword123")
                 .email("invalid-email")
                 .build();
