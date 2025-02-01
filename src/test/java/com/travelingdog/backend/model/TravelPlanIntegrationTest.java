@@ -16,8 +16,10 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
@@ -25,6 +27,7 @@ import com.travelingdog.backend.repository.UserRepository;
 @DataJpaTest
 @ActiveProfiles("test")
 @Tag("integration")
+@Import(JpaAuditingConfigTest.class)
 public class TravelPlanIntegrationTest {
 
         @Autowired
