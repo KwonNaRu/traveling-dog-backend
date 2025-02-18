@@ -1,11 +1,8 @@
 package com.travelingdog.backend.jwt;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.nimbusds.jose.JOSEException;
@@ -15,7 +12,6 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
