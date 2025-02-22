@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import org.apache.hc.client5.http.auth.AuthenticationException;
@@ -15,13 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.ErrorResponse;
 
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
@@ -50,23 +45,23 @@ class AuthServiceTest {
 
     // 회원가입 성공 테스트
     @Test
-    void signUp_ValidInput_ReturnsUser() {
+    void signUp_ValidInput_ReturnsToken() {
         // Given
         SignUpRequest request = new SignUpRequest("newUser", "new@test.com", "password123!");
+        String expectedToken = "dummy.jwt.token";
+
         when(userRepository.existsByEmail(request.email())).thenReturn(false);
         when(passwordEncoder.encode(request.password())).thenReturn("encodedPassword");
-        // save() 메소드가 호출될 때 저장될 User 객체를 반환하도록 설정
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User savedUser = invocation.getArgument(0);
-            return savedUser;
-        });
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(jwtTokenProvider.generateToken(request.email())).thenReturn(expectedToken);
 
         // When
-        User result = authService.signUp(request);
+        String result = authService.signUp(request);
 
         // Then
-        assertThat(result.getEmail()).isEqualTo(request.email());
+        assertThat(result).isEqualTo(expectedToken);
         verify(userRepository).save(any(User.class));
+        verify(jwtTokenProvider).generateToken(request.email());
     }
 
     // 중복 이메일 회원가입 실패 테스트

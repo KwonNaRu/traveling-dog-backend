@@ -2,12 +2,15 @@ package com.travelingdog.backend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -19,12 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.travelingdog.backend.dto.ErrorResponse;
-import com.travelingdog.backend.dto.JwtResponse;
-import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
+@Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -40,7 +42,11 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 테스트 데이터 초기화
+    private String encodeBasic(String email, String password) {
+        String credentials = email + ":" + password;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+    }
+
     @BeforeEach
     void setup() {
         userRepository.deleteAll();
@@ -52,53 +58,87 @@ public class AuthControllerIntegrationTest {
                         .build());
     }
 
-    // 회원가입 성공 테스트
     @Test
     void signUp_ValidRequest_ReturnsCreated() {
         // Given
         SignUpRequest request = new SignUpRequest("newUser", "new@test.com", "password123!");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", encodeBasic("new@test.com", "password123!"));
 
         // When
-        ResponseEntity<Void> response = restTemplate.postForEntity(
+        ResponseEntity<Void> response = restTemplate.exchange(
                 "/api/auth/signup",
-                request,
+                HttpMethod.POST,
+                new HttpEntity<>(request, headers),
                 Void.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
         assertThat(userRepository.findByEmail("new@test.com")).isPresent();
     }
 
     @Test
     void signUp_InvalidEmail_ReturnsBadRequest() {
         // Given
-        SignUpRequest invalidRequest = new SignUpRequest("invalid-username", "invalid-email", "short");
+        SignUpRequest request = new SignUpRequest("invalid-username", "invalid-email", "short");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", encodeBasic("invalid-email", "short"));
 
         // When
-        ResponseEntity<ErrorResponse> response = restTemplate.postForEntity(
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/auth/signup",
-                invalidRequest,
+                HttpMethod.POST,
+                new HttpEntity<>(request, headers),
                 ErrorResponse.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-
         ErrorResponse errorResponse = response.getBody();
         assertThat(errorResponse.errors())
                 .containsKeys("email", "password");
     }
 
-    // 보호된 리소스 접근 테스트
     @Test
-    void accessProtectedResource_WithValidToken_ReturnsOk() {
+    void login_ValidCredentials_ReturnsOkWithCookie() {
         // Given
-        String token = obtainAccessToken("existing@test.com", "password123!");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", encodeBasic("existing@test.com", "password123!"));
 
         // When
+        ResponseEntity<Void> response = restTemplate.exchange(
+                "/api/auth/login",
+                HttpMethod.POST,
+                new HttpEntity<>(headers),
+                Void.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
+    }
+
+    @Test
+    void accessProtectedResource_WithValidCookie_ReturnsOk() {
+        // Given
+        HttpHeaders loginHeaders = new HttpHeaders();
+        loginHeaders.set("Authorization", encodeBasic("existing@test.com", "password123!"));
+
+        ResponseEntity<Void> loginResponse = restTemplate.exchange(
+                "/api/auth/login",
+                HttpMethod.POST,
+                new HttpEntity<>(loginHeaders),
+                Void.class);
+
+        String cookie = loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
+
+        // When
+        HttpHeaders protectedHeaders = new HttpHeaders();
+        protectedHeaders.add(HttpHeaders.COOKIE, cookie);
+
         ResponseEntity<String> response = restTemplate.exchange(
                 "/api/protected",
                 HttpMethod.GET,
-                new HttpEntity<>(createHeaders(token)),
+                new HttpEntity<>(protectedHeaders),
                 String.class);
 
         // Then
@@ -106,32 +146,8 @@ public class AuthControllerIntegrationTest {
     }
 
     @Test
-    void accessProtectedResource_WithExpiredToken_ReturnsForbidden() {
-        String expiredToken = "expired.jwt.token";
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/api/protected",
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(expiredToken)),
-                String.class);
-
+    void accessProtectedResource_WithoutCookie_ReturnsForbidden() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/protected", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    // 헬퍼 메서드: JWT 토큰 획득
-    private String obtainAccessToken(String email, String password) {
-        LoginRequest request = new LoginRequest(email, password);
-        ResponseEntity<JwtResponse> response = restTemplate.postForEntity(
-                "/api/auth/login",
-                request,
-                JwtResponse.class);
-        return response.getBody().accessToken();
-    }
-
-    // 헬퍼 메서드: 인증 헤더 생성
-    private HttpHeaders createHeaders(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        return headers;
     }
 }

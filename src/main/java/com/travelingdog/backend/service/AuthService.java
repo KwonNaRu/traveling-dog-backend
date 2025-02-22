@@ -21,7 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public User signUp(SignUpRequest request) {
+    public String signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateEmailException();
         }
@@ -32,7 +32,8 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
+        return jwtTokenProvider.generateToken(user.getEmail());
     }
 
     public String login(LoginRequest request) throws AuthenticationException {
