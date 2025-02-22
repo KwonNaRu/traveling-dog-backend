@@ -17,7 +17,7 @@ jobs:
             - name: Clone Config Repository
               run: |
                   git clone https://${{ secrets.CONFIG_REPO_PAT }}@${{ secrets.CONFIG_REPO_URL }} config-repo
-                  cp -r config-repo/travelingdog-prod.yml ./src/main/resources/application-build.yml
+                  cp -r config-repo/travelingdog-dev.yml ./src/main/resources/application-build.yml
 
             - name: Setup SSH agent
               uses: webfactory/ssh-agent@v0.5.3
@@ -32,19 +32,19 @@ jobs:
 
             - name: Build Docker image
               run: |
-                  docker build --no-cache -f Dockerfile.prod -t dmdmdm1322/travelingdog-backend:latest .
+                  docker build --no-cache -f Dockerfile.development -t dmdmdm1322/travelingdog-backend:latest .
 
             - name: Push Docker image to Docker Hub
               run: |
                   docker push dmdmdm1322/travelingdog-backend:latest
 
-            - name: Run docker compose on GCP instance
+            - name: Install sshpass
+              run: sudo apt-get install sshpass
+
+            - name: Deploy to Azure VM
               run: |
-                  ssh -o StrictHostKeyChecking=no dmdmdm1322@35.196.99.220 "
-                    export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-                    export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-                    cd ~/traveling-dog-backend
-                    git pull
-                    docker compose -f docker-compose.prod.yml pull
-                    docker compose -f docker-compose.prod.yml up -d
-                  "
+                  sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
+                  docker pull dmdmdm1322/travelingdog-backend:latest
+                  docker-compose down
+                  docker-compose up -d
+                  EOF

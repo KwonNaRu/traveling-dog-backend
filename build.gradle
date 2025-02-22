@@ -57,9 +57,7 @@ dependencies {
 }
 
 tasks.named('test') {
-    useJUnitPlatform {
-        includeTags 'unit', 'integration'
-    }
+    useJUnitPlatform()
 }
 
 // 단위 테스트를 위한 태스크 추가
