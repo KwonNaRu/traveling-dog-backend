@@ -1,4 +1,4 @@
-name: travelingdog-backend
+version: "3.9"
 services:
     app:
         # build: # Dockerfile을 사용하여 이미지 빌드
