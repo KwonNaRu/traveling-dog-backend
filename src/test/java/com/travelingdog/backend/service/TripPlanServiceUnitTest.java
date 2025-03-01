@@ -126,7 +126,8 @@ public class TripPlanServiceUnitTest {
                 when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
                                 .thenReturn("테스트 프롬프트");
 
-                when(routeOptimizationService.optimizeRoute(any())).thenReturn(mockLocations);
+                // 시뮬레이티드 어닐링 알고리즘 사용으로 변경
+                when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
 
                 // When
                 List<TravelLocation> result = tripPlanService.generateTripPlan(request);

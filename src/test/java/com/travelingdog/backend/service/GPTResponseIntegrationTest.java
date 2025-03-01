@@ -165,7 +165,7 @@ public class GPTResponseIntegrationTest {
         void testGptResponseToTravelPlanAndLocations() throws JsonProcessingException {
                 // 경로 최적화 서비스 모킹
                 List<TravelLocation> mockLocations = createMockLocations();
-                when(routeOptimizationService.optimizeRoute(any())).thenReturn(mockLocations);
+                when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
 
                 // When
                 List<TravelLocation> result = tripPlanService.generateTripPlan(request);

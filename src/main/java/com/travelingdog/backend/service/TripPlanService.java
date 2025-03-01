@@ -99,8 +99,12 @@ public class TripPlanService {
                         // travelPlan 연관 관계는 저장할 때 할당
                         locations.add(location);
                     }
-                    // 경로 최적화 실행: 날짜별, 좌표 기반
-                    return routeOptimizationService.optimizeRoute(locations);
+
+                    // 경로 최적화 실행: 시뮬레이티드 어닐링 알고리즘 사용
+                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
+
+                    // 실제 교통 정보를 고려한 경로 최적화를 사용하려면 아래 코드 사용
+                    // return routeOptimizationService.optimizeRouteWithRealDistances(locations);
                 } catch (Exception e) {
                     log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
                     // 대체 응답 사용
@@ -122,7 +126,7 @@ public class TripPlanService {
                         location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
                         fallbackLocations.add(location);
                     }
-                    return routeOptimizationService.optimizeRoute(fallbackLocations);
+                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
                 }
             }
             throw new ExternalApiException("GPT API 호출에 실패했습니다.");

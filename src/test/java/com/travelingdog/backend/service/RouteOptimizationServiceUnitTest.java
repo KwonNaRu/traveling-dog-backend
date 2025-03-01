@@ -2,10 +2,19 @@ package com.travelingdog.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -13,6 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import com.travelingdog.backend.model.TravelLocation;
 
@@ -22,10 +34,30 @@ public class RouteOptimizationServiceUnitTest {
     private RouteOptimizationService routeOptimizationService;
     private List<TravelLocation> locations;
     private GeometryFactory geometryFactory;
+    private WebClient.Builder webClientBuilder;
+    private WebClient webClient;
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+    private WebClient.ResponseSpec responseSpec;
 
     @BeforeEach
     void setUp() {
-        routeOptimizationService = new RouteOptimizationService();
+        // Mock WebClient
+        webClientBuilder = mock(WebClient.Builder.class);
+        webClient = mock(WebClient.class);
+        requestHeadersUriSpec = mock(WebClient.RequestHeadersUriSpec.class);
+        requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
+        responseSpec = mock(WebClient.ResponseSpec.class);
+
+        when(webClientBuilder.build()).thenReturn(webClient);
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+
+        routeOptimizationService = new RouteOptimizationService(webClientBuilder);
+        // API 키 설정
+        ReflectionTestUtils.setField(routeOptimizationService, "googleMapsApiKey", "test-api-key");
+
         geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         locations = new ArrayList<>();
 
@@ -101,6 +133,89 @@ public class RouteOptimizationServiceUnitTest {
         }
 
         List<TravelLocation> result = routeOptimizationService.optimizeRoute(sameDay);
+
+        // 결과 리스트의 크기가 원본과 같은지 확인
+        assertEquals(sameDay.size(), result.size());
+
+        // 모든 위치가 같은 날짜인지 확인
+        for (TravelLocation loc : result) {
+            assertEquals(LocalDate.now(), loc.getAvailableDate());
+        }
+    }
+
+    @Test
+    void testSimulatedAnnealing_OptimizesRoute() {
+        // 같은 날짜의 위치만 포함하는 리스트 생성
+        List<TravelLocation> sameDay = new ArrayList<>();
+        for (TravelLocation loc : locations) {
+            if (loc.getAvailableDate().equals(LocalDate.now())) {
+                sameDay.add(loc);
+            }
+        }
+
+        // 시뮬레이티드 어닐링 알고리즘으로 최적화
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(sameDay);
+
+        // 결과 리스트의 크기가 원본과 같은지 확인
+        assertEquals(sameDay.size(), result.size());
+
+        // 모든 위치가 같은 날짜인지 확인
+        for (TravelLocation loc : result) {
+            assertEquals(LocalDate.now(), loc.getAvailableDate());
+        }
+
+        // 최적화된 경로의 총 거리가 계산되는지 확인
+        double totalDistance = routeOptimizationService.calculateTotalDistance(result);
+        assertTrue(totalDistance > 0);
+    }
+
+    @Test
+    void testGoogleMapsDistanceMatrix_ReturnsValidDistances() {
+        // 테스트 데이터 준비
+        Map<String, Object> distanceResponse = Map.of(
+                "rows", List.of(
+                        Map.of(
+                                "elements", List.of(
+                                        Map.of(
+                                                "distance", Map.of("value", 1500),
+                                                "duration", Map.of("value", 300))))));
+
+        // Google Maps API 응답 모킹
+        when(responseSpec.bodyToMono(eq(Map.class))).thenReturn(Mono.just(distanceResponse));
+
+        // 두 위치 간의 실제 거리 계산
+        double distance = routeOptimizationService.getGoogleMapsDistance(
+                locations.get(0).getCoordinates(),
+                locations.get(1).getCoordinates());
+
+        // 모킹된 응답에 따라 1.5km가 반환되어야 함
+        assertEquals(1.5, distance, 0.01);
+    }
+
+    @Test
+    void testOptimizeRouteWithRealDistances() {
+        // 테스트 데이터 준비
+        Map<String, Object> distanceResponse = Map.of(
+                "rows", List.of(
+                        Map.of(
+                                "elements", List.of(
+                                        Map.of(
+                                                "distance", Map.of("value", 1500),
+                                                "duration", Map.of("value", 300))))));
+
+        // Google Maps API 응답 모킹
+        when(responseSpec.bodyToMono(eq(Map.class))).thenReturn(Mono.just(distanceResponse));
+
+        // 같은 날짜의 위치만 포함하는 리스트 생성
+        List<TravelLocation> sameDay = new ArrayList<>();
+        for (TravelLocation loc : locations) {
+            if (loc.getAvailableDate().equals(LocalDate.now())) {
+                sameDay.add(loc);
+            }
+        }
+
+        // 실제 거리 기반 최적화
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithRealDistances(sameDay);
 
         // 결과 리스트의 크기가 원본과 같은지 확인
         assertEquals(sameDay.size(), result.size());
