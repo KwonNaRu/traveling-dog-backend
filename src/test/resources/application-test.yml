@@ -1,17 +1,26 @@
 spring:
     datasource:
-        url: jdbc:h2:mem:testdb;INIT=RUNSCRIPT FROM 'classpath:schema.sql';DB_CLOSE_DELAY=-1
+        url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
         driverClassName: org.h2.Driver
         username: sa
         password:
 
     jpa:
-        database-platform: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+        database-platform: org.hibernate.dialect.H2Dialect
         hibernate:
             ddl-auto: create-drop
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.H2Dialect
+                format_sql: true
+                show_sql: true
+
+    config:
+        import: optional:configserver:http://localhost:8888
+
+    cloud:
+        config:
+            enabled: false
 
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
@@ -21,3 +30,5 @@ jwt:
 openai:
     api:
         key: sk-test-dummy-key-for-testing-purposes-only
+        url: https://api.openai.com/v1/chat/completions
+        model: gpt-3.5-turbo
