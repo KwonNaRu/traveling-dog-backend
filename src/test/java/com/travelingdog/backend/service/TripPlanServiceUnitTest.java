@@ -31,6 +31,7 @@ import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.TravelPlan;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -42,6 +43,9 @@ public class TripPlanServiceUnitTest {
     @Mock
     private RouteOptimizationService routeOptimizationService;
 
+    @Mock
+    private GptResponseHandler gptResponseHandler;
+
     @InjectMocks
     private TripPlanService tripPlanService;
 
@@ -49,15 +53,15 @@ public class TripPlanServiceUnitTest {
     private AIChatResponse mockResponse;
     private List<TravelLocation> mockLocations;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private LocalDate today;
 
     @BeforeEach
     void setUp() {
         // API 키 설정
         ReflectionTestUtils.setField(tripPlanService, "openAiApiKey", "test-api-key");
-        ReflectionTestUtils.setField(tripPlanService, "restTemplate", restTemplate);
 
         // 테스트 요청 데이터 설정
-        LocalDate today = LocalDate.now();
+        today = LocalDate.now();
         LocalDate endDate = today.plusDays(3);
 
         request = new TravelPlanRequest();
@@ -70,9 +74,9 @@ public class TripPlanServiceUnitTest {
         mockResponse = new AIChatResponse();
         AIChatResponse.Choice choice = new AIChatResponse.Choice();
         AIChatMessage message = new AIChatMessage();
-        message.setContent(
-                "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
-                        + today.format(formatter) + "\"}]");
+        String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
+                + today.format(formatter) + "\"}]";
+        message.setContent(jsonContent);
         choice.setMessage(message);
         List<AIChatResponse.Choice> choices = new ArrayList<>();
         choices.add(choice);
@@ -80,6 +84,13 @@ public class TripPlanServiceUnitTest {
 
         // 모의 위치 데이터 설정
         mockLocations = new ArrayList<>();
+        TravelPlan dummyPlan = TravelPlan.builder()
+                .id(1L)
+                .title("Test Plan")
+                .startDate(today)
+                .endDate(endDate)
+                .build();
+
         TravelLocation location = new TravelLocation();
         location.setPlaceName("Gyeongbokgung Palace");
         location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
@@ -87,6 +98,7 @@ public class TripPlanServiceUnitTest {
         location.setLocationOrder(0);
         location.setDescription("");
         location.setAvailableDate(today);
+        // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
         mockLocations.add(location);
     }
 
@@ -95,6 +107,15 @@ public class TripPlanServiceUnitTest {
         // Given
         when(restTemplate.postForEntity(any(String.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
+
+        // GptResponseHandler 모킹 추가
+        when(gptResponseHandler.parseGptResponse(any(String.class)))
+                .thenReturn(List
+                        .of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770, today.format(formatter))));
+
+        when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
+                .thenReturn("테스트 프롬프트");
+
         when(routeOptimizationService.optimizeRoute(any())).thenReturn(mockLocations);
 
         // When
@@ -105,6 +126,17 @@ public class TripPlanServiceUnitTest {
         assertEquals(1, result.size());
         assertEquals("Gyeongbokgung Palace", result.get(0).getPlaceName());
         assertNotNull(result.get(0).getAvailableDate());
-        assertEquals(LocalDate.now(), result.get(0).getAvailableDate());
+        assertEquals(today, result.get(0).getAvailableDate());
+    }
+
+    // 테스트용 DTO 생성 헬퍼 메서드
+    private com.travelingdog.backend.dto.AIRecommendedLocationDTO createMockLocationDTO(
+            String name, double latitude, double longitude, String availableDate) {
+        com.travelingdog.backend.dto.AIRecommendedLocationDTO dto = new com.travelingdog.backend.dto.AIRecommendedLocationDTO();
+        dto.setName(name);
+        dto.setLatitude(latitude);
+        dto.setLongitude(longitude);
+        dto.setAvailableDate(availableDate);
+        return dto;
     }
 }
