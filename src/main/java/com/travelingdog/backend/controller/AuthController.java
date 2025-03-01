@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -31,7 +32,7 @@ public class AuthController {
 
     private LoginRequest decodeBasicAuth(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
-            throw new IllegalArgumentException("Basic 인증이 필요합니다.");
+            throw new InvalidRequestException("Basic 인증이 필요합니다.");
         }
         String base64Credentials = authHeader.substring("Basic ".length()).trim();
         byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
@@ -83,7 +84,7 @@ public class AuthController {
                     .build();
         } catch (AuthenticationException | BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();
         }
     }

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.model.FailedGptResponse;
 import com.travelingdog.backend.repository.FailedGptResponseRepository;
 
@@ -48,7 +49,7 @@ public class GptResponseHandler {
             // 빈 응답 체크
             if (dtoList.isEmpty()) {
                 logFailedResponse(content, "빈 응답이 반환되었습니다.");
-                throw new IllegalArgumentException("빈 응답이 반환되었습니다.");
+                throw new ExternalApiException("빈 응답이 반환되었습니다.");
             }
 
             // 필수 필드 검증
@@ -57,7 +58,12 @@ public class GptResponseHandler {
             return dtoList;
         } catch (JsonProcessingException e) {
             logFailedResponse(content, "JSON 파싱 실패: " + e.getMessage());
-            throw new IllegalArgumentException("JSON 파싱 실패: " + e.getMessage());
+            throw new ExternalApiException("JSON 파싱 실패: " + e.getMessage());
+        } catch (ExternalApiException e) {
+            throw e;
+        } catch (Exception e) {
+            logFailedResponse(content, "응답 처리 중 오류 발생: " + e.getMessage());
+            throw new ExternalApiException("응답 처리 중 오류 발생: " + e.getMessage());
         }
     }
 
@@ -66,7 +72,7 @@ public class GptResponseHandler {
      */
     private String normalizeGptResponse(String content) {
         if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("응답이 비어 있습니다.");
+            throw new ExternalApiException("응답이 비어 있습니다.");
         }
 
         // 코드 블록 제거 (```json ... ```)
@@ -112,7 +118,7 @@ public class GptResponseHandler {
 
             if (errorMessage.length() > 0) {
                 logFailedResponse(originalContent, "필수 필드가 누락되었거나 형식이 잘못되었습니다: " + errorMessage.toString());
-                throw new IllegalArgumentException("필수 필드가 누락되었거나 형식이 잘못되었습니다: " + errorMessage.toString());
+                throw new ExternalApiException("필수 필드가 누락되었거나 형식이 잘못되었습니다: " + errorMessage.toString());
             }
         }
     }

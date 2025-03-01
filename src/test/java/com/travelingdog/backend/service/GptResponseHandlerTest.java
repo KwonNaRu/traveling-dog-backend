@@ -1,6 +1,12 @@
 package com.travelingdog.backend.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
-import com.travelingdog.backend.model.FailedGptResponse;
+import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.repository.FailedGptResponseRepository;
 
 @Tag("unit")
@@ -98,7 +104,7 @@ public class GptResponseHandlerTest {
                                                                                                                   // 누락
 
         // When & Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(ExternalApiException.class, () -> {
             gptResponseHandler.parseGptResponse(invalidJson);
         });
 
@@ -112,7 +118,7 @@ public class GptResponseHandlerTest {
         String invalidJson = "This is not a valid JSON response";
 
         // When & Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(ExternalApiException.class, () -> {
             gptResponseHandler.parseGptResponse(invalidJson);
         });
 
@@ -126,7 +132,7 @@ public class GptResponseHandlerTest {
         String emptyJson = "[]";
 
         // When & Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(ExternalApiException.class, () -> {
             gptResponseHandler.parseGptResponse(emptyJson);
         });
 

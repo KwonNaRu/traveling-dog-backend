@@ -20,17 +20,16 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
+
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")

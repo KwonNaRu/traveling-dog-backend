@@ -19,6 +19,8 @@ import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.TravelPlanRequest;
+import com.travelingdog.backend.exception.ExternalApiException;
+import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.TravelLocation;
 
 @Service
@@ -123,10 +125,13 @@ public class TripPlanService {
                     return routeOptimizationService.optimizeRoute(fallbackLocations);
                 }
             }
-            throw new RuntimeException("GPT API 호출에 실패했습니다.");
+            throw new ExternalApiException("GPT API 호출에 실패했습니다.");
+        } catch (ExternalApiException e) {
+            log.error("외부 API 호출 중 오류 발생: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("여행 계획 생성 중 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("여행 계획 생성에 실패했습니다: " + e.getMessage());
+            throw new InvalidRequestException("여행 계획 생성에 실패했습니다: " + e.getMessage());
         }
     }
 }
