@@ -1,24 +1,25 @@
 package com.travelingdog.backend.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
-import com.travelingdog.backend.dto.AIChatResponse;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
-import com.travelingdog.backend.model.TravelLocation;
-import com.travelingdog.backend.dto.TravelPlanRequest;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import com.travelingdog.backend.dto.AIChatMessage;
+import com.travelingdog.backend.dto.AIChatRequest;
+import com.travelingdog.backend.dto.AIChatResponse;
+import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.dto.TravelPlanRequest;
+import com.travelingdog.backend.model.TravelLocation;
 
 @Service
 public class TripPlanService {
@@ -28,16 +29,16 @@ public class TripPlanService {
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     private final RouteOptimizationService routeOptimizationService;
     private final GptResponseHandler gptResponseHandler;
 
     @Autowired
     public TripPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
-            RestTemplate restTemplate) {
+            WebClient webClient) {
         this.routeOptimizationService = routeOptimizationService;
         this.gptResponseHandler = gptResponseHandler;
-        this.restTemplate = restTemplate;
+        this.webClient = webClient;
     }
 
     /**
@@ -64,64 +65,62 @@ public class TripPlanService {
             openAiRequest.setMessages(messages);
             openAiRequest.setTemperature(0.3); // 안정적인 JSON 응답을 위해 낮은 temperature 설정
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(openAiApiKey);
-
-            HttpEntity<AIChatRequest> entity = new HttpEntity<>(openAiRequest, headers);
             String openAiUrl = "https://api.openai.com/v1/chat/completions";
 
-            ResponseEntity<AIChatResponse> responseEntity = restTemplate.postForEntity(openAiUrl, entity,
-                    AIChatResponse.class);
+            AIChatResponse openAiResponse = webClient.post()
+                    .uri(openAiUrl)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiApiKey)
+                    .body(BodyInserters.fromValue(openAiRequest))
+                    .retrieve()
+                    .bodyToMono(AIChatResponse.class)
+                    .block();
 
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                AIChatResponse openAiResponse = responseEntity.getBody();
-                if (openAiResponse != null && openAiResponse.getChoices() != null
-                        && !openAiResponse.getChoices().isEmpty()) {
-                    String content = openAiResponse.getChoices().get(0).getMessage().getContent();
+            if (openAiResponse != null && openAiResponse.getChoices() != null
+                    && !openAiResponse.getChoices().isEmpty()) {
+                String content = openAiResponse.getChoices().get(0).getMessage().getContent();
 
-                    try {
-                        // 응답 파싱 및 검증
-                        List<AIRecommendedLocationDTO> dtoList = gptResponseHandler.parseGptResponse(content);
+                try {
+                    // 응답 파싱 및 검증
+                    List<AIRecommendedLocationDTO> dtoList = gptResponseHandler.parseGptResponse(content);
 
-                        // DTO → TravelLocation 변환
-                        List<TravelLocation> locations = new ArrayList<>();
-                        int order = 0;
-                        for (AIRecommendedLocationDTO dto : dtoList) {
-                            TravelLocation location = new TravelLocation();
-                            location.setPlaceName(dto.getName());
-                            location.setCoordinates(dto.getLongitude(), dto.getLatitude());
-                            location.setLocationOrder(order++);
-                            location.setDescription("");
-                            location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
-                            // travelPlan 연관 관계는 저장할 때 할당
-                            locations.add(location);
-                        }
-                        // 경로 최적화 실행: 날짜별, 좌표 기반
-                        return routeOptimizationService.optimizeRoute(locations);
-                    } catch (Exception e) {
-                        log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
-                        // 대체 응답 사용
-                        List<AIRecommendedLocationDTO> fallbackList = gptResponseHandler.getFallbackResponse(
-                                request.getCountry(),
-                                request.getCity(),
-                                request.getStartDate(),
-                                request.getEndDate());
-
-                        // 대체 응답으로 TravelLocation 생성
-                        List<TravelLocation> fallbackLocations = new ArrayList<>();
-                        int order = 0;
-                        for (AIRecommendedLocationDTO dto : fallbackList) {
-                            TravelLocation location = new TravelLocation();
-                            location.setPlaceName(dto.getName());
-                            location.setCoordinates(dto.getLongitude(), dto.getLatitude());
-                            location.setLocationOrder(order++);
-                            location.setDescription("대체 추천 장소");
-                            location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
-                            fallbackLocations.add(location);
-                        }
-                        return routeOptimizationService.optimizeRoute(fallbackLocations);
+                    // DTO → TravelLocation 변환
+                    List<TravelLocation> locations = new ArrayList<>();
+                    int order = 0;
+                    for (AIRecommendedLocationDTO dto : dtoList) {
+                        TravelLocation location = new TravelLocation();
+                        location.setPlaceName(dto.getName());
+                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
+                        location.setLocationOrder(order++);
+                        location.setDescription("");
+                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
+                        // travelPlan 연관 관계는 저장할 때 할당
+                        locations.add(location);
                     }
+                    // 경로 최적화 실행: 날짜별, 좌표 기반
+                    return routeOptimizationService.optimizeRoute(locations);
+                } catch (Exception e) {
+                    log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
+                    // 대체 응답 사용
+                    List<AIRecommendedLocationDTO> fallbackList = gptResponseHandler.getFallbackResponse(
+                            request.getCountry(),
+                            request.getCity(),
+                            request.getStartDate(),
+                            request.getEndDate());
+
+                    // 대체 응답으로 TravelLocation 생성
+                    List<TravelLocation> fallbackLocations = new ArrayList<>();
+                    int order = 0;
+                    for (AIRecommendedLocationDTO dto : fallbackList) {
+                        TravelLocation location = new TravelLocation();
+                        location.setPlaceName(dto.getName());
+                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
+                        location.setLocationOrder(order++);
+                        location.setDescription("대체 추천 장소");
+                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
+                        fallbackLocations.add(location);
+                    }
+                    return routeOptimizationService.optimizeRoute(fallbackLocations);
                 }
             }
             throw new RuntimeException("GPT API 호출에 실패했습니다.");

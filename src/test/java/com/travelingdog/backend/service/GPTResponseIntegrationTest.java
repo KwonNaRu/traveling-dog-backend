@@ -15,11 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +42,7 @@ public class GPTResponseIntegrationTest {
         private GptResponseHandler gptResponseHandler;
 
         @MockBean
-        private RestTemplate restTemplate;
+        private WebClient webClient;
 
         @MockBean
         private RouteOptimizationService routeOptimizationService;
@@ -79,6 +78,21 @@ public class GPTResponseIntegrationTest {
                 List<AIChatResponse.Choice> choices = new ArrayList<>();
                 choices.add(choice);
                 mockResponse.setChoices(choices);
+
+                // WebClient 모킹 설정
+                WebClient.RequestBodyUriSpec requestBodyUriSpec = org.mockito.Mockito
+                                .mock(WebClient.RequestBodyUriSpec.class);
+                WebClient.RequestBodySpec requestBodySpec = org.mockito.Mockito.mock(WebClient.RequestBodySpec.class);
+                WebClient.RequestHeadersSpec requestHeadersSpec = org.mockito.Mockito
+                                .mock(WebClient.RequestHeadersSpec.class);
+                WebClient.ResponseSpec responseSpec = org.mockito.Mockito.mock(WebClient.ResponseSpec.class);
+
+                when(webClient.post()).thenReturn(requestBodyUriSpec);
+                when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any())).thenReturn(requestHeadersSpec);
+                when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
         }
 
         private String createMockGptResponse(LocalDate startDate) {
@@ -149,10 +163,6 @@ public class GPTResponseIntegrationTest {
 
         @Test
         void testGptResponseToTravelPlanAndLocations() throws JsonProcessingException {
-                // Given
-                when(restTemplate.postForEntity(any(String.class), any(HttpEntity.class), any(Class.class)))
-                                .thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
-
                 // 경로 최적화 서비스 모킹
                 List<TravelLocation> mockLocations = createMockLocations();
                 when(routeOptimizationService.optimizeRoute(any())).thenReturn(mockLocations);
