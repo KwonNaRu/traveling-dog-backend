@@ -40,9 +40,8 @@ public class TravelPlan extends BaseTimeEntity {
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user; // 사용자와의 관계
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

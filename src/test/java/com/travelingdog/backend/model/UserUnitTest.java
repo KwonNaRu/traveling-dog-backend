@@ -2,6 +2,9 @@ package com.travelingdog.backend.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Locale;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,7 @@ public class UserUnitTest {
      */
     @BeforeEach
     void setUp() {
-        java.util.Locale.setDefault(java.util.Locale.ENGLISH); // 기본 로케일 영어 설정
+        Locale.setDefault(Locale.ENGLISH); // 기본 로케일 영어 설정
         user = User.builder()
                 .nickname("testUser")
                 .password("securePassword123")
@@ -177,6 +180,35 @@ public class UserUnitTest {
 
         var violations = validator.validate(invalidUser);
         assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .contains("must be a well-formed email address");
+    }
+
+    @Test
+    @Tag("unit")
+    public void testUserCreation_success() {
+        User user = User.builder()
+                .nickname("testUser")
+                .password("securePassword123")
+                .email("test@example.com")
+                .preferredTravelStyle("Adventure")
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @Tag("unit")
+    public void testUserEmailValidation_failure() {
+        User user = User.builder()
+                .nickname("testUser")
+                .password("securePassword123")
+                .email("invalid-email")
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations)
+                .extracting(ConstraintViolation::getMessage)
                 .contains("must be a well-formed email address");
     }
 }

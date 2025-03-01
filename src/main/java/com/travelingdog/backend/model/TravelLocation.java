@@ -1,5 +1,7 @@
 package com.travelingdog.backend.model;
 
+import java.time.LocalDate;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -15,6 +17,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = { "id", "placeName", "locationOrder", "availableDate" })
+@ToString(of = { "id", "placeName", "description", "locationOrder", "availableDate" })
 public class TravelLocation {
 
     @Id
@@ -41,7 +45,20 @@ public class TravelLocation {
     @JoinColumn(name = "travel_plan_id", nullable = false)
     private TravelPlan travelPlan; // 여행 계획과의 관계
 
+    // 여행 가능 날짜 (이제 DB에 저장됨)
+    @NotNull
+    @Column(name = "available_date", nullable = false)
+    private LocalDate availableDate;
+
     public void setCoordinates(double longitude, double latitude) {
         this.coordinates = new GeometryFactory().createPoint(new Coordinate(longitude, latitude));
+    }
+
+    // coordinates 필드를 toString에 포함시키기 위한 커스텀 메서드
+    public String getCoordinatesString() {
+        if (coordinates == null) {
+            return "null";
+        }
+        return "Point(" + coordinates.getX() + ", " + coordinates.getY() + ")";
     }
 }

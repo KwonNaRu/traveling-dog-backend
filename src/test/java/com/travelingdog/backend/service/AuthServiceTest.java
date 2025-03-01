@@ -80,8 +80,8 @@ class AuthServiceTest {
     // 로그인 성공 테스트
     @Test
     void login_ValidCredentials_ReturnsToken() throws AuthenticationException {
-        // Given
         LoginRequest request = new LoginRequest("exist@test.com", "password123!");
+
         User user = User.builder()
                 .email(request.email())
                 .password("encodedPassword")
@@ -91,11 +91,8 @@ class AuthServiceTest {
         when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
         when(jwtTokenProvider.generateToken(user.getEmail())).thenReturn("jwt.token.here");
 
-        // When
         String token = authService.login(request);
-
-        // Then
-        assertThat(token).isNotNull();
+        assertThat(token).isEqualTo("jwt.token.here");
     }
 
     @Test

@@ -16,3 +16,8 @@ spring:
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
     accessTokenValidityInSeconds: 86400 # 24시간
+
+# 테스트용 더미 API 키
+openai:
+    api:
+        key: sk-test-dummy-key-for-testing-purposes-only

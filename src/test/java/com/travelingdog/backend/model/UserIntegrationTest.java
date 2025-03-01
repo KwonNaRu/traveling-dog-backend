@@ -56,8 +56,8 @@ public class UserIntegrationTest {
         @Test
         public void whenUpdateUser_thenUpdatedAtChanges() throws InterruptedException {
                 User user = User.builder()
-                                .nickname("testuser")
-                                .password("password")
+                                .nickname("testUser")
+                                .password("securePassword123")
                                 .email("test@example.com")
                                 .preferredTravelStyle("Adventure")
                                 .build();
@@ -80,9 +80,10 @@ public class UserIntegrationTest {
         @Test
         public void whenCreateUser_thenCreatedAtAndUpdatedAtAreSet() {
                 User user = User.builder()
-                                .nickname("testuser")
-                                .password("password")
+                                .nickname("testUser")
+                                .password("securePassword123")
                                 .email("test@example.com")
+                                .preferredTravelStyle("Adventure")
                                 .build();
 
                 userRepository.save(user);

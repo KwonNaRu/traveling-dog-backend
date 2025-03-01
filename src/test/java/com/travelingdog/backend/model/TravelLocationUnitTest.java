@@ -3,6 +3,8 @@ package com.travelingdog.backend.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.Locale;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -19,44 +21,42 @@ import jakarta.validation.ValidatorFactory;
 @Tag("unit")
 public class TravelLocationUnitTest {
 
-        private User user;
         private TravelPlan travelPlan;
         private TravelLocation travelLocation;
         private Validator validator;
+        private GeometryFactory geometryFactory;
+        private LocalDate testDate;
 
         @BeforeEach
-        void setUp() {
-                java.util.Locale.setDefault(java.util.Locale.ENGLISH);
+        public void setup() {
+                Locale.setDefault(Locale.ENGLISH);
 
-                user = User.builder()
-                                .nickname("testUser")
-                                .password("password123")
-                                .email("test@example.com")
-                                .build();
+                ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+                validator = factory.getValidator();
 
+                // TravelPlan 생성 (필수 필드만 가장 기본적으로 초기화)
                 travelPlan = TravelPlan.builder()
                                 .title("여행 계획")
-                                .startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(10))
+                                .startDate(LocalDate.now().plusDays(1))
+                                .endDate(LocalDate.now().plusDays(5))
+                                .user(User.builder()
+                                                .nickname("testUser")
+                                                .password("password123")
+                                                .email("test@example.com")
+                                                .build())
                                 .build();
 
-                user.addTravelPlan(travelPlan);
-
+                // TravelLocation 초기화
+                geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+                testDate = LocalDate.now();
                 travelLocation = TravelLocation.builder()
-                                .placeName("여행 위치")
-
-                                .description("여행 위치 설명")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(126.978, 37.5665)))
+                                .placeName("Test Location")
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.977, 37.579)))
+                                .description("Test Description")
                                 .locationOrder(1)
                                 .travelPlan(travelPlan)
+                                .availableDate(testDate)
                                 .build();
-
-                travelPlan.addTravelLocation(travelLocation);
-
-                try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-                        validator = factory.getValidator();
-                }
         }
 
         /**
@@ -65,12 +65,13 @@ public class TravelLocationUnitTest {
         @Test
         public void testTravelLocationCreation() {
                 assertThat(travelLocation).isNotNull();
-                assertThat(travelLocation.getPlaceName()).isEqualTo("여행 위치");
-                assertThat(travelLocation.getDescription()).isEqualTo("여행 위치 설명");
-                assertThat(travelLocation.getCoordinates()).isEqualTo(new GeometryFactory(new PrecisionModel(), 4326)
-                                .createPoint(new Coordinate(126.978, 37.5665)));
+                assertThat(travelLocation.getPlaceName()).isEqualTo("Test Location");
+                assertThat(travelLocation.getDescription()).isEqualTo("Test Description");
+                assertThat(travelLocation.getCoordinates())
+                                .isEqualTo(geometryFactory.createPoint(new Coordinate(126.977, 37.579)));
                 assertThat(travelLocation.getLocationOrder()).isEqualTo(1);
                 assertThat(travelLocation.getTravelPlan()).isEqualTo(travelPlan);
+                assertThat(travelLocation.getAvailableDate()).isNotNull();
         }
 
         /**
@@ -82,8 +83,8 @@ public class TravelLocationUnitTest {
                 travelLocation.setCoordinates(155.978, 42.5665);
 
                 assertThat(travelLocation.getPlaceName()).isEqualTo("업데이트된 여행 위치");
-                assertThat(travelLocation.getCoordinates()).isEqualTo(new GeometryFactory(new PrecisionModel(), 4326)
-                                .createPoint(new Coordinate(155.978, 42.5665)));
+                assertThat(travelLocation.getCoordinates())
+                                .isEqualTo(geometryFactory.createPoint(new Coordinate(155.978, 42.5665)));
         }
 
         /**
@@ -104,14 +105,15 @@ public class TravelLocationUnitTest {
         public void testPlaceNameIsNull() {
                 TravelLocation invalidTravelLocation = TravelLocation.builder()
                                 .description("여행 위치 설명")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(126.978, 37.5665)))
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
                                 .locationOrder(1)
                                 .travelPlan(travelPlan)
+                                .availableDate(LocalDate.now())
                                 .build();
 
-                var violations = validator.validate(invalidTravelLocation);
-                assertThat(violations).extracting(ConstraintViolation::getMessage)
+                Set<ConstraintViolation<TravelLocation>> violations = validator.validate(invalidTravelLocation);
+                assertThat(violations)
+                                .extracting(ConstraintViolation::getMessage)
                                 .contains("must not be null");
         }
 
@@ -125,6 +127,7 @@ public class TravelLocationUnitTest {
                                 .description("여행 위치 설명")
                                 .locationOrder(1)
                                 .travelPlan(travelPlan)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 var violations = validator.validate(invalidTravelLocation);
@@ -140,9 +143,9 @@ public class TravelLocationUnitTest {
                 TravelLocation validTravelLocation = TravelLocation.builder()
                                 .placeName("여행 위치")
                                 .description("여행 위치 설명")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(126.978, 37.5665)))
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
                                 .travelPlan(travelPlan)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 assertThat(validTravelLocation.getLocationOrder()).isEqualTo(0);
@@ -156,9 +159,9 @@ public class TravelLocationUnitTest {
                 TravelLocation invalidTravelLocation = TravelLocation.builder()
                                 .placeName("여행 위치")
                                 .description("여행 위치 설명")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(126.978, 37.5665)))
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
                                 .locationOrder(1)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 var violations = validator.validate(invalidTravelLocation);
@@ -174,14 +177,106 @@ public class TravelLocationUnitTest {
                 TravelLocation invalidTravelLocation = TravelLocation.builder()
                                 .placeName("여행 위치")
                                 .description("여행 위치 설명")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(126.978, 37.5665)))
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
                                 .locationOrder(-1)
                                 .travelPlan(travelPlan)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 var violations = validator.validate(invalidTravelLocation);
                 assertThat(violations).extracting(ConstraintViolation::getMessage)
                                 .contains("Order must be positive number");
+        }
+
+        /**
+         * ✅ availableDate 필드가 null이면 검증 실패해야 합니다.
+         */
+        @Test
+        public void testAvailableDateIsNull() {
+                TravelLocation invalidTravelLocation = TravelLocation.builder()
+                                .placeName("여행 위치")
+                                .description("여행 위치 설명")
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
+                                .locationOrder(1)
+                                .travelPlan(travelPlan)
+                                .build();
+
+                var violations = validator.validate(invalidTravelLocation);
+                assertThat(violations).extracting(ConstraintViolation::getMessage)
+                                .contains("must not be null");
+        }
+
+        @Test
+        @Tag("unit")
+        public void testTravelLocationCreation_success() {
+                TravelLocation travelLocation = TravelLocation.builder()
+                                .placeName("여행 위치")
+                                .description("여행 위치 설명")
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.978, 37.5665)))
+                                .locationOrder(1)
+                                .travelPlan(travelPlan)
+                                .availableDate(LocalDate.now())
+                                .build();
+
+                Set<ConstraintViolation<TravelLocation>> violations = validator.validate(travelLocation);
+                assertThat(violations).isEmpty();
+        }
+
+        @Test
+        public void testSetAvailableDate() {
+                // Given
+                LocalDate newDate = LocalDate.now().plusDays(1);
+
+                // When
+                travelLocation.setAvailableDate(newDate);
+
+                // Then
+                assertThat(travelLocation.getAvailableDate()).isEqualTo(newDate);
+        }
+
+        @Test
+        public void testSetNullAvailableDate() {
+                // When
+                travelLocation.setAvailableDate(null);
+
+                // Then
+                assertThat(travelLocation.getAvailableDate()).isNull();
+        }
+
+        @Test
+        public void testEqualsAndHashCode() {
+                // Given
+                TravelLocation location1 = TravelLocation.builder()
+                                .id(1L)
+                                .placeName("Test Location")
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.977, 37.579)))
+                                .description("Test Description")
+                                .locationOrder(1)
+                                .availableDate(testDate)
+                                .build();
+
+                TravelLocation location2 = TravelLocation.builder()
+                                .id(1L)
+                                .placeName("Test Location")
+                                .coordinates(geometryFactory.createPoint(new Coordinate(126.977, 37.579)))
+                                .description("Test Description")
+                                .locationOrder(1)
+                                .availableDate(testDate)
+                                .build();
+
+                // Then
+                assertThat(location1).isEqualTo(location2);
+                assertThat(location1.hashCode()).isEqualTo(location2.hashCode());
+        }
+
+        @Test
+        public void testToString() {
+                // When
+                String toString = travelLocation.toString();
+
+                // Then
+                assertThat(toString).isNotNull();
+                // toString 메서드가 availableDate 필드를 포함하는지 확인
+                assertThat(toString).contains("availableDate");
         }
 }

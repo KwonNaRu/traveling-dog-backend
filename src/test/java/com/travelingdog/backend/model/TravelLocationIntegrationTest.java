@@ -72,6 +72,7 @@ public class TravelLocationIntegrationTest {
                                                 .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description")
                                 .locationOrder(1)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);
@@ -96,6 +97,7 @@ public class TravelLocationIntegrationTest {
                                                 .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description")
                                 .locationOrder(1)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);
@@ -123,6 +125,7 @@ public class TravelLocationIntegrationTest {
                                                 .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description")
                                 .locationOrder(1)
+                                .availableDate(LocalDate.now())
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);

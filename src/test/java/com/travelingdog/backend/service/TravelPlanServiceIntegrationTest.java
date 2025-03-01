@@ -1,7 +1,8 @@
 package com.travelingdog.backend.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalDate;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.travelingdog.backend.config.JpaAuditingConfigTest;
+import com.travelingdog.backend.config.TestConfig;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
@@ -22,7 +24,7 @@ import com.travelingdog.backend.repository.UserRepository;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(JpaAuditingConfigTest.class)
+@Import({ JpaAuditingConfigTest.class, TestConfig.class })
 public class TravelPlanServiceIntegrationTest {
 
         @Autowired
@@ -36,22 +38,18 @@ public class TravelPlanServiceIntegrationTest {
         @BeforeEach
         public void setUp() {
                 user = User.builder()
-                                .nickname("testuser")
+                                .nickname("testUser")
                                 .password("password")
                                 .email("test@example.com")
-                                .preferredTravelStyle("Adventure")
-                                .favoriteDestinations(List.of("Paris", "New York"))
                                 .build();
-
-                userRepository.save(user);
-
                 travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
                                 .user(user)
                                 .build();
-
+                user.addTravelPlan(travelPlan);
+                userRepository.save(user);
                 travelPlanRepository.save(travelPlan);
         }
 
@@ -69,6 +67,7 @@ public class TravelPlanServiceIntegrationTest {
                                                 .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description 1")
                                 .locationOrder(1)
+                                .availableDate(LocalDate.now())
                                 .build();
                 travelPlan.addTravelLocation(travelLocation1);
 
@@ -78,12 +77,20 @@ public class TravelPlanServiceIntegrationTest {
                                                 .createPoint(new Coordinate(123.456, 78.901)))
                                 .description("Test Description 2")
                                 .locationOrder(2)
+                                .availableDate(LocalDate.now())
                                 .build();
                 travelPlan.addTravelLocation(travelLocation2);
 
                 travelPlanRepository.save(travelPlan);
+        }
 
-                // TODO:
+        @Test
+        public void testUpdateTravelPlan() {
+                travelPlan.setTitle("Updated Travel Plan");
+                travelPlanRepository.save(travelPlan);
+
+                TravelPlan updatedPlan = travelPlanRepository.findById(travelPlan.getId()).orElse(null);
+                assertThat(updatedPlan.getTitle()).isEqualTo("Updated Travel Plan");
         }
 
 }

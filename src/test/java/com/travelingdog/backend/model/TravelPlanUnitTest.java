@@ -247,8 +247,8 @@ public class TravelPlanUnitTest {
         }
 
         /**
-         * ✅ user 필드가 null이면 검증 실패해야 합니다.
-         * - `@NotNull` 검증이 동작하여 "must not be null" 메시지를 반환해야 합니다.
+         * ✅ user 필드가 null이어도 검증을 통과해야 합니다.
+         * - `user_id` 컬럼은 nullable=true로 설정되어 있습니다.
          */
         @Test
         public void testUserIsNull() {
@@ -260,7 +260,7 @@ public class TravelPlanUnitTest {
 
                 var violations = validator.validate(invalidTravelPlan);
                 assertThat(violations).extracting(ConstraintViolation::getMessage)
-                                .contains("must not be null");
+                                .doesNotContain("must not be null");
         }
 
 }
