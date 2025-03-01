@@ -21,3 +21,20 @@ spring:
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
     accessTokenValidityInSeconds: 86400 # 24시간
+
+openai:
+    api:
+        key: sk-dummy-api-key-for-testing-purposes-only
+        url: https://api.openai.com/v1/chat/completions
+        model: gpt-3.5-turbo
+
+springdoc:
+    swagger-ui:
+        path: /swagger-ui.html
+        api-docs: /api-docs
+        default-consumes-media-type: application/json
+        default-produces-media-type: application/json
+        operationsSorter: method
+        tagsSorter: alpha
+        tryItOutEnabled: true
+        filter: true
