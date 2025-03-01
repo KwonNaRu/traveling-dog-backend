@@ -21,6 +21,7 @@ spring:
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
     accessTokenValidityInSeconds: 86400 # 24시간
+    refreshTokenValidityInSeconds: 604800 # 7일
 
 openai:
     api:
