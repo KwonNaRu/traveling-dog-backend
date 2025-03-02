@@ -3,7 +3,6 @@ package com.travelingdog.backend.controller;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.apache.hc.client5.http.auth.AuthenticationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.InvalidRequestException;
@@ -67,12 +67,12 @@ public class AuthController {
                 credentials.email(),
                 credentials.password());
 
-        String token = authService.signUp(signUpRequest);
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+        JwtResponse jwtResponse = authService.signUp(signUpRequest);
+        ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.accessToken())
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(3600)
+                .maxAge(jwtResponse.expiresIn())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -89,24 +89,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Void> login(
             @Parameter(description = "Basic 인증 헤더 (Base64 인코딩된 이메일:비밀번호)", required = true) @RequestHeader("Authorization") String authHeader) {
-        try {
-            LoginRequest loginRequest = decodeBasicAuth(authHeader);
-            String token = authService.login(loginRequest);
+        LoginRequest loginRequest = decodeBasicAuth(authHeader);
+        JwtResponse token = authService.login(loginRequest);
 
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(3600)
-                    .build();
+        ResponseCookie cookie = ResponseCookie.from("jwt", token.accessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(token.expiresIn())
+                .build();
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .build();
-        } catch (AuthenticationException | BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
     }
 }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
 
                 return ResponseEntity.badRequest()
                                 .body(ErrorResponse.of("VALIDATION_FAILED", "입력값 검증 실패", errors));
+        }
+
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
+                System.out.println("BadCredentialsException 처리: " + e.getMessage());
+                Map<String, String> errors = Map.of("credentials",
+                                e.getMessage() != null ? e.getMessage() : "인증 정보가 올바르지 않습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of("INVALID_CREDENTIALS", "인증 실패", errors));
         }
 
         @ExceptionHandler(DuplicateEmailException.class)

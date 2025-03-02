@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.util.Base64;
 import com.travelingdog.backend.config.SecurityConfig;
+import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
@@ -99,6 +100,7 @@ public class AuthControllerUnitTest {
      */
     @BeforeEach
     void setUp() {
+        authController = new AuthController(authService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -122,8 +124,9 @@ public class AuthControllerUnitTest {
         String email = "test@test.com";
         String password = "password";
         String token = "dummy-token";
+        String refreshToken = "dummy-refresh-token";
 
-        when(authService.login(any(LoginRequest.class))).thenReturn(token);
+        when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
@@ -148,8 +151,9 @@ public class AuthControllerUnitTest {
         String email = "test@test.com";
         String password = "password";
         String token = "dummy-token";
+        String refreshToken = "dummy-refresh-token";
 
-        when(authService.login(any(LoginRequest.class))).thenReturn(token);
+        when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
@@ -205,8 +209,9 @@ public class AuthControllerUnitTest {
         String password = "password123!";
         SignUpRequest request = new SignUpRequest("newUser", email, password);
         String token = "dummy-token";
+        String refreshToken = "dummy-refresh-token";
 
-        when(authService.signUp(any(SignUpRequest.class))).thenReturn(token);
+        when(authService.signUp(any(SignUpRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         // When & Then
         mockMvc.perform(post("/api/auth/signup")
@@ -245,7 +250,7 @@ public class AuthControllerUnitTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("이미 등록된 이메일입니다."));
+                .andExpect(jsonPath("$.message").value("이메일 중복 오류"));
     }
 
     /**

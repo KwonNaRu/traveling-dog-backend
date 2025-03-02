@@ -1,9 +1,10 @@
 package com.travelingdog.backend.service;
 
-import org.apache.hc.client5.http.auth.AuthenticationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
@@ -21,7 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public String signUp(SignUpRequest request) {
+    public JwtResponse signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateEmailException();
         }
@@ -33,17 +34,24 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        return jwtTokenProvider.generateToken(user.getEmail());
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+
+        return JwtResponse.of(token, 3600, refreshToken);
     }
 
-    public String login(LoginRequest request) throws AuthenticationException {
+    public JwtResponse login(LoginRequest request) throws BadCredentialsException {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new BadCredentialsException("Invalid credentials");
         }
 
-        return jwtTokenProvider.generateToken(user.getEmail());
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+
+        return JwtResponse.of(token, 3600, refreshToken);
     }
 }

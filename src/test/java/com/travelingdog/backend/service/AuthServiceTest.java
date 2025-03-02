@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
+import org.apache.hc.client5.http.auth.AuthenticationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -17,14 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.travelingdog.backend.dto.LoginDTO;
-import com.travelingdog.backend.dto.SignUpDTO;
-import com.travelingdog.backend.dto.TokenDTO;
+import com.travelingdog.backend.dto.JwtResponse;
+import com.travelingdog.backend.dto.LoginRequest;
+import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
-import com.travelingdog.backend.exception.InvalidCredentialsException;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
@@ -56,9 +55,10 @@ public class AuthServiceTest {
     @InjectMocks
     private AuthService authService;
 
-    private SignUpDTO signUpDTO;
+    private SignUpRequest signUpRequest;
     private User user;
     private String token;
+    private String refreshToken;
 
     /**
      * 각 테스트 실행 전 환경 설정
@@ -72,20 +72,18 @@ public class AuthServiceTest {
     @BeforeEach
     void setUp() {
         // 테스트용 회원가입 DTO 생성
-        signUpDTO = new SignUpDTO();
-        signUpDTO.setEmail("test@example.com");
-        signUpDTO.setPassword("password");
-        signUpDTO.setName("Test User");
+        signUpRequest = new SignUpRequest("testUser", "test@example.com", "password");
 
         // 테스트용 사용자 객체 생성
         user = new User();
         user.setId(1L);
         user.setEmail("test@example.com");
         user.setPassword("encodedPassword");
-        user.setName("Test User");
+        user.setNickname("testUser");
 
         // 테스트용 JWT 토큰 생성
         token = "test.jwt.token";
+        refreshToken = "test.refresh.token";
     }
 
     /**
@@ -103,17 +101,18 @@ public class AuthServiceTest {
     @DisplayName("유효한 회원가입 정보로 회원가입 시 토큰을 반환한다")
     void signUp_ValidInput_ReturnsToken() {
         // Given
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(jwtTokenProvider.generateToken(anyString())).thenReturn(token);
+        when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
 
         // When
-        TokenDTO result = authService.signUp(signUpDTO);
+        JwtResponse result = authService.signUp(signUpRequest);
 
         // Then
         assertNotNull(result);
-        assertEquals(token, result.getToken());
+        assertEquals(token, result.accessToken());
+        assertEquals(refreshToken, result.refreshToken());
     }
 
     /**
@@ -131,11 +130,11 @@ public class AuthServiceTest {
     @DisplayName("이미 등록된 이메일로 회원가입 시 예외가 발생한다")
     void signUp_DuplicateEmail_ThrowsException() {
         // Given
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmail(anyString())).thenReturn(true);
 
         // When & Then
         assertThrows(DuplicateEmailException.class, () -> {
-            authService.signUp(signUpDTO);
+            authService.signUp(signUpRequest);
         });
     }
 
@@ -152,46 +151,21 @@ public class AuthServiceTest {
      */
     @Test
     @DisplayName("유효한 로그인 정보로 로그인 시 토큰을 반환한다")
-    void login_ValidCredentials_ReturnsToken() {
+    void login_ValidCredentials_ReturnsToken() throws AuthenticationException {
         // Given
-        LoginDTO loginDTO = new LoginDTO();
-        loginDTO.setEmail("test@example.com");
-        loginDTO.setPassword("password");
+        LoginRequest loginRequest = new LoginRequest("test@example.com", "password");
 
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtTokenProvider.generateToken(anyString())).thenReturn(token);
+        when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
 
         // When
-        TokenDTO result = authService.login(loginDTO);
+        JwtResponse result = authService.login(loginRequest);
 
         // Then
         assertNotNull(result);
-        assertEquals(token, result.getToken());
-    }
-
-    /**
-     * 사용자명으로 사용자 정보 로드 테스트
-     * 
-     * 이 테스트는 AuthService의 loadUserByUsername 메소드가
-     * 주어진 이메일로 사용자 정보를 올바르게 로드하는지 검증합니다.
-     * 
-     * 테스트 과정:
-     * 1. 모의 객체 설정 (사용자 존재)
-     * 2. AuthService의 loadUserByUsername 메소드 호출
-     * 3. 결과 검증: 반환된 UserDetails 객체의 사용자명이 예상한 값과 일치하는지 확인
-     */
-    @Test
-    @DisplayName("이메일로 사용자 정보를 로드한다")
-    void testLoadUserByUsername() {
-        // Given
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-
-        // When
-        UserDetails userDetails = authService.loadUserByUsername("test@example.com");
-
-        // Then
-        assertNotNull(userDetails);
-        assertEquals("test@example.com", userDetails.getUsername());
+        assertEquals(token, result.accessToken());
+        assertEquals(refreshToken, result.refreshToken());
     }
 }
