@@ -19,12 +19,15 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
 
 import com.travelingdog.backend.model.TravelLocation;
 
@@ -63,9 +66,9 @@ public class RouteOptimizationServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // WebClient 모킹 설정
-        WebClient.RequestHeadersUriSpec requestHeadersUriSpec = org.mockito.Mockito
-                .mock(WebClient.RequestHeadersUriSpec.class);
-        WebClient.RequestHeadersSpec requestHeadersSpec = org.mockito.Mockito.mock(WebClient.RequestHeadersSpec.class);
+        RequestHeadersUriSpec requestHeadersUriSpec = Mockito
+                .mock(RequestHeadersUriSpec.class);
+        RequestHeadersSpec requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);
         WebClient.ResponseSpec responseSpec = org.mockito.Mockito.mock(WebClient.ResponseSpec.class);
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);

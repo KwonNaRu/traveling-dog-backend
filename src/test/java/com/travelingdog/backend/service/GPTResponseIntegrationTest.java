@@ -15,11 +15,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +54,7 @@ import reactor.core.publisher.Mono;
 public class GPTResponseIntegrationTest {
 
         @Autowired
-        private TripPlanService tripPlanService;
+        private TravelPlanService tripPlanService;
 
         @Autowired
         private GptResponseHandler gptResponseHandler;
@@ -103,12 +108,12 @@ public class GPTResponseIntegrationTest {
                 mockResponse.setChoices(choices);
 
                 // WebClient 모킹 설정
-                WebClient.RequestBodyUriSpec requestBodyUriSpec = org.mockito.Mockito
-                                .mock(WebClient.RequestBodyUriSpec.class);
-                WebClient.RequestBodySpec requestBodySpec = org.mockito.Mockito.mock(WebClient.RequestBodySpec.class);
-                WebClient.RequestHeadersSpec requestHeadersSpec = org.mockito.Mockito
-                                .mock(WebClient.RequestHeadersSpec.class);
-                WebClient.ResponseSpec responseSpec = org.mockito.Mockito.mock(WebClient.ResponseSpec.class);
+                RequestBodyUriSpec requestBodyUriSpec = Mockito
+                                .mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
+                RequestHeadersSpec requestHeadersSpec = Mockito
+                                .mock(RequestHeadersSpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
 
                 when(webClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);

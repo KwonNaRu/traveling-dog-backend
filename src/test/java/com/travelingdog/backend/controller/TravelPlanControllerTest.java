@@ -32,7 +32,7 @@ import com.travelingdog.backend.dto.TravelPlanRequest;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
-import com.travelingdog.backend.service.TripPlanService;
+import com.travelingdog.backend.service.TravelPlanService;
 
 @WebMvcTest(TravelPlanController.class)
 @Import({ SecurityConfig.class, TravelPlanControllerTest.MockSecurityConfig.class })
@@ -45,7 +45,7 @@ public class TravelPlanControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private TripPlanService tripPlanService;
+    private TravelPlanService tripPlanService;
 
     private TravelPlanRequest request;
     private List<TravelLocation> mockLocations;

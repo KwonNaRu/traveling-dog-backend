@@ -21,6 +21,10 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
+import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 
 import com.travelingdog.backend.model.TravelLocation;
 
@@ -43,11 +47,11 @@ public class RouteOptimizationServiceUnitTest {
     private RouteOptimizationService routeOptimizationService;
     private List<TravelLocation> locations;
     private GeometryFactory geometryFactory;
-    private WebClient.Builder webClientBuilder;
+    private Builder webClientBuilder;
     private WebClient webClient;
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
-    private WebClient.ResponseSpec responseSpec;
+    private RequestHeadersUriSpec requestHeadersUriSpec;
+    private RequestHeadersSpec requestHeadersSpec;
+    private ResponseSpec responseSpec;
 
     /**
      * 각 테스트 실행 전 환경 설정

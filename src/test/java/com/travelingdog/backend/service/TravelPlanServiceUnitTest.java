@@ -20,12 +20,18 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatResponse;
+import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
@@ -46,7 +52,7 @@ import reactor.core.publisher.Mono;
  */
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
-public class TripPlanServiceUnitTest {
+public class TravelPlanServiceUnitTest {
 
         @Mock
         private WebClient webClient;
@@ -58,7 +64,7 @@ public class TripPlanServiceUnitTest {
         private GptResponseHandler gptResponseHandler;
 
         @InjectMocks
-        private TripPlanService tripPlanService;
+        private TravelPlanService tripPlanService;
 
         private TravelPlanRequest request;
         private AIChatResponse mockResponse;
@@ -125,12 +131,13 @@ public class TripPlanServiceUnitTest {
                 mockLocations.add(location);
 
                 // WebClient 모킹 설정
-                WebClient.RequestBodyUriSpec requestBodyUriSpec = org.mockito.Mockito
-                                .mock(WebClient.RequestBodyUriSpec.class);
-                WebClient.RequestBodySpec requestBodySpec = org.mockito.Mockito.mock(WebClient.RequestBodySpec.class);
-                WebClient.RequestHeadersSpec requestHeadersSpec = org.mockito.Mockito
-                                .mock(WebClient.RequestHeadersSpec.class);
-                WebClient.ResponseSpec responseSpec = org.mockito.Mockito.mock(WebClient.ResponseSpec.class);
+                RequestBodyUriSpec requestBodyUriSpec = Mockito
+                                .mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito
+                                .mock(RequestBodySpec.class);
+                RequestHeadersSpec requestHeadersSpec = Mockito
+                                .mock(RequestHeadersSpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
 
                 when(webClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
@@ -192,9 +199,9 @@ public class TripPlanServiceUnitTest {
          * @param availableDate 방문 가능 날짜 (문자열 형식)
          * @return 모의 AIRecommendedLocationDTO 객체
          */
-        private com.travelingdog.backend.dto.AIRecommendedLocationDTO createMockLocationDTO(
+        private AIRecommendedLocationDTO createMockLocationDTO(
                         String name, double latitude, double longitude, String availableDate) {
-                com.travelingdog.backend.dto.AIRecommendedLocationDTO dto = new com.travelingdog.backend.dto.AIRecommendedLocationDTO();
+                AIRecommendedLocationDTO dto = new AIRecommendedLocationDTO();
                 dto.setName(name);
                 dto.setLatitude(latitude);
                 dto.setLongitude(longitude);

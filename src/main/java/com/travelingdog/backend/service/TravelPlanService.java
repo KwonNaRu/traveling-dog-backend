@@ -24,9 +24,9 @@ import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.TravelLocation;
 
 @Service
-public class TripPlanService {
+public class TravelPlanService {
 
-    private static final Logger log = LoggerFactory.getLogger(TripPlanService.class);
+    private static final Logger log = LoggerFactory.getLogger(TravelPlanService.class);
 
     @Value("${openai.api.key}")
     private String openAiApiKey;
@@ -36,7 +36,7 @@ public class TripPlanService {
     private final GptResponseHandler gptResponseHandler;
 
     @Autowired
-    public TripPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
+    public TravelPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
             WebClient webClient) {
         this.routeOptimizationService = routeOptimizationService;
         this.gptResponseHandler = gptResponseHandler;
