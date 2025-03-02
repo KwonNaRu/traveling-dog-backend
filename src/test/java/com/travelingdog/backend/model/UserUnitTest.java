@@ -14,6 +14,15 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
+/**
+ * 사용자 모델 단위 테스트
+ * 
+ * 이 테스트는 User 엔티티 모델의 기능과 유효성 검사를 검증합니다.
+ * 사용자 생성, 필드 업데이트, 여행 계획 연결, 즐겨찾기 목적지 관리 등
+ * 사용자 모델의 핵심 기능을 테스트합니다.
+ * 또한 Bean Validation을 사용한 필드 유효성 검사도 테스트합니다.
+ * (이메일 형식, 비밀번호 강도, 필수 필드 등)
+ */
 @Tag("unit")
 public class UserUnitTest {
 

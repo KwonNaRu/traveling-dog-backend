@@ -20,6 +20,14 @@ import org.springframework.test.context.ActiveProfiles;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
+/**
+ * 토큰 갱신 기능 테스트
+ * 
+ * 이 테스트는 JWT 토큰의 갱신 기능을 검증합니다.
+ * 리프레시 토큰을 사용하여 액세스 토큰을 갱신하는 과정과
+ * 토큰 만료 처리 등 토큰 갱신 관련 기능의 정상 작동을 확인합니다.
+ * 실제 애플리케이션 컨텍스트를 로드하여 통합 테스트 환경에서 수행됩니다.
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 public class TokenRefreshTest {

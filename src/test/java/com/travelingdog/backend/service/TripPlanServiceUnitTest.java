@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,18 @@ import com.travelingdog.backend.model.TravelPlan;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * 여행 계획 서비스 단위 테스트
+ * 
+ * 이 테스트 클래스는 TripPlanService의 기능을 단위 테스트합니다.
+ * 외부 의존성(WebClient, RouteOptimizationService, GptResponseHandler)을
+ * 모킹하여 서비스 로직만 독립적으로 테스트합니다.
+ * 
+ * 주요 테스트 대상:
+ * 1. 여행 계획 생성 요청 처리
+ * 2. GPT 응답 처리 및 위치 데이터 변환
+ * 3. 경로 최적화 서비스 연동
+ */
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
 public class TripPlanServiceUnitTest {
@@ -53,6 +66,18 @@ public class TripPlanServiceUnitTest {
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private LocalDate today;
 
+        /**
+         * 각 테스트 실행 전 환경 설정
+         * 
+         * 1. API 키 설정: ReflectionTestUtils를 사용하여 테스트용 API 키 설정
+         * 2. 테스트용 여행 계획 요청 데이터 생성
+         * 3. 모의 GPT 응답 데이터 설정
+         * 4. 모의 위치 데이터 설정
+         * 5. WebClient 모킹 설정: OpenAI API 호출을 시뮬레이션
+         * 
+         * 이 설정을 통해 실제 외부 서비스를 호출하지 않고도
+         * TripPlanService의 로직을 테스트할 수 있습니다.
+         */
         @BeforeEach
         void setUp() {
                 // API 키 설정
@@ -115,7 +140,22 @@ public class TripPlanServiceUnitTest {
                 when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
         }
 
+        /**
+         * 여행 계획 생성 기능 테스트
+         * 
+         * 이 테스트는 TripPlanService의 generateTripPlan 메소드가
+         * 여행 계획 요청을 처리하여 여행 위치 목록을 생성하는 과정을 검증합니다.
+         * 
+         * 테스트 과정:
+         * 1. GptResponseHandler 모킹: GPT 응답 파싱 및 프롬프트 생성 기능 모킹
+         * 2. RouteOptimizationService 모킹: 경로 최적화 기능 모킹
+         * 3. 여행 계획 생성 요청
+         * 4. 결과 검증: 위치 수, 위치 이름, 날짜 정보
+         * 
+         * 이 테스트는 여행 계획 생성의 전체 흐름이 올바르게 작동하는지 검증합니다.
+         */
         @Test
+        @DisplayName("여행 계획 생성 기능 테스트")
         void testGenerateTripPlan() {
                 // GptResponseHandler 모킹 추가
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
@@ -140,7 +180,18 @@ public class TripPlanServiceUnitTest {
                 assertEquals(today, result.get(0).getAvailableDate());
         }
 
-        // 테스트용 DTO 생성 헬퍼 메서드
+        /**
+         * 테스트용 위치 DTO 생성 헬퍼 메소드
+         * 
+         * 이 메소드는 테스트에 사용할 AIRecommendedLocationDTO 객체를 생성합니다.
+         * GPT 응답에서 파싱된 위치 정보를 시뮬레이션하는 데 사용됩니다.
+         * 
+         * @param name          장소 이름
+         * @param latitude      위도
+         * @param longitude     경도
+         * @param availableDate 방문 가능 날짜 (문자열 형식)
+         * @return 모의 AIRecommendedLocationDTO 객체
+         */
         private com.travelingdog.backend.dto.AIRecommendedLocationDTO createMockLocationDTO(
                         String name, double latitude, double longitude, String availableDate) {
                 com.travelingdog.backend.dto.AIRecommendedLocationDTO dto = new com.travelingdog.backend.dto.AIRecommendedLocationDTO();

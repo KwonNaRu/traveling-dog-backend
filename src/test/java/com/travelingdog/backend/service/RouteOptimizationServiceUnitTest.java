@@ -2,9 +2,6 @@ package com.travelingdog.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -14,9 +11,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -24,10 +21,22 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import com.travelingdog.backend.model.TravelLocation;
 
+import reactor.core.publisher.Mono;
+
+/**
+ * 경로 최적화 서비스 단위 테스트
+ * 
+ * 이 테스트 클래스는 RouteOptimizationService의 다양한 기능을 단위 테스트합니다.
+ * 외부 의존성(WebClient)을 모킹하여 서비스 로직만 독립적으로 테스트합니다.
+ * 주요 테스트 대상:
+ * 1. 빈 리스트, 단일 위치, 다중 위치에 대한 경로 최적화
+ * 2. 날짜별 그룹화 기능
+ * 3. 시뮬레이티드 어닐링 알고리즘
+ * 4. Google Maps API 연동
+ */
 @Tag("unit")
 public class RouteOptimizationServiceUnitTest {
 
@@ -40,6 +49,13 @@ public class RouteOptimizationServiceUnitTest {
     private WebClient.RequestHeadersSpec requestHeadersSpec;
     private WebClient.ResponseSpec responseSpec;
 
+    /**
+     * 각 테스트 실행 전 환경 설정
+     * 
+     * 1. WebClient 모킹 설정: Google Maps API 호출을 시뮬레이션
+     * 2. RouteOptimizationService 인스턴스 생성 및 API 키 설정
+     * 3. 테스트용 위치 데이터 생성: 서울의 주요 관광지 좌표를 사용하여 두 날짜에 걸친 여행 일정 생성
+     */
     @BeforeEach
     void setUp() {
         // Mock WebClient
@@ -73,6 +89,15 @@ public class RouteOptimizationServiceUnitTest {
         createLocation("동대문디자인플라자", 127.0094, 37.5669, 5, LocalDate.now().plusDays(1));
     }
 
+    /**
+     * 테스트용 여행 위치 객체를 생성하는 헬퍼 메소드
+     * 
+     * @param name      장소 이름
+     * @param longitude 경도
+     * @param latitude  위도
+     * @param order     방문 순서
+     * @param date      방문 날짜
+     */
     private void createLocation(String name, double longitude, double latitude, int order, LocalDate date) {
         TravelLocation location = new TravelLocation();
         location.setPlaceName(name);
@@ -83,13 +108,29 @@ public class RouteOptimizationServiceUnitTest {
         locations.add(location);
     }
 
+    /**
+     * 빈 위치 리스트에 대한 경로 최적화 테스트
+     * 
+     * 이 테스트는 위치 리스트가 비어있을 때 경로 최적화 서비스가
+     * 빈 리스트를 반환하는지 검증합니다. 이는 경계 조건 처리의
+     * 정확성을 확인하기 위한 테스트입니다.
+     */
     @Test
+    @DisplayName("빈 위치 리스트에 대한 경로 최적화 테스트")
     void testOptimizeRoute_EmptyList() {
         List<TravelLocation> result = routeOptimizationService.optimizeRoute(new ArrayList<>());
         assertTrue(result.isEmpty());
     }
 
+    /**
+     * 단일 위치에 대한 경로 최적화 테스트
+     * 
+     * 이 테스트는 위치가 하나만 있을 때 경로 최적화 서비스가
+     * 해당 위치를 그대로 반환하는지 검증합니다. 이는 경계 조건 처리의
+     * 정확성을 확인하기 위한 테스트입니다.
+     */
     @Test
+    @DisplayName("단일 위치에 대한 경로 최적화 테스트")
     void testOptimizeRoute_SingleLocation() {
         List<TravelLocation> singleLocation = new ArrayList<>();
         singleLocation.add(locations.get(0));
@@ -100,7 +141,15 @@ public class RouteOptimizationServiceUnitTest {
         assertEquals("경복궁", result.get(0).getPlaceName());
     }
 
+    /**
+     * 다중 위치에 대한 경로 최적화 테스트
+     * 
+     * 이 테스트는 여러 날짜에 걸친 다중 위치에 대해 경로 최적화 서비스가
+     * 날짜별로 그룹화하여 최적화하는지 검증합니다. 결과 리스트에서
+     * 같은 날짜의 위치들이 연속적으로 배치되어야 합니다.
+     */
     @Test
+    @DisplayName("다중 위치에 대한 경로 최적화 테스트")
     void testOptimizeRoute_MultipleLocations() {
         List<TravelLocation> result = routeOptimizationService.optimizeRoute(locations);
 
@@ -122,7 +171,15 @@ public class RouteOptimizationServiceUnitTest {
         }
     }
 
+    /**
+     * 같은 날짜의 위치들에 대한 경로 최적화 테스트
+     * 
+     * 이 테스트는 모든 위치가 같은 날짜인 경우 경로 최적화 서비스가
+     * 정상적으로 최적화를 수행하는지 검증합니다. 결과 리스트의 모든 위치가
+     * 동일한 날짜를 가져야 합니다.
+     */
     @Test
+    @DisplayName("같은 날짜의 위치들에 대한 경로 최적화 테스트")
     void testOptimizeRoute_LocationsWithSameDate() {
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = new ArrayList<>();
@@ -143,7 +200,18 @@ public class RouteOptimizationServiceUnitTest {
         }
     }
 
+    /**
+     * 시뮬레이티드 어닐링 알고리즘을 이용한 경로 최적화 테스트
+     * 
+     * 이 테스트는 시뮬레이티드 어닐링 알고리즘이 같은 날짜의 위치들에 대해
+     * 효과적으로 경로를 최적화하는지 검증합니다. 최적화된 경로의 총 거리가
+     * 계산 가능한지 확인합니다.
+     * 
+     * 시뮬레이티드 어닐링은 확률적 알고리즘으로, 지역 최적해에서 벗어나
+     * 전역 최적해를 찾는 데 효과적입니다.
+     */
     @Test
+    @DisplayName("시뮬레이티드 어닐링 알고리즘을 이용한 경로 최적화 테스트")
     void testSimulatedAnnealing_OptimizesRoute() {
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = new ArrayList<>();
@@ -169,7 +237,17 @@ public class RouteOptimizationServiceUnitTest {
         assertTrue(totalDistance > 0);
     }
 
+    /**
+     * Google Maps Distance Matrix API 연동 테스트
+     * 
+     * 이 테스트는 Google Maps API를 통해 두 위치 간의 실제 도로 거리를
+     * 정확하게 계산하는지 검증합니다. 모킹된 API 응답을 사용하여
+     * 예상된 거리(1.5km)가 반환되는지 확인합니다.
+     * 
+     * 이 테스트는 외부 API 의존성을 모킹하여 테스트하는 방법을 보여줍니다.
+     */
     @Test
+    @DisplayName("Google Maps Distance Matrix API 연동 테스트")
     void testGoogleMapsDistanceMatrix_ReturnsValidDistances() {
         // 테스트 데이터 준비
         Map<String, Object> distanceResponse = Map.of(
@@ -192,7 +270,18 @@ public class RouteOptimizationServiceUnitTest {
         assertEquals(1.5, distance, 0.01);
     }
 
+    /**
+     * 실제 도로 거리 기반 경로 최적화 테스트
+     * 
+     * 이 테스트는 Google Maps API에서 제공하는 실제 도로 거리를 기반으로
+     * 경로를 최적화하는 기능을 검증합니다. 직선 거리가 아닌 실제 도로 거리를
+     * 사용하여 더 현실적인 경로 최적화가 이루어지는지 확인합니다.
+     * 
+     * 이 방식은 하버사인 공식을 사용한 직선 거리 계산보다 실제 여행 경로에
+     * 더 적합한 결과를 제공합니다.
+     */
     @Test
+    @DisplayName("실제 도로 거리 기반 경로 최적화 테스트")
     void testOptimizeRouteWithRealDistances() {
         // 테스트 데이터 준비
         Map<String, Object> distanceResponse = Map.of(

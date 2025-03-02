@@ -9,6 +9,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+/**
+ * 속도 제한(Rate Limiting) 설정 테스트
+ * 
+ * 이 테스트는 애플리케이션의 API 요청 속도 제한 기능을 검증합니다.
+ * 특정 IP 주소에서 오는 요청의 빈도를 제한하는 기능이 올바르게 작동하는지 확인합니다.
+ * 허용된 요청 횟수 내에서는 정상 처리되고, 제한을 초과하면 요청이 차단되는지 테스트합니다.
+ * 실제 애플리케이션 컨텍스트를 로드하여 통합 테스트 환경에서 수행됩니다.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -17,6 +25,12 @@ public class RateLimitingConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * 허용된 요청 횟수 내에서 정상 처리되는지 테스트
+     * 
+     * 동일한 IP 주소에서 허용된 횟수 내의 요청을 보내고
+     * 모든 요청이 정상적으로 처리되는지 확인합니다.
+     */
     @Test
     public void testRateLimitingAllowsRequestsWithinLimit() throws Exception {
         // 허용된 요청 횟수 내에서는 정상 처리되는지 테스트

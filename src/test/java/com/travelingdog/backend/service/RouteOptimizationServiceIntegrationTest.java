@@ -1,7 +1,6 @@
 package com.travelingdog.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -25,10 +25,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import com.travelingdog.backend.model.TravelLocation;
 
+import reactor.core.publisher.Mono;
+
+/**
+ * 경로 최적화 서비스 통합 테스트
+ * 
+ * 이 테스트는 여행 경로 최적화 서비스의 통합 기능을 검증합니다.
+ * 실제 서비스 환경과 유사한 조건에서 경로 최적화 알고리즘의 동작을 테스트하며,
+ * 날짜별 그룹화, 시뮬레이티드 어닐링 알고리즘, 최근접 이웃 알고리즘 등
+ * 다양한 경로 최적화 전략의 정확성과 효율성을 검증합니다.
+ * Google Maps API와의 통합 기능도 테스트합니다.
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 @Tag("integration")
@@ -43,6 +53,13 @@ public class RouteOptimizationServiceIntegrationTest {
     private List<TravelLocation> locations;
     private GeometryFactory geometryFactory;
 
+    /**
+     * 각 테스트 실행 전 환경 설정
+     * 
+     * 1. WebClient 모킹 설정: Google Maps API 호출을 시뮬레이션
+     * 2. 테스트용 위치 데이터 생성: 서울의 주요 관광지 좌표를 사용하여 두 날짜에 걸친 여행 일정 생성
+     * 3. 모킹된 Google Maps API 응답 설정: 1.5km 거리와 300초 소요 시간으로 응답 설정
+     */
     @BeforeEach
     void setUp() {
         // WebClient 모킹 설정
@@ -87,6 +104,15 @@ public class RouteOptimizationServiceIntegrationTest {
         createLocation("코엑스", 127.0586, 37.5126, 7, LocalDate.now().plusDays(1));
     }
 
+    /**
+     * 테스트용 여행 위치 객체를 생성하는 헬퍼 메소드
+     * 
+     * @param name      장소 이름
+     * @param longitude 경도
+     * @param latitude  위도
+     * @param order     방문 순서
+     * @param date      방문 날짜
+     */
     private void createLocation(String name, double longitude, double latitude, int order, LocalDate date) {
         TravelLocation location = new TravelLocation();
         location.setPlaceName(name);
@@ -97,7 +123,15 @@ public class RouteOptimizationServiceIntegrationTest {
         locations.add(location);
     }
 
+    /**
+     * 경로 최적화 시 날짜별 그룹화 기능 테스트
+     * 
+     * 이 테스트는 여러 날짜에 걸친 여행 일정이 날짜별로 올바르게 그룹화되는지 검증합니다.
+     * 경로 최적화 서비스는 날짜가 다른 위치들을 별도로 그룹화하여 각 날짜 내에서만
+     * 최적화를 수행해야 합니다.
+     */
     @Test
+    @DisplayName("경로 최적화 시 날짜별 그룹화 기능 테스트")
     void testOptimizeRoute_GroupsByDate() {
         List<TravelLocation> result = routeOptimizationService.optimizeRoute(locations);
 
@@ -113,7 +147,18 @@ public class RouteOptimizationServiceIntegrationTest {
         assertTrue(grouped.containsKey(LocalDate.now().plusDays(1)));
     }
 
+    /**
+     * 시뮬레이티드 어닐링 알고리즘을 이용한 경로 최적화 테스트
+     * 
+     * 이 테스트는 시뮬레이티드 어닐링 알고리즘이 같은 날짜의 위치들에 대해
+     * 효과적으로 경로를 최적화하는지 검증합니다. 최적화 전후의 총 거리를 비교하여
+     * 최적화된 경로가 원래 경로보다 짧거나 비슷한지 확인합니다.
+     * 
+     * 시뮬레이티드 어닐링은 확률적 알고리즘이므로 항상 최적의 결과를 보장하지는 않지만,
+     * 일반적으로 좋은 결과를 제공해야 합니다.
+     */
     @Test
+    @DisplayName("시뮬레이티드 어닐링 알고리즘을 이용한 경로 최적화 테스트")
     void testSimulatedAnnealing_OptimizesRoute() {
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = locations.stream()
@@ -146,7 +191,18 @@ public class RouteOptimizationServiceIntegrationTest {
                 "최적화된 경로가 원래 경로보다 10% 이상 길면 안됩니다.");
     }
 
+    /**
+     * 최근접 이웃 알고리즘과 시뮬레이티드 어닐링 알고리즘 비교 테스트
+     * 
+     * 이 테스트는 두 가지 경로 최적화 알고리즘의 성능을 비교합니다:
+     * 1. 최근접 이웃(Nearest Neighbor) 알고리즘: 간단하지만 지역 최적해에 빠질 수 있음
+     * 2. 시뮬레이티드 어닐링(Simulated Annealing) 알고리즘: 더 복잡하지만 지역 최적해를 탈출할 수 있음
+     * 
+     * 두 알고리즘으로 계산된 경로의 총 거리를 비교하여 시뮬레이티드 어닐링이
+     * 최근접 이웃 방식보다 더 나은 결과를 제공하는지 검증합니다.
+     */
     @Test
+    @DisplayName("최근접 이웃 알고리즘과 시뮬레이티드 어닐링 알고리즘 비교 테스트")
     void testCompareOptimizationAlgorithms() {
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = locations.stream()
@@ -198,7 +254,15 @@ public class RouteOptimizationServiceIntegrationTest {
                 "시뮬레이티드 어닐링 경로가 최근접 이웃 경로보다 10% 이상 길면 안됩니다.");
     }
 
+    /**
+     * Google Maps API를 이용한 거리 계산 테스트
+     * 
+     * 이 테스트는 Google Maps API를 통해 두 위치 간의 실제 도로 거리를
+     * 정확하게 계산하는지 검증합니다. 모킹된 API 응답을 사용하여
+     * 예상된 거리(1.5km)가 반환되는지 확인합니다.
+     */
     @Test
+    @DisplayName("Google Maps API를 이용한 거리 계산 테스트")
     void testGoogleMapsDistance() {
         // 두 위치 간의 실제 거리 계산
         double distance = routeOptimizationService.getGoogleMapsDistance(
@@ -209,7 +273,15 @@ public class RouteOptimizationServiceIntegrationTest {
         assertEquals(1.5, distance, 0.01);
     }
 
+    /**
+     * 실제 도로 거리 기반 경로 최적화 테스트
+     * 
+     * 이 테스트는 Google Maps API에서 제공하는 실제 도로 거리를 기반으로
+     * 경로를 최적화하는 기능을 검증합니다. 직선 거리가 아닌 실제 도로 거리를
+     * 사용하여 더 현실적인 경로 최적화가 이루어지는지 확인합니다.
+     */
     @Test
+    @DisplayName("실제 도로 거리 기반 경로 최적화 테스트")
     void testOptimizeRouteWithRealDistances() {
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = locations.stream()
@@ -228,7 +300,16 @@ public class RouteOptimizationServiceIntegrationTest {
         }
     }
 
-    // 하버사인 공식을 이용한 거리 계산 (테스트용)
+    /**
+     * 하버사인 공식을 이용한 거리 계산 (테스트용)
+     * 
+     * 두 지리적 좌표 간의 대원 거리(Great-circle distance)를 계산하는 하버사인 공식을 구현합니다.
+     * 이 메소드는 테스트 내에서 최근접 이웃 알고리즘 구현에 사용됩니다.
+     * 
+     * @param p1 첫 번째 위치의 좌표
+     * @param p2 두 번째 위치의 좌표
+     * @return 두 위치 간의 거리(km)
+     */
     private double calculateHaversineDistance(org.locationtech.jts.geom.Point p1, org.locationtech.jts.geom.Point p2) {
         double lat1 = p1.getY();
         double lon1 = p1.getX();

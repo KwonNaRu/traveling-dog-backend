@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,18 @@ import com.travelingdog.backend.model.TravelLocation;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * GPT 응답 처리 통합 테스트
+ * 
+ * 이 테스트 클래스는 OpenAI GPT API와의 통합을 테스트합니다.
+ * 여행 계획 생성 요청에 대한 GPT 응답을 처리하고, 이를 통해
+ * 여행 위치 목록을 생성하는 전체 프로세스를 검증합니다.
+ * 
+ * 주요 테스트 대상:
+ * 1. GPT 응답 JSON 파싱 기능
+ * 2. 파싱된 데이터를 TravelLocation 객체로 변환
+ * 3. 경로 최적화 서비스와의 통합
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 @Tag("integration")
@@ -53,6 +66,16 @@ public class GPTResponseIntegrationTest {
         private ObjectMapper objectMapper = new ObjectMapper();
         private LocalDate today;
 
+        /**
+         * 각 테스트 실행 전 환경 설정
+         * 
+         * 1. 테스트용 여행 계획 요청 데이터 생성
+         * 2. 모의 GPT 응답 데이터 설정
+         * 3. WebClient 모킹 설정: OpenAI API 호출을 시뮬레이션
+         * 
+         * 이 설정을 통해 실제 OpenAI API를 호출하지 않고도
+         * GPT 응답 처리 로직을 테스트할 수 있습니다.
+         */
         @BeforeEach
         void setUp() {
                 // 테스트 요청 데이터 설정
@@ -95,6 +118,15 @@ public class GPTResponseIntegrationTest {
                 when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
         }
 
+        /**
+         * 모의 GPT 응답 JSON 생성 헬퍼 메소드
+         * 
+         * 이 메소드는 테스트에 사용할 모의 GPT 응답 JSON을 생성합니다.
+         * 서울의 주요 관광지 정보와 방문 날짜를 포함한 JSON 배열을 생성합니다.
+         * 
+         * @param startDate 여행 시작 날짜
+         * @return GPT 응답 형식의 JSON 문자열
+         */
         private String createMockGptResponse(LocalDate startDate) {
                 StringBuilder jsonBuilder = new StringBuilder();
                 jsonBuilder.append("[");
@@ -120,6 +152,14 @@ public class GPTResponseIntegrationTest {
                 return jsonBuilder.toString();
         }
 
+        /**
+         * 모의 여행 위치 객체 생성 헬퍼 메소드
+         * 
+         * 이 메소드는 테스트에 사용할 모의 TravelLocation 객체 리스트를 생성합니다.
+         * 서울의 주요 관광지 정보와 방문 날짜, 순서 등을 포함한 객체를 생성합니다.
+         * 
+         * @return 모의 TravelLocation 객체 리스트
+         */
         private List<TravelLocation> createMockLocations() {
                 List<TravelLocation> locations = new ArrayList<>();
 
@@ -161,7 +201,22 @@ public class GPTResponseIntegrationTest {
                 return locations;
         }
 
+        /**
+         * GPT 응답을 여행 계획 및 위치로 변환하는 기능 테스트
+         * 
+         * 이 테스트는 TripPlanService가 GPT 응답을 처리하여
+         * 여행 위치 목록을 생성하는 전체 프로세스를 검증합니다.
+         * 
+         * 테스트 과정:
+         * 1. 모의 GPT 응답 설정
+         * 2. 경로 최적화 서비스 모킹
+         * 3. 여행 계획 생성 요청
+         * 4. 결과 검증: 위치 수, 위치 이름, 날짜별 그룹화
+         * 
+         * 이 테스트는 GPT 응답 처리와 경로 최적화의 통합을 검증합니다.
+         */
         @Test
+        @DisplayName("GPT 응답을 여행 계획 및 위치로 변환하는 기능 테스트")
         void testGptResponseToTravelPlanAndLocations() throws JsonProcessingException {
                 // 경로 최적화 서비스 모킹
                 List<TravelLocation> mockLocations = createMockLocations();
@@ -196,7 +251,21 @@ public class GPTResponseIntegrationTest {
                 assertEquals(2, secondDayLocations.size());
         }
 
+        /**
+         * GPT 응답 JSON 파싱 기능 테스트
+         * 
+         * 이 테스트는 GptResponseHandler가 유효한 JSON 형식의
+         * GPT 응답을 올바르게 파싱하는지 검증합니다.
+         * 
+         * 테스트 과정:
+         * 1. 유효한 JSON 형식의 GPT 응답 생성
+         * 2. GptResponseHandler를 사용하여 JSON 파싱
+         * 3. 결과 검증: 파싱된 객체 수, 객체 속성 값
+         * 
+         * 이 테스트는 GPT 응답 파싱의 정확성을 검증합니다.
+         */
         @Test
+        @DisplayName("GPT 응답 JSON 파싱 기능 테스트")
         void testGptResponseHandlerParseValidJson() {
                 // Given
                 String validJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""

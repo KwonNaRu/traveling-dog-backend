@@ -20,6 +20,18 @@ import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 
+/**
+ * 전역 예외 처리기 테스트
+ * 
+ * 이 테스트는 애플리케이션의 전역 예외 처리 메커니즘을 검증합니다.
+ * 다양한 유형의 예외가 발생했을 때 GlobalExceptionHandler가
+ * 적절한 HTTP 상태 코드와 응답 형식으로 처리하는지 확인합니다.
+ * 테스트 대상 예외:
+ * - 중복 이메일 예외 (DuplicateEmailException)
+ * - 리소스 찾을 수 없음 예외 (ResourceNotFoundException)
+ * - 잘못된 요청 예외 (InvalidRequestException)
+ * - 외부 API 예외 (ExternalApiException)
+ */
 @Tag("unit")
 public class GlobalExceptionHandlerTest {
 

@@ -18,6 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
+/**
+ * JWT 토큰 제공자 테스트
+ * 
+ * 이 테스트는 JWT 토큰의 생성, 검증 및 관련 기능을 검증합니다.
+ * 토큰 생성, 유효한 토큰 검증, 유효하지 않은 토큰 검증, 만료된 토큰 검증 등
+ * JWT 인증 시스템의 핵심 기능을 테스트합니다.
+ * Mockito를 사용하여 의존성을 모의(Mock)하고 단위 테스트를 수행합니다.
+ */
 @ExtendWith(MockitoExtension.class)
 class JwtTokenProviderTest {
 
