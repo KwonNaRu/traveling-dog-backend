@@ -1,10 +1,11 @@
-package com.travelingdog.backend.dto;
+package com.travelingdog.backend.dto.travelPlan;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.travelingdog.backend.dto.TravelLocationDTO;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -20,6 +21,8 @@ import lombok.NoArgsConstructor;
 public class TravelPlanDTO {
     private Long id;
     private String title;
+    private String country;
+    private String city;
     private LocalDate startDate;
     private LocalDate endDate;
     private Long userId;
@@ -36,6 +39,8 @@ public class TravelPlanDTO {
         return TravelPlanDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
+                .country(entity.getCountry())
+                .city(entity.getCity())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
