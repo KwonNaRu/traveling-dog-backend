@@ -30,6 +30,12 @@ public class TravelPlan extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String title; // 여행 계획 제목
 
+    @Column(nullable = false, length = 100)
+    private String country; // 여행 국가
+
+    @Column(nullable = false, length = 100)
+    private String city; // 여행 도시
+
     @NotNull
     @Column(name = "start_date", nullable = false)
     @FutureOrPresent(message = "Start date must be in the present or future")
@@ -40,8 +46,9 @@ public class TravelPlan extends BaseTimeEntity {
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
+    @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자와의 관계
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
