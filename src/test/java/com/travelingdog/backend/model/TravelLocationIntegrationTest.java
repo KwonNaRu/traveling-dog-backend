@@ -54,9 +54,11 @@ public class TravelLocationIntegrationTest {
 
                 travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("Japan")
+                                .city("Osaka")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
                 travelPlanRepository.save(travelPlan);
         }

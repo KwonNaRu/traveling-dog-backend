@@ -30,6 +30,7 @@ public class TravelPlanDTO {
     private int viewCount;
     private int likeCount;
     private PlanStatus status;
+    private Boolean isShared;
 
     public static TravelPlanDTO fromEntity(TravelPlan entity) {
         if (entity == null) {
@@ -43,6 +44,7 @@ public class TravelPlanDTO {
                 .city(entity.getCity())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+                .isShared(entity.getIsShared())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .travelLocations(entity.getTravelLocations().stream()
                         .map(TravelLocationDTO::fromEntity)
@@ -52,4 +54,5 @@ public class TravelPlanDTO {
                 .status(entity.getStatus())
                 .build();
     }
+
 }

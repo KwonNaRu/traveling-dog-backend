@@ -2,6 +2,9 @@ package com.travelingdog.backend.dto;
 
 import java.time.LocalDate;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+
 import com.travelingdog.backend.model.TravelLocation;
 
 import lombok.AllArgsConstructor;
@@ -37,4 +40,15 @@ public class TravelLocationDTO {
                 .availableDate(entity.getAvailableDate())
                 .build();
     }
+
+    public static TravelLocation toEntity(TravelLocationDTO dto) {
+        return TravelLocation.builder()
+                .placeName(dto.getPlaceName())
+                .coordinates(new GeometryFactory().createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
+                .description(dto.getDescription())
+                .locationOrder(dto.getLocationOrder())
+                .availableDate(dto.getAvailableDate())
+                .build();
+    }
+
 }

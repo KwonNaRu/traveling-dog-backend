@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS travel_plans (
     user_id BIGINT,
     country VARCHAR(255) NOT NULL,
     city VARCHAR(255) NOT NULL,
+    is_shared BOOLEAN DEFAULT FALSE,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

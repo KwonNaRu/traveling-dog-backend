@@ -18,6 +18,8 @@ import com.travelingdog.backend.exception.DuplicateEmailException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ExternalApiException;
+import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
+import com.travelingdog.backend.exception.UnauthorizedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -81,6 +83,22 @@ public class GlobalExceptionHandler {
                 Map<String, String> errors = Map.of("header", e.getMessage());
                 return ResponseEntity.badRequest()
                                 .body(ErrorResponse.of("MISSING_HEADER", "필수 헤더가 누락되었습니다.", errors));
+        }
+
+        // 인증이 필요한 요청에서 인증이 실패한 경우
+        @ExceptionHandler(UnauthorizedException.class)
+        public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException e) {
+                Map<String, String> errors = Map.of("error", e.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of("UNAUTHORIZED", "인증이 필요한 요청입니다.", errors));
+        }
+
+        @ExceptionHandler(ForbiddenResourceAccessException.class)
+        public ResponseEntity<ErrorResponse> handleForbiddenResourceAccessException(
+                        ForbiddenResourceAccessException e) {
+                Map<String, String> errors = Map.of("error", e.getMessage());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ErrorResponse.of("FORBIDDEN", e.getMessage(), errors));
         }
 
         // 기타 모든 예외를 처리하는 핸들러

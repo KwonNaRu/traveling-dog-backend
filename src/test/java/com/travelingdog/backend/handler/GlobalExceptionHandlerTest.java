@@ -53,7 +53,7 @@ public class GlobalExceptionHandlerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("DUPLICATE_EMAIL"))
-                .andExpect(jsonPath("$.message").value("이메일 중복 오류"))
+                .andExpect(jsonPath("$.message").value("이미 가입된 이메일입니다."))
                 .andExpect(jsonPath("$.errors.email").value("이미 가입된 이메일입니다."));
     }
 

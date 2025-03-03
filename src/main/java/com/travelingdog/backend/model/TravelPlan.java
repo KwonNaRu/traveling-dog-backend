@@ -1,11 +1,5 @@
 package com.travelingdog.backend.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +7,27 @@ import java.util.List;
 
 import com.travelingdog.backend.auditing.BaseTimeEntity;
 import com.travelingdog.backend.status.PlanStatus;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -46,14 +61,17 @@ public class TravelPlan extends BaseTimeEntity {
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user; // 사용자와의 관계
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<TravelLocation> travelLocations = new ArrayList<>(); // 여행 위치 리스트
+
+    @NotNull
+    @Column(name = "is_shared", nullable = false)
+    private Boolean isShared;
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default

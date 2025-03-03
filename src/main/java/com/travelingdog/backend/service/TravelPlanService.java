@@ -2,7 +2,9 @@ package com.travelingdog.backend.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,10 +22,21 @@ import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
-import com.travelingdog.backend.dto.TravelPlanRequest;
+import com.travelingdog.backend.dto.TravelLocationDTO;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ExternalApiException;
+import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.exception.InvalidRequestException;
+import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.TravelLocationRepository;
+import com.travelingdog.backend.repository.TravelPlanRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class TravelPlanService {
@@ -34,13 +49,17 @@ public class TravelPlanService {
     private final WebClient webClient;
     private final RouteOptimizationService routeOptimizationService;
     private final GptResponseHandler gptResponseHandler;
+    private final TravelPlanRepository travelPlanRepository;
+    private final TravelLocationRepository travelLocationRepository;
 
-    @Autowired
     public TravelPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
-            WebClient webClient) {
+            WebClient webClient, TravelPlanRepository travelPlanRepository,
+            TravelLocationRepository travelLocationRepository) {
         this.routeOptimizationService = routeOptimizationService;
         this.gptResponseHandler = gptResponseHandler;
         this.webClient = webClient;
+        this.travelPlanRepository = travelPlanRepository;
+        this.travelLocationRepository = travelLocationRepository;
     }
 
     /**
@@ -138,4 +157,157 @@ public class TravelPlanService {
             throw new InvalidRequestException("여행 계획 생성에 실패했습니다: " + e.getMessage());
         }
     }
+
+    public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
+        // 유저 정보가 있을 경우 유저 정보를 가져오고, 없을 경우 익명 유저로 처리
+
+        List<TravelLocation> locations = generateTripPlan(request);
+        TravelPlan travelPlan = TravelPlan.builder()
+                .title(request.getTitle())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .travelLocations(locations)
+                .isShared(request.getIsShared())
+                .user(user)
+                .build();
+
+        TravelPlan savedTravelPlan = travelPlanRepository.save(travelPlan);
+
+        return TravelPlanDTO.fromEntity(savedTravelPlan);
+    }
+
+    /**
+     * 다른 유저의 리스트는 조회할 수 없음.
+     */
+    public List<TravelPlanDTO> getTravelPlanList(User user) {
+        List<TravelPlan> travelPlans = travelPlanRepository.findAllByUser(user);
+        return travelPlans.stream()
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 여행 계획 상세 조회
+     */
+    public TravelPlanDTO getTravelPlanDetail(Long id, User user)
+            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId()) || !travelPlan.getIsShared()) {
+            throw new ForbiddenResourceAccessException("접근 금지된 여행 계획입니다.");
+        }
+
+        return TravelPlanDTO.fromEntity(travelPlan);
+    }
+
+    /**
+     * 여행 계획 수정
+     */
+    public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user)
+            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("수정할 수 없는 여행 계획입니다.");
+        }
+
+        // travelLocations가 null일 경우 빈 리스트로 처리
+        List<TravelLocation> travelLocations = request.getTravelLocations() == null
+                ? new ArrayList<>()
+                : request.getTravelLocations().stream()
+                        .map(TravelLocationDTO::toEntity)
+                        .collect(Collectors.toList());
+
+        TravelPlan newTravelPlan = TravelPlan.builder()
+                .id(travelPlan.getId())
+                .title(request.getTitle())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .travelLocations(travelLocations)
+                .build();
+        TravelPlan updatedTravelPlan = travelPlanRepository.save(newTravelPlan);
+
+        return TravelPlanDTO.fromEntity(updatedTravelPlan);
+    }
+
+    /**
+     * 여행 계획 삭제
+     */
+    public void deleteTravelPlan(Long id, User user)
+            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("삭제할 수 없는 여행 계획입니다.");
+        }
+
+        travelPlanRepository.delete(travelPlan);
+    }
+
+    /**
+     * 여행 장소의 순서를 변경합니다.
+     * 
+     * @param locationId 이동할 장소 ID
+     * @param newOrder   새로운 순서 위치
+     * @return 업데이트된 여행 계획 DTO
+     * @throws ResourceNotFoundException 장소를 찾을 수 없는 경우
+     */
+    @Transactional
+    public TravelPlanDTO changeTravelLocationOrder(Long locationId, int newOrder) throws ResourceNotFoundException {
+        // 1. 이동할 장소 찾기
+        TravelLocation locationToMove = travelLocationRepository.findById(locationId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("travelLocation", "해당 여행 장소를 찾을 수 없습니다: " + locationId));
+
+        // 2. 해당 장소가 속한 여행 계획 가져오기
+        TravelPlan travelPlan = locationToMove.getTravelPlan();
+
+        // 3. 현재 순서 저장
+        int currentOrder = locationToMove.getLocationOrder();
+
+        // 4. 같은 순서면 아무것도 하지 않음
+        if (currentOrder == newOrder) {
+            return TravelPlanDTO.fromEntity(travelPlan);
+        }
+
+        // 5. 모든 장소 가져와서 순서대로 정렬
+        List<TravelLocation> locations = travelPlan.getTravelLocations()
+                .stream()
+                .sorted(Comparator.comparing(TravelLocation::getLocationOrder))
+                .collect(Collectors.toList());
+
+        // 6. 순서 재배치
+        if (currentOrder < newOrder) {
+            // 현재 위치보다 뒤로 이동하는 경우 (예: 1→3)
+            // 중간에 있는 장소들은 한 칸씩 앞으로 당김 (2→1, 3→2)
+            for (TravelLocation loc : locations) {
+                int order = loc.getLocationOrder();
+                if (order > currentOrder && order <= newOrder) {
+                    loc.setLocationOrder(order - 1);
+                }
+            }
+        } else {
+            // 현재 위치보다 앞으로 이동하는 경우 (예: 3→1)
+            // 중간에 있는 장소들은 한 칸씩 뒤로 밀림 (1→2, 2→3)
+            for (TravelLocation loc : locations) {
+                int order = loc.getLocationOrder();
+                if (order >= newOrder && order < currentOrder) {
+                    loc.setLocationOrder(order + 1);
+                }
+            }
+        }
+
+        // 7. 이동할 장소의 순서 변경
+        locationToMove.setLocationOrder(newOrder);
+
+        // 8. 변경사항 저장
+        travelLocationRepository.saveAll(locations);
+
+        // 9. 업데이트된 여행 계획 DTO 반환
+        return TravelPlanDTO.fromEntity(travelPlan);
+    }
+
 }

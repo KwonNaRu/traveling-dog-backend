@@ -25,7 +25,6 @@ public class RouteOptimizationService {
     private static final double COOLING_RATE = 0.003;
     private static final int MAX_ITERATIONS = 1000;
 
-    @Autowired
     public RouteOptimizationService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
     }

@@ -61,12 +61,15 @@ public class TravelPlanIntegrationTest {
         public void whenSaveTravelPlan_thenFindById() {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
 
                 travelPlanRepository.save(travelPlan);
+                user.addTravelPlan(travelPlan);
 
                 TravelPlan foundTravelPlan = travelPlanRepository.findById(travelPlan.getId()).orElse(null);
                 assertThat(foundTravelPlan).isNotNull();
@@ -80,10 +83,14 @@ public class TravelPlanIntegrationTest {
         public void whenUpdateTravelPlan_thenUpdatedAtChanges() throws InterruptedException {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
+
+                user.addTravelPlan(travelPlan);
 
                 travelPlanRepository.save(travelPlan);
                 LocalDateTime initialUpdatedAt = travelPlan.getUpdatedAt();
@@ -108,9 +115,11 @@ public class TravelPlanIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
 
                 travelPlanRepository.save(travelPlan);
@@ -138,9 +147,11 @@ public class TravelPlanIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);
@@ -176,9 +187,11 @@ public class TravelPlanIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .user(user)
+                                .isShared(false)
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);

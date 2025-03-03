@@ -136,8 +136,11 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
+                                .isShared(false)
                                 .build();
 
                 user.addTravelPlan(travelPlan);
@@ -166,8 +169,11 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("South Korea")
+                                .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
+                                .isShared(false)
                                 .build();
 
                 user.addTravelPlan(travelPlan);

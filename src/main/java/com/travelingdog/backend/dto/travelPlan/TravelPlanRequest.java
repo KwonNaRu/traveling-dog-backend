@@ -3,6 +3,7 @@ package com.travelingdog.backend.dto.travelPlan;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +20,12 @@ public class TravelPlanRequest {
     @NotBlank(message = "City is required")
     private String city;
 
-    @NotBlank(message = "Start date is required")
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
 
-    @NotBlank(message = "End date is required")
+    @NotNull(message = "End date is required")
     private LocalDate endDate;
+
+    @NotNull(message = "Is shared is required")
+    private Boolean isShared;
 }

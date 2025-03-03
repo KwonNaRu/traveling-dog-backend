@@ -251,8 +251,8 @@ public class GptResponseHandlerTest {
         // Given
         String country = "South Korea";
         String city = "Seoul";
-        String startDate = today.format(formatter);
-        String endDate = today.plusDays(3).format(formatter);
+        LocalDate startDate = today;
+        LocalDate endDate = today.plusDays(3);
 
         // When
         String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate);
@@ -265,8 +265,8 @@ public class GptResponseHandlerTest {
         assertTrue(enhancedPrompt.contains("\"availableDate\": \"yyyy-MM-dd 형식의 날짜(문자열)\""));
         assertTrue(enhancedPrompt.contains(country));
         assertTrue(enhancedPrompt.contains(city));
-        assertTrue(enhancedPrompt.contains(startDate));
-        assertTrue(enhancedPrompt.contains(endDate));
+        assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
+        assertTrue(enhancedPrompt.contains(endDate.format(formatter)));
     }
 
     /**
@@ -289,8 +289,8 @@ public class GptResponseHandlerTest {
         // Given
         String country = "South Korea";
         String city = "Seoul";
-        String startDate = today.format(formatter);
-        String endDate = today.plusDays(3).format(formatter);
+        LocalDate startDate = today;
+        LocalDate endDate = today.plusDays(3);
 
         // When
         List<AIRecommendedLocationDTO> fallbackResponse = gptResponseHandler.getFallbackResponse(country, city,
