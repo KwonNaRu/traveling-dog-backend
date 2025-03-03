@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorResponse> handleDuplicateEmailException(DuplicateEmailException e) {
                 Map<String, String> errors = Map.of("email", e.getMessage());
                 return ResponseEntity.badRequest()
-                                .body(ErrorResponse.of("DUPLICATE_EMAIL", "이메일 중복 오류", errors));
+                                .body(ErrorResponse.of("DUPLICATE_EMAIL", "이미 가입된 이메일입니다.", errors));
         }
 
         @ExceptionHandler(ResourceNotFoundException.class)

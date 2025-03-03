@@ -250,7 +250,7 @@ public class AuthControllerUnitTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("이메일 중복 오류"));
+                .andExpect(jsonPath("$.message").value("이미 가입된 이메일입니다."));
     }
 
     /**

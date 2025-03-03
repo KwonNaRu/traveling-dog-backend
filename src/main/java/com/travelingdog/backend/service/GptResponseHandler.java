@@ -141,7 +141,7 @@ public class GptResponseHandler {
     /**
      * 강화된 프롬프트를 생성합니다.
      */
-    public String createEnhancedPrompt(String country, String city, String startDate, String endDate) {
+    public String createEnhancedPrompt(String country, String city, LocalDate startDate, LocalDate endDate) {
         return "다음 정보를 기반으로, 해당 도시의 추천 맛집 및 관광지 정보를 JSON 배열 형식으로 생성해줘. "
                 + "각 객체는 반드시 다음 형식을 따라야 함: "
                 + "{"
@@ -160,12 +160,10 @@ public class GptResponseHandler {
     /**
      * GPT 응답 파싱에 실패했을 때 사용할 대체 응답을 제공합니다.
      */
-    public List<AIRecommendedLocationDTO> getFallbackResponse(String country, String city, String startDate,
-            String endDate) {
+    public List<AIRecommendedLocationDTO> getFallbackResponse(String country, String city, LocalDate startDate,
+            LocalDate endDate) {
         List<AIRecommendedLocationDTO> fallbackList = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate start = LocalDate.parse(startDate, formatter);
-        LocalDate end = LocalDate.parse(endDate, formatter);
 
         // 서울의 경우 기본 관광지 제공
         if ("Seoul".equalsIgnoreCase(city)) {
@@ -173,14 +171,14 @@ public class GptResponseHandler {
             location1.setName("Gyeongbokgung Palace");
             location1.setLatitude(37.5796);
             location1.setLongitude(126.9770);
-            location1.setAvailableDate(start.format(formatter));
+            location1.setAvailableDate(startDate.format(formatter));
             fallbackList.add(location1);
 
             AIRecommendedLocationDTO location2 = new AIRecommendedLocationDTO();
             location2.setName("Namsan Tower");
             location2.setLatitude(37.5512);
             location2.setLongitude(126.9882);
-            location2.setAvailableDate(start.plusDays(1).format(formatter));
+            location2.setAvailableDate(startDate.plusDays(1).format(formatter));
             fallbackList.add(location2);
         }
         // 다른 도시의 경우 기본 응답 제공
@@ -189,7 +187,7 @@ public class GptResponseHandler {
             location.setName("Popular Attraction in " + city);
             location.setLatitude(37.5665);
             location.setLongitude(126.9780);
-            location.setAvailableDate(start.format(formatter));
+            location.setAvailableDate(startDate.format(formatter));
             fallbackList.add(location);
         }
 

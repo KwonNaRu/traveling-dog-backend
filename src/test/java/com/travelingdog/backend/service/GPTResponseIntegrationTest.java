@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
-import com.travelingdog.backend.dto.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
 
 import reactor.core.publisher.Mono;
@@ -90,8 +90,8 @@ public class GPTResponseIntegrationTest {
                 request = new TravelPlanRequest();
                 request.setCountry("South Korea");
                 request.setCity("Seoul");
-                request.setStartDate(today.format(formatter));
-                request.setEndDate(endDate.format(formatter));
+                request.setStartDate(today);
+                request.setEndDate(endDate);
 
                 // 모의 GPT 응답 데이터 설정
                 mockResponse = new AIChatResponse();
@@ -241,7 +241,7 @@ public class GPTResponseIntegrationTest {
                 assertTrue(result.stream().anyMatch(loc -> loc.getPlaceName().equals("Myeongdong")));
 
                 // 날짜별 장소 확인
-                LocalDate firstDay = LocalDate.parse(request.getStartDate(), formatter);
+                LocalDate firstDay = request.getStartDate();
                 LocalDate secondDay = firstDay.plusDays(1);
 
                 List<TravelLocation> firstDayLocations = result.stream()
