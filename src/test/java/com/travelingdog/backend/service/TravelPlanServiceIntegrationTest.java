@@ -34,6 +34,7 @@ import com.travelingdog.backend.config.TestConfig;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
+import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
@@ -100,21 +101,7 @@ public class TravelPlanServiceIntegrationTest {
                                 .build();
                 userRepository.save(user);
 
-                // 테스트용 여행 장소 생성
-                travelLocations = new ArrayList<>();
-                for (int i = 0; i < 3; i++) {
-                        TravelLocation location = TravelLocation.builder()
-                                        .placeName("Location " + (i + 1))
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(37.5 + i * 0.1, 127.0 + i * 0.1)))
-                                        .locationOrder(i + 1)
-                                        .travelPlan(travelPlan)
-                                        .build();
-                        travelLocationRepository.save(location);
-                        travelLocations.add(location);
-                }
-
-                // 테스트용 여행 계획 생성
+                // 먼저 여행 계획 생성 (빈 리스트로 초기화)
                 travelPlan = TravelPlan.builder()
                                 .country("South Korea")
                                 .city("Seoul")
@@ -122,10 +109,27 @@ public class TravelPlanServiceIntegrationTest {
                                 .title("Test Travel Plan")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .travelLocations(travelLocations)
+                                .travelLocations(new ArrayList<>()) // 빈 리스트로 초기화
                                 .isShared(true)
                                 .build();
-                TravelPlan savedTravelPlan = travelPlanRepository.save(travelPlan);
+                travelPlanRepository.save(travelPlan);
+
+                // 그 다음 여행 장소 생성 및 연결
+                travelLocations = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
+                        TravelLocation location = TravelLocation.builder()
+                                        .placeName("Location " + (i + 1))
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(37.5 + i * 0.1, 127.0 + i * 0.1)))
+                                        .locationOrder(i + 1)
+                                        .travelPlan(travelPlan) // 이미 생성된 travelPlan 참조
+                                        .build();
+                        travelLocationRepository.save(location);
+                        travelLocations.add(location);
+                }
+
+                // 여행 장소 리스트 업데이트 (필요한 경우)
+                travelPlan.setTravelLocations(travelLocations);
 
                 // 테스트 후 SecurityContext 정리를 위해
                 SecurityContextHolder.clearContext();
@@ -159,7 +163,7 @@ public class TravelPlanServiceIntegrationTest {
                 request.setIsShared(true);
 
                 // When
-                TravelPlanDTO createdPlan = travelPlanService.createTravelPlan(request);
+                TravelPlanDTO createdPlan = travelPlanService.createTravelPlan(request, user);
 
                 // Then
                 assertNotNull(createdPlan);
@@ -192,10 +196,10 @@ public class TravelPlanServiceIntegrationTest {
                 secondRequest.setEndDate(LocalDate.now().plusDays(7));
                 secondRequest.setIsShared(false);
 
-                TravelPlanDTO secondTravelPlan = travelPlanService.createTravelPlan(secondRequest);
+                TravelPlanDTO secondTravelPlan = travelPlanService.createTravelPlan(secondRequest, user);
 
                 // When
-                List<TravelPlanDTO> travelPlanList = travelPlanService.getTravelPlanList();
+                List<TravelPlanDTO> travelPlanList = travelPlanService.getTravelPlanList(user);
 
                 // Then
                 assertNotNull(travelPlanList);
@@ -220,7 +224,7 @@ public class TravelPlanServiceIntegrationTest {
                 setAuthenticationUser(user);
 
                 // When
-                TravelPlanDTO travelPlanDTO = travelPlanService.getTravelPlanById(travelPlan.getId());
+                TravelPlanDTO travelPlanDTO = travelPlanService.getTravelPlanDetail(travelPlan.getId(), user);
 
                 // Then
                 assertNotNull(travelPlanDTO);
@@ -387,7 +391,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // When & Then
                 // 1. 공유된 여행 계획에 다른 사용자가 접근하면 성공
-                TravelPlanDTO retrievedSharedPlan = travelPlanService.getTravelPlanById(travelPlan.getId());
+                TravelPlanDTO retrievedSharedPlan = travelPlanService.getTravelPlanDetail(travelPlan.getId(), user);
                 assertNotNull(retrievedSharedPlan);
                 assertEquals(travelPlan.getId(), retrievedSharedPlan.getId());
                 assertEquals(travelPlan.getTitle(), retrievedSharedPlan.getTitle());
@@ -428,7 +432,7 @@ public class TravelPlanServiceIntegrationTest {
                 // When & Then
                 // 1. 공유되지 않은 여행 계획에 다른 사용자가 접근하면 예외 발생
                 assertThrows(ForbiddenResourceAccessException.class, () -> {
-                        travelPlanService.getTravelPlanById(savedOtherUserPlan.getId());
+                        travelPlanService.getTravelPlanDetail(savedOtherUserPlan.getId(), user);
                 });
         }
 
@@ -474,13 +478,13 @@ public class TravelPlanServiceIntegrationTest {
                 updateRequest.setTitle("Trying to update other's shared plan");
 
                 assertThrows(ForbiddenResourceAccessException.class, () -> {
-                        travelPlanService.updateTravelPlan(travelPlan.getId(), updateRequest);
+                        travelPlanService.updateTravelPlan(travelPlan.getId(), updateRequest, user);
                 });
 
                 // 1-2. 다른 사용자의 공유되지 않은 여행 계획 수정 시도
                 updateRequest.setTitle("Trying to update other's unshared plan");
                 assertThrows(ForbiddenResourceAccessException.class, () -> {
-                        travelPlanService.updateTravelPlan(savedOtherUserPlan.getId(), updateRequest);
+                        travelPlanService.updateTravelPlan(savedOtherUserPlan.getId(), updateRequest, user);
                 });
         }
 
@@ -508,7 +512,7 @@ public class TravelPlanServiceIntegrationTest {
                 updateRequest.setEndDate(LocalDate.now().plusDays(6));
 
                 // When
-                TravelPlan updatedPlan = travelPlanService.updateTravelPlan(travelPlan.getId(), updateRequest);
+                TravelPlanDTO updatedPlan = travelPlanService.updateTravelPlan(travelPlan.getId(), updateRequest, user);
 
                 // Then
                 assertEquals(newTitle, updatedPlan.getTitle());
@@ -532,7 +536,7 @@ public class TravelPlanServiceIntegrationTest {
                 setAuthenticationUser(user);
 
                 // When
-                travelPlanService.deleteTravelPlan(travelPlan.getId());
+                travelPlanService.deleteTravelPlan(travelPlan.getId(), user);
 
                 // Then id로 조회 시 null 반환
                 assertNull(travelPlanRepository.findById(travelPlan.getId()));
@@ -575,7 +579,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // When
                 assertThrows(ForbiddenResourceAccessException.class, () -> {
-                        travelPlanService.deleteTravelPlan(savedOtherUserPlan.getId());
+                        travelPlanService.deleteTravelPlan(savedOtherUserPlan.getId(), user);
                 });
         }
 

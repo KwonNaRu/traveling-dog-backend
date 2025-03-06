@@ -37,8 +37,10 @@ import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 
 import reactor.core.publisher.Mono;
@@ -79,6 +81,7 @@ public class TravelPlanServiceUnitTest {
         private List<TravelLocation> mockLocations;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private LocalDate today;
+        private User user;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -94,6 +97,12 @@ public class TravelPlanServiceUnitTest {
          */
         @BeforeEach
         void setUp() {
+                user = User.builder()
+                                .id(1L)
+                                .email("test@test.com")
+                                .password("password123!")
+                                .build();
+
                 // API 키 설정
                 ReflectionTestUtils.setField(tripPlanService, "openAiApiKey", "test-api-key");
 
@@ -202,7 +211,7 @@ public class TravelPlanServiceUnitTest {
          */
         @Test
         @DisplayName("여행 계획 생성 후 저장 기능 테스트")
-        void testCreateTravelPlanDTO() {
+        void testCreateTravelPlan() {
                 // Given
                 TravelPlan savedTravelPlan = TravelPlan.builder()
                                 .id(1L)
@@ -227,7 +236,7 @@ public class TravelPlanServiceUnitTest {
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
 
                 // When
-                TravelPlanDTO result = tripPlanService.createTravelPlan(request);
+                TravelPlanDTO result = tripPlanService.createTravelPlan(request, user);
 
                 // Then
                 assertNotNull(result);
@@ -261,13 +270,15 @@ public class TravelPlanServiceUnitTest {
                 TravelPlan existingPlan = TravelPlan.builder()
                                 .id(travelPlanId)
                                 .title("Original Title")
+                                .user(user)
                                 .startDate(today)
                                 .endDate(today.plusDays(3))
+                                .isShared(true)
                                 .country("South Korea")
                                 .city("Seoul")
                                 .build();
 
-                TravelPlanRequest updateRequest = new TravelPlanRequest();
+                TravelPlanUpdateRequest updateRequest = new TravelPlanUpdateRequest();
                 updateRequest.setTitle("Updated Title");
                 updateRequest.setStartDate(today.plusDays(1));
                 updateRequest.setEndDate(today.plusDays(4));
@@ -275,8 +286,10 @@ public class TravelPlanServiceUnitTest {
                 TravelPlan updatedPlan = TravelPlan.builder()
                                 .id(travelPlanId)
                                 .title(updateRequest.getTitle())
+                                .user(existingPlan.getUser())
                                 .startDate(updateRequest.getStartDate())
                                 .endDate(updateRequest.getEndDate())
+                                .isShared(false)
                                 .country(existingPlan.getCountry())
                                 .city(existingPlan.getCity())
                                 .build();
@@ -286,7 +299,7 @@ public class TravelPlanServiceUnitTest {
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(updatedPlan);
 
                 // When
-                TravelPlanDTO result = tripPlanService.updateTravelPlan(travelPlanId, updateRequest);
+                TravelPlanDTO result = tripPlanService.updateTravelPlan(travelPlanId, updateRequest, user);
 
                 // Then
                 assertNotNull(result);
@@ -320,6 +333,10 @@ public class TravelPlanServiceUnitTest {
                 TravelPlan existingPlan = TravelPlan.builder()
                                 .id(travelPlanId)
                                 .title("Travel Plan to Delete")
+                                .country("South Korea")
+                                .city("Seoul")
+                                .user(user)
+                                .isShared(true)
                                 .build();
 
                 // Repository 모킹
@@ -328,7 +345,7 @@ public class TravelPlanServiceUnitTest {
                                 .thenReturn(Optional.empty()); // 삭제 후 두 번째 호출에서는 빈 Optional 반환
 
                 // When
-                tripPlanService.deleteTravelPlan(travelPlanId);
+                tripPlanService.deleteTravelPlan(travelPlanId, user);
 
                 // Then
                 // 삭제 메서드 호출 검증
