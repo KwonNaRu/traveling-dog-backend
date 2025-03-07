@@ -8,12 +8,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -63,9 +60,8 @@ public class TravelPlanService {
     }
 
     /**
-     * 프론트엔드에서 전달받은 여행 정보를 바탕으로 GPT API를 호출하고,
-     * 추천 장소 정보를 JSON 배열로 받아 List<TravelLocation>으로 변환한 후
-     * 경로 최적화를 적용하여 반환합니다.
+     * 프론트엔드에서 전달받은 여행 정보를 바탕으로 GPT API를 호출하고, 추천 장소 정보를 JSON 배열로 받아
+     * List<TravelLocation>으로 변환한 후 경로 최적화를 적용하여 반환합니다.
      */
     public List<TravelLocation> generateTripPlan(TravelPlanRequest request) {
         try {
@@ -159,21 +155,125 @@ public class TravelPlanService {
     }
 
     public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
-        // 유저 정보가 있을 경우 유저 정보를 가져오고, 없을 경우 익명 유저로 처리
-
-        List<TravelLocation> locations = generateTripPlan(request);
+        // 1. 먼저 TravelPlan 객체 생성 (빈 travelLocations 리스트로)
         TravelPlan travelPlan = TravelPlan.builder()
                 .title(request.getTitle())
+                .country(request.getCountry()) // country와 city도 설정해야 함
+                .city(request.getCity())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .travelLocations(locations)
                 .isShared(request.getIsShared())
                 .user(user)
+                .travelLocations(new ArrayList<>()) // 빈 리스트로 초기화
                 .build();
 
+        // 2. TravelPlan 저장 (ID 생성)
         TravelPlan savedTravelPlan = travelPlanRepository.save(travelPlan);
 
+        // 3. GPT API 호출하여 추천 장소 가져오기
+        List<TravelLocation> locations = generateTripPlanLocations(request, savedTravelPlan);
+
+        // 4. 각 TravelLocation에 travelPlan 설정 및 저장
+        for (TravelLocation location : locations) {
+            location.setTravelPlan(savedTravelPlan);
+            travelLocationRepository.save(location);
+        }
+
+        // 5. TravelPlan에 locations 설정
+        savedTravelPlan.setTravelLocations(locations);
+
+        // 6. 최종 결과 반환
         return TravelPlanDTO.fromEntity(savedTravelPlan);
+    }
+
+    // generateTripPlan 메서드를 수정하여 TravelPlan을 매개변수로 받도록 함
+    private List<TravelLocation> generateTripPlanLocations(TravelPlanRequest request, TravelPlan travelPlan) {
+        try {
+            // 강화된 프롬프트 생성
+            String prompt = gptResponseHandler.createEnhancedPrompt(
+                    request.getCountry(),
+                    request.getCity(),
+                    request.getStartDate(),
+                    request.getEndDate());
+
+            // GPT API 요청 메시지 구성
+            List<AIChatMessage> messages = new ArrayList<>();
+            messages.add(new AIChatMessage("system", "You are a travel recommendation assistant."));
+            messages.add(new AIChatMessage("user", prompt));
+
+            AIChatRequest openAiRequest = new AIChatRequest();
+            openAiRequest.setModel("gpt-3.5-turbo");
+            openAiRequest.setMessages(messages);
+            openAiRequest.setTemperature(0.3); // 안정적인 JSON 응답을 위해 낮은 temperature 설정
+
+            String openAiUrl = "https://api.openai.com/v1/chat/completions";
+
+            AIChatResponse openAiResponse = webClient.post()
+                    .uri(openAiUrl)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiApiKey)
+                    .body(BodyInserters.fromValue(openAiRequest))
+                    .retrieve()
+                    .bodyToMono(AIChatResponse.class)
+                    .block();
+
+            if (openAiResponse != null && openAiResponse.getChoices() != null
+                    && !openAiResponse.getChoices().isEmpty()) {
+                String content = openAiResponse.getChoices().get(0).getMessage().getContent();
+
+                try {
+                    // 응답 파싱 및 검증
+                    List<AIRecommendedLocationDTO> dtoList = gptResponseHandler.parseGptResponse(content);
+
+                    // DTO → TravelLocation 변환
+                    List<TravelLocation> locations = new ArrayList<>();
+                    int order = 0;
+                    for (AIRecommendedLocationDTO dto : dtoList) {
+                        TravelLocation location = new TravelLocation();
+                        location.setPlaceName(dto.getName());
+                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
+                        location.setLocationOrder(order++);
+                        location.setDescription("");
+                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
+                        location.setTravelPlan(travelPlan);  // 여기서 travelPlan 설정
+                        locations.add(location);
+                    }
+
+                    // 경로 최적화 실행: 시뮬레이티드 어닐링 알고리즘 사용
+                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
+                } catch (Exception e) {
+                    log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
+                    // 대체 응답 사용
+                    List<AIRecommendedLocationDTO> fallbackList = gptResponseHandler.getFallbackResponse(
+                            request.getCountry(),
+                            request.getCity(),
+                            request.getStartDate(),
+                            request.getEndDate());
+
+                    // 대체 응답으로 TravelLocation 생성
+                    List<TravelLocation> fallbackLocations = new ArrayList<>();
+                    int order = 0;
+                    for (AIRecommendedLocationDTO dto : fallbackList) {
+                        TravelLocation location = new TravelLocation();
+                        location.setPlaceName(dto.getName());
+                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
+                        location.setLocationOrder(order++);
+                        location.setDescription("대체 추천 장소");
+                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
+                        location.setTravelPlan(travelPlan);  // 여기서 travelPlan 설정
+                        fallbackLocations.add(location);
+                    }
+                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
+                }
+            }
+            throw new ExternalApiException("GPT API 호출에 실패했습니다.");
+        } catch (ExternalApiException e) {
+            log.error("외부 API 호출 중 오류 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("여행 계획 생성 중 오류 발생: {}", e.getMessage());
+            throw new InvalidRequestException("여행 계획 생성에 실패했습니다: " + e.getMessage());
+        }
     }
 
     /**
@@ -194,7 +294,7 @@ public class TravelPlanService {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
 
-        if (!travelPlan.getUser().getId().equals(user.getId()) || !travelPlan.getIsShared()) {
+        if (!travelPlan.getIsShared() && !travelPlan.getUser().getId().equals(user.getId())) {
             throw new ForbiddenResourceAccessException("접근 금지된 여행 계획입니다.");
         }
 
@@ -249,9 +349,9 @@ public class TravelPlanService {
 
     /**
      * 여행 장소의 순서를 변경합니다.
-     * 
+     *
      * @param locationId 이동할 장소 ID
-     * @param newOrder   새로운 순서 위치
+     * @param newOrder 새로운 순서 위치
      * @return 업데이트된 여행 계획 DTO
      * @throws ResourceNotFoundException 장소를 찾을 수 없는 경우
      */
