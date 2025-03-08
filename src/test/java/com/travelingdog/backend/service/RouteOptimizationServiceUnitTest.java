@@ -56,13 +56,14 @@ public class RouteOptimizationServiceUnitTest {
      * 2. RouteOptimizationService 인스턴스 생성 및 API 키 설정
      * 3. 테스트용 위치 데이터 생성: 서울의 주요 관광지 좌표를 사용하여 두 날짜에 걸친 여행 일정 생성
      */
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         // Mock RestClient - 간소화된 방식으로 모킹
         restClientBuilder = mock(Builder.class);
         restClient = mock(RestClient.class);
         responseSpec = mock(ResponseSpec.class);
+        requestHeadersUriSpec = mock(RequestHeadersUriSpec.class);
+        requestHeadersSpec = mock(RequestHeadersSpec.class);
 
         when(restClientBuilder.build()).thenReturn(restClient);
 

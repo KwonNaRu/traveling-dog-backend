@@ -172,7 +172,7 @@ public class RouteOptimizationService {
             Map<String, Object> response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(Map.class);
+                    .toEntity(Map.class).getBody();
 
             if (response != null) {
                 List<Map<String, Object>> rows = (List<Map<String, Object>>) response.get("rows");
