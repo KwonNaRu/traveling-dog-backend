@@ -25,12 +25,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.web.client.RestClient;
 
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatResponse;
@@ -43,13 +40,11 @@ import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 
-import reactor.core.publisher.Mono;
-
 /**
  * 여행 계획 서비스 단위 테스트
  * 
  * 이 테스트 클래스는 TripPlanService의 기능을 단위 테스트합니다.
- * 외부 의존성(WebClient, RouteOptimizationService, GptResponseHandler)을
+ * 외부 의존성(RestClient, RouteOptimizationService, GptResponseHandler)을
  * 모킹하여 서비스 로직만 독립적으로 테스트합니다.
  * 
  * 주요 테스트 대상:
@@ -62,7 +57,7 @@ import reactor.core.publisher.Mono;
 public class TravelPlanServiceUnitTest {
 
         @Mock
-        private WebClient webClient;
+        private RestClient restClient;
 
         @Mock
         private RouteOptimizationService routeOptimizationService;
@@ -90,7 +85,7 @@ public class TravelPlanServiceUnitTest {
          * 2. 테스트용 여행 계획 요청 데이터 생성
          * 3. 모의 GPT 응답 데이터 설정
          * 4. 모의 위치 데이터 설정
-         * 5. WebClient 모킹 설정: OpenAI API 호출을 시뮬레이션
+         * 5. RestClient 모킹 설정: OpenAI API 호출을 시뮬레이션
          * 
          * 이 설정을 통해 실제 외부 서비스를 호출하지 않고도
          * TripPlanService의 로직을 테스트할 수 있습니다.
@@ -141,21 +136,17 @@ public class TravelPlanServiceUnitTest {
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
                 mockLocations.add(location);
 
-                // WebClient 모킹 설정
-                RequestBodyUriSpec requestBodyUriSpec = Mockito
-                                .mock(RequestBodyUriSpec.class);
-                RequestBodySpec requestBodySpec = Mockito
-                                .mock(RequestBodySpec.class);
-                RequestHeadersSpec requestHeadersSpec = Mockito
-                                .mock(RequestHeadersSpec.class);
-                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+                // RestClient 모킹 설정 - 간소화된 방식으로 모킹
+                RestClient.RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RestClient.RequestBodyUriSpec.class);
+                RestClient.RequestBodySpec requestBodySpec = Mockito.mock(RestClient.RequestBodySpec.class);
+                RestClient.ResponseSpec responseSpec = Mockito.mock(RestClient.ResponseSpec.class);
 
-                when(webClient.post()).thenReturn(requestBodyUriSpec);
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any())).thenReturn(requestHeadersSpec);
-                when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
+                when(requestBodySpec.body(any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.toEntity(AIChatResponse.class)).thenReturn(ResponseEntity.ok(mockResponse));
         }
 
         /**

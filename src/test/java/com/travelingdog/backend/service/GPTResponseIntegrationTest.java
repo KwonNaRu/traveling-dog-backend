@@ -19,12 +19,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,8 +30,6 @@ import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
-
-import reactor.core.publisher.Mono;
 
 /**
  * GPT 응답 처리 통합 테스트
@@ -60,7 +55,7 @@ public class GPTResponseIntegrationTest {
         private GptResponseHandler gptResponseHandler;
 
         @MockBean
-        private WebClient webClient;
+        private RestClient restClient;
 
         @MockBean
         private RouteOptimizationService routeOptimizationService;
@@ -76,7 +71,7 @@ public class GPTResponseIntegrationTest {
          * 
          * 1. 테스트용 여행 계획 요청 데이터 생성
          * 2. 모의 GPT 응답 데이터 설정
-         * 3. WebClient 모킹 설정: OpenAI API 호출을 시뮬레이션
+         * 3. RestClient 모킹 설정: OpenAI API 호출을 시뮬레이션
          * 
          * 이 설정을 통해 실제 OpenAI API를 호출하지 않고도
          * GPT 응답 처리 로직을 테스트할 수 있습니다.
@@ -107,20 +102,17 @@ public class GPTResponseIntegrationTest {
                 choices.add(choice);
                 mockResponse.setChoices(choices);
 
-                // WebClient 모킹 설정
-                RequestBodyUriSpec requestBodyUriSpec = Mockito
-                                .mock(RequestBodyUriSpec.class);
-                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
-                RequestHeadersSpec requestHeadersSpec = Mockito
-                                .mock(RequestHeadersSpec.class);
-                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+                // RestClient 모킹 설정
+                RestClient.RequestBodySpec requestBodySpec = Mockito.mock(RestClient.RequestBodySpec.class);
+                RestClient.RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RestClient.RequestBodyUriSpec.class);
+                RestClient.ResponseSpec responseSpec = Mockito.mock(RestClient.ResponseSpec.class);
 
-                when(webClient.post()).thenReturn(requestBodyUriSpec);
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any())).thenReturn(requestHeadersSpec);
-                when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
+                when(requestBodySpec.body(any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.toEntity(AIChatResponse.class)).thenReturn(ResponseEntity.ok(mockResponse));
         }
 
         /**
