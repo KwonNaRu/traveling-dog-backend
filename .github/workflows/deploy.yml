@@ -32,11 +32,11 @@ jobs:
 
             - name: Build Docker image
               run: |
-                  docker build --no-cache -f Dockerfile.development -t dmdmdm1322/travelingdog-backend:latest .
+                  docker build --no-cache -f Dockerfile.development -t ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest .
 
             - name: Push Docker image to Docker Hub
               run: |
-                  docker push dmdmdm1322/travelingdog-backend:latest
+                  docker push ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
 
             - name: Install sshpass
               run: sudo apt-get install sshpass
@@ -46,7 +46,7 @@ jobs:
                   sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
                   export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
                   export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-                  docker pull dmdmdm1322/travelingdog-backend:latest
+                  docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
                   docker-compose down
                   docker-compose up -d
                   EOF
