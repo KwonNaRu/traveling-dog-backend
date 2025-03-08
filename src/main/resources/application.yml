@@ -32,10 +32,6 @@ openai:
 springdoc:
     swagger-ui:
         path: /swagger-ui.html
-        api-docs: /api-docs
-        default-consumes-media-type: application/json
-        default-produces-media-type: application/json
-        operationsSorter: method
-        tagsSorter: alpha
-        tryItOutEnabled: true
-        filter: true
+    api-docs:
+        path: /v3/api-docs
+    packages-to-scan: com.travelingdog.backend.controller
