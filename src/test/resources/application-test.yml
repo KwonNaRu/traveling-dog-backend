@@ -18,6 +18,11 @@ spring:
         config:
             enabled: false
 
+google:
+    maps:
+        api:
+            key: test_api_key
+
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
     accessTokenValidityInSeconds: 86400 # 24시간
@@ -29,3 +34,12 @@ openai:
         key: sk-test-dummy-key-for-testing-purposes-only
         url: https://api.openai.com/v1/chat/completions
         model: gpt-3.5-turbo
+
+logging:
+    level:
+        root: DEBUG
+        org.springframework: DEBUG
+        org.hibernate: DEBUG
+        org.springframework.web: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.test: DEBUG
