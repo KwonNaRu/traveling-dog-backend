@@ -1,6 +1,7 @@
 package com.travelingdog.backend.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,13 +25,25 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.RequestBodySpec;
+import org.springframework.web.client.RestClient.RequestBodyUriSpec;
+import org.springframework.web.client.RestClient.ResponseSpec;
 
+import com.travelingdog.backend.dto.AIChatMessage;
+import com.travelingdog.backend.dto.AIChatRequest;
+import com.travelingdog.backend.dto.AIChatResponse;
+import com.travelingdog.backend.dto.AIChatResponse.Choice;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -71,10 +85,14 @@ public class TravelPlanServiceIntegrationTest {
     @Autowired
     private RouteOptimizationService routeOptimizationService;
 
+    @MockBean
+    private RestClient restClient;
+
     private User user;
     private TravelPlan travelPlan;
     private List<TravelLocation> travelLocations;
     private TravelPlanUpdateRequest updateRequest;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * 각 테스트 실행 전 환경 설정
@@ -131,6 +149,31 @@ public class TravelPlanServiceIntegrationTest {
         // 여행 장소 리스트 업데이트 (필요한 경우)
         travelPlan.setTravelLocations(travelLocations);
 
+        // RestClient 모킹 설정
+        AIChatResponse mockResponse = new AIChatResponse();
+        List<Choice> choices = new ArrayList<>();
+        Choice choice = new Choice();
+        AIChatMessage message = new AIChatMessage();
+
+        // Mock 장소 4개 생성
+        String jsonResponse = createMockGptResponse(today);
+        message.setContent(jsonResponse);
+
+        choice.setMessage(message);
+        choices.add(choice);
+        mockResponse.setChoices(choices);
+
+        RequestBodySpec requestBodySpec = mock(RequestBodySpec.class);
+        RequestBodyUriSpec requestBodyUriSpec = mock(RequestBodyUriSpec.class);
+        ResponseSpec responseSpec = mock(ResponseSpec.class);
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+        when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
+
         // 테스트 후 SecurityContext 정리를 위해
         SecurityContextHolder.clearContext();
     }
@@ -170,6 +213,11 @@ public class TravelPlanServiceIntegrationTest {
         assertEquals(request.getCity(), createdPlan.getCity());
         assertEquals(request.getStartDate(), createdPlan.getStartDate());
         assertEquals(request.getEndDate(), createdPlan.getEndDate());
+
+        // 생성된 여행 장소 확인
+        assertNotNull(createdPlan.getTravelLocations());
+        assertFalse(createdPlan.getTravelLocations().isEmpty());
+        assertEquals(4, createdPlan.getTravelLocations().size());
     }
 
     /**
@@ -579,5 +627,39 @@ public class TravelPlanServiceIntegrationTest {
 
         // SecurityContext에 인증 객체 설정
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    /**
+     * 모의 GPT 응답 JSON 생성 헬퍼 메소드
+     *
+     * 이 메소드는 테스트에 사용할 모의 GPT 응답 JSON을 생성합니다. 서울의 주요 관광지 정보와 방문 날짜를 포함한 JSON 배열을
+     * 생성합니다.
+     *
+     * @param startDate 여행 시작 날짜
+     * @return GPT 응답 형식의 JSON 문자열
+     */
+    private String createMockGptResponse(LocalDate startDate) {
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.append("[");
+
+        // 첫째 날 장소들
+        jsonBuilder.append(
+                "{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\"")
+                .append(startDate.format(formatter)).append("\"},");
+        jsonBuilder.append(
+                "{\"name\":\"Insadong\",\"latitude\":37.5746,\"longitude\":126.9850,\"availableDate\":\"")
+                .append(startDate.format(formatter)).append("\"},");
+
+        // 둘째 날 장소들
+        LocalDate secondDay = startDate.plusDays(1);
+        jsonBuilder
+                .append("{\"name\":\"Namsan Tower\",\"latitude\":37.5512,\"longitude\":126.9882,\"availableDate\":\"")
+                .append(secondDay.format(formatter)).append("\"},");
+        jsonBuilder.append(
+                "{\"name\":\"Myeongdong\",\"latitude\":37.5635,\"longitude\":126.9850,\"availableDate\":\"")
+                .append(secondDay.format(formatter)).append("\"}");
+
+        jsonBuilder.append("]");
+        return jsonBuilder.toString();
     }
 }

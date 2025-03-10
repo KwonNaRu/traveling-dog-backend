@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
+import com.travelingdog.backend.dto.AIChatResponse.Choice;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.model.TravelLocation;
@@ -95,7 +96,7 @@ public class GPTResponseIntegrationTest {
         message.setContent(jsonResponse);
 
         choice.setMessage(message);
-        List<AIChatResponse.Choice> choices = new ArrayList<>();
+        List<Choice> choices = new ArrayList<>();
         choices.add(choice);
         mockResponse.setChoices(choices);
 
