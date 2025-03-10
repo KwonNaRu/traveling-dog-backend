@@ -62,14 +62,12 @@ public class AuthControllerIntegrationTest {
     void signUp_ValidRequest_ReturnsCreated() {
         // Given
         SignUpRequest request = new SignUpRequest("newUser", "new@test.com", "password123!");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", encodeBasic("new@test.com", "password123!"));
 
         // When
         ResponseEntity<Void> response = restTemplate.exchange(
                 "/api/auth/signup",
                 HttpMethod.POST,
-                new HttpEntity<>(request, headers),
+                new HttpEntity<>(request),
                 Void.class);
 
         // Then
@@ -82,14 +80,12 @@ public class AuthControllerIntegrationTest {
     void signUp_InvalidEmail_ReturnsBadRequest() {
         // Given
         SignUpRequest request = new SignUpRequest("invalid-username", "invalid-email", "short");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", encodeBasic("invalid-email", "short"));
 
         // When
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/auth/signup",
                 HttpMethod.POST,
-                new HttpEntity<>(request, headers),
+                new HttpEntity<>(request),
                 ErrorResponse.class);
 
         // Then

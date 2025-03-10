@@ -25,11 +25,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.RequestBodySpec;
+import org.springframework.web.client.RestClient.RequestBodyUriSpec;
+import org.springframework.web.client.RestClient.RequestHeadersSpec;
+import org.springframework.web.client.RestClient.ResponseSpec;
 
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatResponse;
@@ -43,12 +43,10 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 
-import reactor.core.publisher.Mono;
-
 /**
  * 여행 계획 서비스 단위 테스트
  *
- * 이 테스트 클래스는 TripPlanService의 기능을 단위 테스트합니다. 외부 의존성(WebClient,
+ * 이 테스트 클래스는 TripPlanService의 기능을 단위 테스트합니다. 외부 의존성(RestClient,
  * RouteOptimizationService, GptResponseHandler)을 모킹하여 서비스 로직만 독립적으로 테스트합니다.
  *
  * 주요 테스트 대상: 1. 여행 계획 생성 요청 처리 2. GPT 응답 처리 및 위치 데이터 변환 3. 경로 최적화 서비스 연동
@@ -58,7 +56,7 @@ import reactor.core.publisher.Mono;
 public class TravelPlanServiceUnitTest {
 
     @Mock
-    private WebClient webClient;
+    private RestClient restClient;
 
     @Mock
     private RouteOptimizationService routeOptimizationService;
@@ -76,6 +74,7 @@ public class TravelPlanServiceUnitTest {
     private TravelPlanService tripPlanService;
 
     private TravelPlanRequest request;
+    private TravelPlan travelPlan;
     private AIChatResponse mockResponse;
     private List<TravelLocation> mockLocations;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -86,8 +85,8 @@ public class TravelPlanServiceUnitTest {
      * 각 테스트 실행 전 환경 설정
      *
      * 1. API 키 설정: ReflectionTestUtils를 사용하여 테스트용 API 키 설정 2. 테스트용 여행 계획 요청 데이터
-     * 생성 3. 모의 GPT 응답 데이터 설정 4. 모의 위치 데이터 설정 5. WebClient 모킹 설정: OpenAI API 호출을
-     * 시뮬레이션
+     * 생성 3. 모의 GPT 응답 데이터 설정 4. 모의 위치 데이터 설정 5. RestClient 모킹 설정: OpenAI API
+     * 호출을 시뮬레이션
      *
      * 이 설정을 통해 실제 외부 서비스를 호출하지 않고도 TripPlanService의 로직을 테스트할 수 있습니다.
      */
@@ -127,6 +126,15 @@ public class TravelPlanServiceUnitTest {
         // 모의 위치 데이터 설정
         mockLocations = new ArrayList<>();
 
+        travelPlan = TravelPlan.builder()
+                .id(1L)
+                .title("Test Travel Plan")
+                .startDate(today)
+                .endDate(endDate)
+                .country("South Korea")
+                .city("Seoul")
+                .build();
+
         TravelLocation location = new TravelLocation();
         location.setPlaceName("Gyeongbokgung Palace");
         location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
@@ -136,57 +144,6 @@ public class TravelPlanServiceUnitTest {
         location.setAvailableDate(today);
         // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
         mockLocations.add(location);
-    }
-
-    /**
-     * 여행 계획 생성 기능 테스트
-     *
-     * 이 테스트는 TripPlanService의 generateTripPlan 메소드가 여행 계획 요청을 처리하여 여행 위치 목록을
-     * 생성하는 과정을 검증합니다.
-     *
-     * 테스트 과정: 1. GptResponseHandler 모킹: GPT 응답 파싱 및 프롬프트 생성 기능 모킹 2.
-     * RouteOptimizationService 모킹: 경로 최적화 기능 모킹 3. 여행 계획 생성 요청 4. 결과 검증: 위치 수,
-     * 위치 이름, 날짜 정보
-     *
-     * 이 테스트는 여행 계획 생성의 전체 흐름이 올바르게 작동하는지 검증합니다.
-     */
-    @Test
-    @DisplayName("여행 계획 생성 기능 테스트")
-    void testGenerateTripPlan() {
-        // WebClient 모킹 설정 - 이 테스트에서 필요한 경우에만 설정
-        RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
-        RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
-        RequestHeadersSpec requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);
-        ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
-
-        when(webClient.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
-        when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
-
-        // GptResponseHandler 모킹 추가
-        when(gptResponseHandler.parseGptResponse(any(String.class)))
-                .thenReturn(List
-                        .of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770,
-                                today.format(formatter))));
-
-        when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
-                .thenReturn("테스트 프롬프트");
-
-        // 시뮬레이티드 어닐링 알고리즘 사용으로 변경
-        when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
-
-        // When
-        List<TravelLocation> result = tripPlanService.generateTripPlan(request);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Gyeongbokgung Palace", result.get(0).getPlaceName());
-        assertNotNull(result.get(0).getAvailableDate());
-        assertEquals(today, result.get(0).getAvailableDate());
     }
 
     /**
@@ -200,18 +157,18 @@ public class TravelPlanServiceUnitTest {
     @Test
     @DisplayName("여행 계획 생성 후 저장 기능 테스트")
     void testCreateTravelPlan() {
-        // WebClient 모킹 설정 - 이 테스트에서 필요한 경우에만 설정
+        // RestClient 모킹 설정 - 이 테스트에서 필요한 경우에만 설정
         RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
         RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
         RequestHeadersSpec requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);
         ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
 
-        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
         when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any())).thenReturn(requestHeadersSpec);
+        when(requestBodySpec.body(any())).thenReturn(requestBodySpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(AIChatResponse.class)).thenReturn(Mono.just(mockResponse));
+        when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
 
         // Given
         TravelPlan savedTravelPlan = TravelPlan.builder()

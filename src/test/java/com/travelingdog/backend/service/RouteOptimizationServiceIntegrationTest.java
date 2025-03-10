@@ -23,15 +23,15 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.RequestHeadersSpec;
+import org.springframework.web.client.RestClient.RequestHeadersUriSpec;
+import org.springframework.web.client.RestClient.ResponseSpec;
 
 import com.travelingdog.backend.model.TravelLocation;
-
-import reactor.core.publisher.Mono;
 
 /**
  * 경로 최적화 서비스 통합 테스트
@@ -51,7 +51,7 @@ public class RouteOptimizationServiceIntegrationTest {
     private RouteOptimizationService routeOptimizationService;
 
     @MockBean
-    private WebClient webClient;
+    private RestClient restClient;
 
     private List<TravelLocation> locations;
     private GeometryFactory geometryFactory;
@@ -59,19 +59,19 @@ public class RouteOptimizationServiceIntegrationTest {
     /**
      * 각 테스트 실행 전 환경 설정
      * 
-     * 1. WebClient 모킹 설정: Google Maps API 호출을 시뮬레이션
+     * 1. RestClient 모킹 설정: Google Maps API 호출을 시뮬레이션
      * 2. 테스트용 위치 데이터 생성: 서울의 주요 관광지 좌표를 사용하여 두 날짜에 걸친 여행 일정 생성
      * 3. 모킹된 Google Maps API 응답 설정: 1.5km 거리와 300초 소요 시간으로 응답 설정
      */
     @BeforeEach
     void setUp() {
-        // WebClient 모킹 설정
+        // RestClient 모킹 설정
         RequestHeadersUriSpec requestHeadersUriSpec = Mockito
                 .mock(RequestHeadersUriSpec.class);
         RequestHeadersSpec requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);
-        WebClient.ResponseSpec responseSpec = org.mockito.Mockito.mock(WebClient.ResponseSpec.class);
+        ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
 
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(any(String.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
 
@@ -85,10 +85,10 @@ public class RouteOptimizationServiceIntegrationTest {
                                                 "duration", Map.of("value", 300))))));
 
         // Google Maps API 응답 모킹
-        when(responseSpec.bodyToMono(eq(Map.class))).thenReturn(Mono.just(distanceResponse));
+        when(responseSpec.toEntity(eq(Map.class))).thenReturn(ResponseEntity.ok(distanceResponse));
 
-        // RouteOptimizationService의 webClient 필드를 모킹된 webClient로 교체
-        ReflectionTestUtils.setField(routeOptimizationService, "webClient", webClient);
+        // RouteOptimizationService의 restClient 필드를 모킹된 restClient로 교체
+        ReflectionTestUtils.setField(routeOptimizationService, "restClient", restClient);
 
         geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         locations = new ArrayList<>();

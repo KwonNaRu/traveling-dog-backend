@@ -23,19 +23,9 @@ jwt:
     accessTokenValidityInSeconds: 86400 # 24시간
     refreshTokenValidityInSeconds: 604800 # 7일
 
-openai:
-    api:
-        key: sk-dummy-api-key-for-testing-purposes-only
-        url: https://api.openai.com/v1/chat/completions
-        model: gpt-3.5-turbo
-
 springdoc:
     swagger-ui:
         path: /swagger-ui.html
-        api-docs: /api-docs
-        default-consumes-media-type: application/json
-        default-produces-media-type: application/json
-        operationsSorter: method
-        tagsSorter: alpha
-        tryItOutEnabled: true
-        filter: true
+    api-docs:
+        path: /v3/api-docs
+    packages-to-scan: com.travelingdog.backend.controller

@@ -15,8 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import com.travelingdog.backend.dto.AIChatMessage;
 import com.travelingdog.backend.dto.AIChatRequest;
@@ -46,18 +45,18 @@ public class TravelPlanService {
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
-    private final WebClient webClient;
+    private final RestClient restClient;
     private final RouteOptimizationService routeOptimizationService;
     private final GptResponseHandler gptResponseHandler;
     private final TravelPlanRepository travelPlanRepository;
     private final TravelLocationRepository travelLocationRepository;
 
     public TravelPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
-            WebClient webClient, TravelPlanRepository travelPlanRepository,
+            RestClient restClient, TravelPlanRepository travelPlanRepository,
             TravelLocationRepository travelLocationRepository) {
         this.routeOptimizationService = routeOptimizationService;
         this.gptResponseHandler = gptResponseHandler;
-        this.webClient = webClient;
+        this.restClient = restClient;
         this.travelPlanRepository = travelPlanRepository;
         this.travelLocationRepository = travelLocationRepository;
     }
@@ -87,14 +86,13 @@ public class TravelPlanService {
 
             String openAiUrl = "https://api.openai.com/v1/chat/completions";
 
-            AIChatResponse openAiResponse = webClient.post()
+            AIChatResponse openAiResponse = restClient.post()
                     .uri(openAiUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiApiKey)
-                    .body(BodyInserters.fromValue(openAiRequest))
+                    .body(openAiRequest)
                     .retrieve()
-                    .bodyToMono(AIChatResponse.class)
-                    .block();
+                    .body(AIChatResponse.class);
 
             if (openAiResponse != null && openAiResponse.getChoices() != null
                     && !openAiResponse.getChoices().isEmpty()) {
@@ -211,14 +209,13 @@ public class TravelPlanService {
 
             String openAiUrl = "https://api.openai.com/v1/chat/completions";
 
-            AIChatResponse openAiResponse = webClient.post()
+            AIChatResponse openAiResponse = restClient.post()
                     .uri(openAiUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiApiKey)
-                    .body(BodyInserters.fromValue(openAiRequest))
+                    .body(openAiRequest)
                     .retrieve()
-                    .bodyToMono(AIChatResponse.class)
-                    .block();
+                    .body(AIChatResponse.class);
 
             if (openAiResponse != null && openAiResponse.getChoices() != null
                     && !openAiResponse.getChoices().isEmpty()) {

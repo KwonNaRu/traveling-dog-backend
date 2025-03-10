@@ -215,7 +215,6 @@ public class AuthControllerUnitTest {
 
         // When & Then
         mockMvc.perform(post("/api/auth/signup")
-                .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -246,7 +245,6 @@ public class AuthControllerUnitTest {
 
         // When & Then
         mockMvc.perform(post("/api/auth/signup")
-                .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

@@ -5,8 +5,8 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.Builder;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,15 +18,15 @@ public class RouteOptimizationService {
     @Value("${google.maps.api.key:}")
     private String googleMapsApiKey;
 
-    private final WebClient webClient;
+    private final RestClient restClient;
 
     // 시뮬레이티드 어닐링 파라미터
     private static final double INITIAL_TEMPERATURE = 10000;
     private static final double COOLING_RATE = 0.003;
     private static final int MAX_ITERATIONS = 1000;
 
-    public RouteOptimizationService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    public RouteOptimizationService(Builder restClientBuilder) {
+        this.restClient = restClientBuilder.build();
     }
 
     // 하버사인 공식을 이용해 두 좌표 사이의 거리를 계산 (단위: km)
@@ -169,11 +169,10 @@ public class RouteOptimizationService {
                     "https://maps.googleapis.com/maps/api/distancematrix/json?origins=%s&destinations=%s&key=%s",
                     originStr, destStr, googleMapsApiKey);
 
-            Map<String, Object> response = webClient.get()
+            Map<String, Object> response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+                    .toEntity(Map.class).getBody();
 
             if (response != null) {
                 List<Map<String, Object>> rows = (List<Map<String, Object>>) response.get("rows");

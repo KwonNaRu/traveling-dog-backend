@@ -19,22 +19,18 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.Builder;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.*;
 
 import com.travelingdog.backend.model.TravelLocation;
-
-import reactor.core.publisher.Mono;
 
 /**
  * 경로 최적화 서비스 단위 테스트
  * 
  * 이 테스트 클래스는 RouteOptimizationService의 다양한 기능을 단위 테스트합니다.
- * 외부 의존성(WebClient)을 모킹하여 서비스 로직만 독립적으로 테스트합니다.
+ * 외부 의존성(RestClient)을 모킹하여 서비스 로직만 독립적으로 테스트합니다.
  * 주요 테스트 대상:
  * 1. 빈 리스트, 단일 위치, 다중 위치에 대한 경로 최적화
  * 2. 날짜별 그룹화 기능
@@ -47,34 +43,36 @@ public class RouteOptimizationServiceUnitTest {
     private RouteOptimizationService routeOptimizationService;
     private List<TravelLocation> locations;
     private GeometryFactory geometryFactory;
-    private Builder webClientBuilder;
-    private WebClient webClient;
+    private Builder restClientBuilder;
+    private RestClient restClient;
+    private ResponseSpec responseSpec;
     private RequestHeadersUriSpec requestHeadersUriSpec;
     private RequestHeadersSpec requestHeadersSpec;
-    private ResponseSpec responseSpec;
 
     /**
      * 각 테스트 실행 전 환경 설정
      * 
-     * 1. WebClient 모킹 설정: Google Maps API 호출을 시뮬레이션
+     * 1. RestClient 모킹 설정: Google Maps API 호출을 시뮬레이션
      * 2. RouteOptimizationService 인스턴스 생성 및 API 키 설정
      * 3. 테스트용 위치 데이터 생성: 서울의 주요 관광지 좌표를 사용하여 두 날짜에 걸친 여행 일정 생성
      */
     @BeforeEach
     void setUp() {
-        // Mock WebClient
-        webClientBuilder = mock(WebClient.Builder.class);
-        webClient = mock(WebClient.class);
-        requestHeadersUriSpec = mock(WebClient.RequestHeadersUriSpec.class);
-        requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
-        responseSpec = mock(WebClient.ResponseSpec.class);
+        // Mock RestClient - 간소화된 방식으로 모킹
+        restClientBuilder = mock(Builder.class);
+        restClient = mock(RestClient.class);
+        responseSpec = mock(ResponseSpec.class);
+        requestHeadersUriSpec = mock(RequestHeadersUriSpec.class);
+        requestHeadersSpec = mock(RequestHeadersSpec.class);
 
-        when(webClientBuilder.build()).thenReturn(webClient);
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(restClientBuilder.build()).thenReturn(restClient);
+
+        // 직접 체인 호출 결과를 모킹하여 제네릭 타입 문제 회피
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
 
-        routeOptimizationService = new RouteOptimizationService(webClientBuilder);
+        routeOptimizationService = new RouteOptimizationService(restClientBuilder);
         // API 키 설정
         ReflectionTestUtils.setField(routeOptimizationService, "googleMapsApiKey", "test-api-key");
 
@@ -263,7 +261,7 @@ public class RouteOptimizationServiceUnitTest {
                                                 "duration", Map.of("value", 300))))));
 
         // Google Maps API 응답 모킹
-        when(responseSpec.bodyToMono(eq(Map.class))).thenReturn(Mono.just(distanceResponse));
+        when(responseSpec.toEntity(eq(Map.class))).thenReturn(ResponseEntity.ok(distanceResponse));
 
         // 두 위치 간의 실제 거리 계산
         double distance = routeOptimizationService.getGoogleMapsDistance(
@@ -297,7 +295,7 @@ public class RouteOptimizationServiceUnitTest {
                                                 "duration", Map.of("value", 300))))));
 
         // Google Maps API 응답 모킹
-        when(responseSpec.bodyToMono(eq(Map.class))).thenReturn(Mono.just(distanceResponse));
+        when(responseSpec.toEntity(eq(Map.class))).thenReturn(ResponseEntity.ok(distanceResponse));
 
         // 같은 날짜의 위치만 포함하는 리스트 생성
         List<TravelLocation> sameDay = new ArrayList<>();
