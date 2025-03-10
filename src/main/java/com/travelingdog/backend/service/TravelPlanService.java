@@ -6,6 +6,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -231,7 +234,8 @@ public class TravelPlanService {
                     for (AIRecommendedLocationDTO dto : dtoList) {
                         TravelLocation location = new TravelLocation();
                         location.setPlaceName(dto.getName());
-                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
+                        location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())));
                         location.setLocationOrder(order++);
                         location.setDescription("");
                         location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
