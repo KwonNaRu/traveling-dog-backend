@@ -40,6 +40,7 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.model.TravelLocation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 
 import reactor.core.publisher.Mono;
@@ -67,6 +68,9 @@ public class TravelPlanServiceUnitTest {
 
     @Mock
     private TravelPlanRepository travelPlanRepository;
+
+    @Mock
+    private TravelLocationRepository travelLocationRepository;
 
     @InjectMocks
     private TravelPlanService tripPlanService;
@@ -231,6 +235,9 @@ public class TravelPlanServiceUnitTest {
 
         // TravelPlanRepository 모킹
         when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
+
+        // TravelLocationRepository 모킹
+        when(travelLocationRepository.save(any(TravelLocation.class))).thenReturn(mockLocations.get(0));
 
         // When
         TravelPlanDTO result = tripPlanService.createTravelPlan(request, user);
