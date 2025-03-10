@@ -28,10 +28,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
-import org.springframework.web.client.RestClient.RequestHeadersSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
 import com.travelingdog.backend.dto.AIChatMessage;
+import com.travelingdog.backend.dto.AIChatRequest;
 import com.travelingdog.backend.dto.AIChatResponse;
 import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
@@ -157,17 +157,17 @@ public class TravelPlanServiceUnitTest {
     @Test
     @DisplayName("여행 계획 생성 후 저장 기능 테스트")
     void testCreateTravelPlan() {
+
         // RestClient 모킹 설정 - 이 테스트에서 필요한 경우에만 설정
         RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
         RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
-        RequestHeadersSpec requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);
         ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
 
         when(restClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
         when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any())).thenReturn(requestBodySpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
 
         // Given
