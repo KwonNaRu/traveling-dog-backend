@@ -33,8 +33,7 @@ public class GptResponseHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * GPT 응답을 파싱하여 AIRecommendedLocationDTO 리스트로 변환합니다.
-     * 다양한 형태의 응답을 처리할 수 있습니다.
+     * GPT 응답을 파싱하여 AIRecommendedLocationDTO 리스트로 변환합니다. 다양한 형태의 응답을 처리할 수 있습니다.
      */
     public List<AIRecommendedLocationDTO> parseGptResponse(String content) {
         try {
@@ -44,7 +43,7 @@ public class GptResponseHandler {
             // JSON 파싱
             List<AIRecommendedLocationDTO> dtoList = objectMapper.readValue(normalizedContent,
                     new TypeReference<List<AIRecommendedLocationDTO>>() {
-                    });
+            });
 
             // 빈 응답 체크
             if (dtoList.isEmpty()) {
@@ -146,10 +145,12 @@ public class GptResponseHandler {
                 + "각 객체는 반드시 다음 형식을 따라야 함: "
                 + "{"
                 + "\"name\": \"장소명(문자열)\", "
-                + "\"latitude\": 위도(숫자), "
-                + "\"longitude\": 경도(숫자), "
+                + "\"latitude\": 위도(숫자, 구글맵 기준), "
+                + "\"longitude\": 경도(숫자, 구글맵 기준), "
                 + "\"availableDate\": \"yyyy-MM-dd 형식의 날짜(문자열)\""
                 + "} "
+                + "위도와 경도는 반드시 구글맵에서 사용하는 좌표계(WGS84)를 기준으로 정확한 값을 제공해야 함. "
+                + "각 장소의 정확한 위치를 구글맵 기준으로 제공하고, 실제 존재하는 장소만 추천해줘. "
                 + "추가 텍스트나 설명 없이 순수 JSON 배열만 출력해줘. "
                 + "입력 정보 - 국가: " + country
                 + ", 도시: " + city
@@ -180,8 +181,7 @@ public class GptResponseHandler {
             location2.setLongitude(126.9882);
             location2.setAvailableDate(startDate.plusDays(1).format(formatter));
             fallbackList.add(location2);
-        }
-        // 다른 도시의 경우 기본 응답 제공
+        } // 다른 도시의 경우 기본 응답 제공
         else {
             AIRecommendedLocationDTO location = new AIRecommendedLocationDTO();
             location.setName("Popular Attraction in " + city);
