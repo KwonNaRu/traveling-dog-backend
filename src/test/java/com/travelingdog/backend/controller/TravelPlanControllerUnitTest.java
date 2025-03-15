@@ -120,7 +120,7 @@ public class TravelPlanControllerUnitTest {
                 .thenReturn(travelPlanDTO);
 
         // When & Then
-        mockMvc.perform(post("/travel/plan")
+        mockMvc.perform(post("/api/travel/plan")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -136,7 +136,7 @@ public class TravelPlanControllerUnitTest {
                 .thenReturn(new ArrayList<>());
 
         // When & Then
-        mockMvc.perform(get("/travel/plans"))
+        mockMvc.perform(get("/api/travel/plans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -160,7 +160,7 @@ public class TravelPlanControllerUnitTest {
                 .thenReturn(updatedTravelPlanDTO);
 
         // When & Then
-        mockMvc.perform(put("/travel/plan/{id}", 1L)
+        mockMvc.perform(put("/api/travel/plan/{id}", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -175,7 +175,7 @@ public class TravelPlanControllerUnitTest {
         doNothing().when(travelPlanService).deleteTravelPlan(anyLong(), any(User.class));
 
         // When & Then
-        mockMvc.perform(delete("/travel/plan/{id}", 1L))
+        mockMvc.perform(delete("/api/travel/plan/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 
@@ -190,7 +190,7 @@ public class TravelPlanControllerUnitTest {
                 .thenReturn(null);
 
         // When & Then
-        mockMvc.perform(post("/travel/plan")
+        mockMvc.perform(post("/api/travel/plan")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError());
@@ -207,7 +207,7 @@ public class TravelPlanControllerUnitTest {
         // 필수 필드를 비워둠
 
         // When & Then
-        mockMvc.perform(post("/travel/plan")
+        mockMvc.perform(post("/api/travel/plan")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
@@ -230,7 +230,7 @@ public class TravelPlanControllerUnitTest {
                         new ForbiddenResourceAccessException("You don't have permission to update this travel plan"));
 
         // When & Then
-        mockMvc.perform(put("/travel/plan/{id}", 1L)
+        mockMvc.perform(put("/api/travel/plan/{id}", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isForbidden());
@@ -247,7 +247,7 @@ public class TravelPlanControllerUnitTest {
                 .when(travelPlanService).deleteTravelPlan(any(Long.class), any(User.class));
 
         // When & Then
-        mockMvc.perform(delete("/travel/plan/{id}", 1L))
+        mockMvc.perform(delete("/api/travel/plan/{id}", 1L))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("삭제할 수 없는 여행 계획입니다."));
     }
