@@ -3,12 +3,8 @@ package com.travelingdog.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +18,6 @@ import com.travelingdog.backend.dto.TravelLocationDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
-import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.exception.UnauthorizedException;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.TravelPlanService;
@@ -38,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/travel")
+@RequestMapping("/api/travel")
 @Tag(name = "여행 계획", description = "여행 계획 생성 API")
 public class TravelPlanController {
 
