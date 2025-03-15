@@ -25,6 +25,7 @@ public class TravelPlanDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Long userId;
+    private String nickname;
     private List<TravelLocationDTO> travelLocations;
     private int viewCount;
     private int likeCount;
@@ -45,6 +46,7 @@ public class TravelPlanDTO {
                 .endDate(entity.getEndDate())
                 .isShared(entity.getIsShared())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
+                .nickname(entity.getUser() != null ? entity.getUser().getNickname() : null)
                 .travelLocations(entity.getTravelLocations().stream()
                         .map(TravelLocationDTO::fromEntity)
                         .collect(Collectors.toList()))
