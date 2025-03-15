@@ -1,8 +1,6 @@
 package com.travelingdog.backend.config;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -39,19 +37,20 @@ public class RateLimitingConfig {
     @Bean
     public FilterRegistrationBean<OncePerRequestFilter> rateLimitingFilter() {
         FilterRegistrationBean<OncePerRequestFilter> registrationBean = new FilterRegistrationBean<>();
-        
+
         registrationBean.setFilter(new OncePerRequestFilter() {
             @Override
-            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                    FilterChain filterChain)
                     throws ServletException, IOException {
-                
+
                 // 클라이언트 IP 주소 가져오기
                 String clientIp = getClientIp(request);
-                
+
                 try {
                     // 해당 IP의 RateLimiter 가져오기
                     RateLimiter rateLimiter = rateLimiters.get(clientIp);
-                    
+
                     // 요청 허용 여부 확인
                     if (rateLimiter.tryAcquire()) {
                         // 허용된 경우 요청 처리
@@ -67,12 +66,12 @@ public class RateLimitingConfig {
                 }
             }
         });
-        
+
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1); // HTTPS 필터 다음 순서
         registrationBean.addUrlPatterns("/api/*"); // API 경로에만 적용
         return registrationBean;
     }
-    
+
     private String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
@@ -82,4 +81,4 @@ public class RateLimitingConfig {
         // 없는 경우 원격 주소 사용
         return request.getRemoteAddr();
     }
-} 
+}
