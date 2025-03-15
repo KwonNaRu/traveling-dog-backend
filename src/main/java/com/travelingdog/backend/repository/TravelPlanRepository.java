@@ -29,7 +29,7 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      * @param user 조회할 사용자
      * @return 여행 계획 상세
      */
-    @Query("SELECT p FROM TravelPlan p WHERE p.id = :id AND (p.user.id = :userId OR p.isShared = true)")
+    @Query("SELECT p FROM TravelPlan p WHERE p.id = :id AND (p.user.id = :userId OR p.status = 'PUBLISHED')")
     Optional<TravelPlan> findByIdWithSecurity(@Param("id") Long id, @Param("userId") Long userId);
 
     /**

@@ -23,6 +23,7 @@ import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -69,7 +70,7 @@ public class TravelLocationAvailableDateTest {
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
                                 .user(user)
-                                .isShared(true)
+                                .status(PlanStatus.PUBLISHED)
                                 .build();
                 travelPlanRepository.save(travelPlan);
         }

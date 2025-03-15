@@ -3,6 +3,7 @@ package com.travelingdog.backend.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -26,7 +27,7 @@ public class TravelPlanUnitTest {
 
         @BeforeEach
         void setUp() {
-                java.util.Locale.setDefault(java.util.Locale.ENGLISH); // 기본 로케일 영어 설정
+                Locale.setDefault(Locale.ENGLISH); // 기본 로케일 영어 설정
 
                 user = User.builder()
                                 .nickname("testUser")
@@ -253,7 +254,6 @@ public class TravelPlanUnitTest {
         @Test
         public void testUserIsNull() {
                 TravelPlan invalidTravelPlan = TravelPlan.builder()
-                                .title("여행 계획")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(10))
                                 .build();

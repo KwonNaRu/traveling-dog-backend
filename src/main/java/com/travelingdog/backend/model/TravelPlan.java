@@ -69,10 +69,6 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<TravelLocation> travelLocations = new ArrayList<>(); // 여행 위치 리스트
 
-    @NotNull
-    @Column(name = "is_shared", nullable = false)
-    private Boolean isShared;
-
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default
     private List<PlanLike> likes = new ArrayList<>();

@@ -36,6 +36,7 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.TravelPlanService;
+import com.travelingdog.backend.status.PlanStatus;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -81,7 +82,7 @@ public class TravelPlanControllerIntegrationTest {
         testTravelPlan.setStartDate(LocalDate.now().plusDays(1));
         testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
         testTravelPlan.setUser(testUser);
-        testTravelPlan.setIsShared(true);
+        testTravelPlan.setStatus(PlanStatus.PUBLISHED);
         travelPlanRepository.save(testTravelPlan);
     }
 
@@ -102,7 +103,6 @@ public class TravelPlanControllerIntegrationTest {
         request.setCity("Tokyo");
         request.setStartDate(LocalDate.now().plusDays(10));
         request.setEndDate(LocalDate.now().plusDays(15));
-        request.setIsShared(true);
 
         TravelPlanDTO mockResponse = new TravelPlanDTO();
         mockResponse.setId(999L);
@@ -116,7 +116,7 @@ public class TravelPlanControllerIntegrationTest {
         when(travelPlanService.createTravelPlan(any(TravelPlanRequest.class), any())).thenReturn(mockResponse);
 
         // When & Then
-        mockMvc.perform(post("/travel/plan")
+        mockMvc.perform(post("/api/travel/plan")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -142,7 +142,7 @@ public class TravelPlanControllerIntegrationTest {
         when(travelPlanService.getTravelPlanList(any())).thenReturn(mockResponse);
 
         // When & Then
-        mockMvc.perform(get("/travel/plans"))
+        mockMvc.perform(get("/api/travel/plans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testTravelPlan.getId()))
                 .andExpect(jsonPath("$[0].title").value(testTravelPlan.getTitle()));
@@ -163,7 +163,7 @@ public class TravelPlanControllerIntegrationTest {
         when(travelPlanService.getTravelPlanDetail(any(Long.class), any())).thenReturn(mockResponse);
 
         // When & Then
-        mockMvc.perform(get("/travel/plan/{id}", testTravelPlan.getId()))
+        mockMvc.perform(get("/api/travel/plan/{id}", testTravelPlan.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testTravelPlan.getId()))
                 .andExpect(jsonPath("$.title").value(testTravelPlan.getTitle()));
@@ -190,7 +190,7 @@ public class TravelPlanControllerIntegrationTest {
                 .thenReturn(mockResponse);
 
         // When & Then
-        mockMvc.perform(put("/travel/plan/{id}", testTravelPlan.getId())
+        mockMvc.perform(put("/api/travel/plan/{id}", testTravelPlan.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -201,7 +201,7 @@ public class TravelPlanControllerIntegrationTest {
     @WithMockCustomUser(email = "test@example.com")
     public void testDeleteTravelPlan() throws Exception {
         // When & Then
-        mockMvc.perform(delete("/travel/plan/{id}", testTravelPlan.getId()))
+        mockMvc.perform(delete("/api/travel/plan/{id}", testTravelPlan.getId()))
                 .andExpect(status().isNoContent());
     }
 }

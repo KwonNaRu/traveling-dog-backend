@@ -19,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 @Tag("integration")
 @DataJpaTest
@@ -140,7 +141,7 @@ public class UserIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 user.addTravelPlan(travelPlan);
@@ -173,7 +174,7 @@ public class UserIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 user.addTravelPlan(travelPlan);

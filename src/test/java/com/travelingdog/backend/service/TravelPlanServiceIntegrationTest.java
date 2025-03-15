@@ -54,6 +54,7 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 /**
  * TravelPlanService 통합 테스트
@@ -127,7 +128,7 @@ public class TravelPlanServiceIntegrationTest {
                 .startDate(today) // 현재 날짜로 설정
                 .endDate(futureDate) // 미래 날짜로 설정
                 .travelLocations(new ArrayList<>()) // 빈 리스트로 초기화
-                .isShared(true)
+                .status(PlanStatus.PUBLISHED)
                 .build();
         travelPlanRepository.save(travelPlan);
 
@@ -202,7 +203,6 @@ public class TravelPlanServiceIntegrationTest {
         request.setCity("Seoul");
         request.setStartDate(LocalDate.now());
         request.setEndDate(LocalDate.now().plusDays(7));
-        request.setIsShared(true);
 
         // When
         TravelPlanDTO createdPlan = travelPlanService.createTravelPlan(request, user);
@@ -241,7 +241,6 @@ public class TravelPlanServiceIntegrationTest {
         secondRequest.setCity("Tokyo");
         secondRequest.setStartDate(LocalDate.now());
         secondRequest.setEndDate(LocalDate.now().plusDays(7));
-        secondRequest.setIsShared(false);
 
         TravelPlanDTO secondTravelPlan = travelPlanService.createTravelPlan(secondRequest, user);
 
@@ -466,7 +465,7 @@ public class TravelPlanServiceIntegrationTest {
                 .title("Other User's Travel Plan")
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(5))
-                .isShared(false)
+                .status(PlanStatus.PRIVATE)
                 .build();
         TravelPlan savedOtherUserPlan = travelPlanRepository.save(otherUserPlan);
 
@@ -508,7 +507,7 @@ public class TravelPlanServiceIntegrationTest {
                 .title("Other User's Travel Plan")
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(5))
-                .isShared(false)
+                .status(PlanStatus.PRIVATE)
                 .build();
         TravelPlan savedOtherUserPlan = travelPlanRepository.save(otherUserPlan);
 
@@ -608,7 +607,7 @@ public class TravelPlanServiceIntegrationTest {
                 .title("Other User's Travel Plan")
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(5))
-                .isShared(false)
+                .status(PlanStatus.PRIVATE)
                 .build();
         TravelPlan savedOtherUserPlan = travelPlanRepository.save(otherUserPlan);
 

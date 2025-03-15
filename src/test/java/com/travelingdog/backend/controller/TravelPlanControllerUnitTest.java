@@ -44,6 +44,7 @@ import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.AuthService;
 import com.travelingdog.backend.service.TravelPlanService;
+import com.travelingdog.backend.status.PlanStatus;
 
 @WebMvcTest(TravelPlanController.class)
 @Import({ SecurityConfig.class, TravelPlanControllerUnitTest.MockConfig.class })
@@ -90,7 +91,6 @@ public class TravelPlanControllerUnitTest {
         request.setTitle("Test Travel Plan");
         request.setCountry("South Korea");
         request.setCity("Seoul");
-        request.setIsShared(true);
         request.setStartDate(LocalDate.now().plusDays(1));
         request.setEndDate(LocalDate.now().plusDays(5));
 
@@ -100,7 +100,7 @@ public class TravelPlanControllerUnitTest {
         travelPlanDTO.setTitle("Test Travel Plan");
         travelPlanDTO.setCountry("South Korea");
         travelPlanDTO.setCity("Seoul");
-        travelPlanDTO.setIsShared(true);
+        travelPlanDTO.setStatus(PlanStatus.PUBLISHED);
         travelPlanDTO.setStartDate(LocalDate.now().plusDays(1));
         travelPlanDTO.setEndDate(LocalDate.now().plusDays(5));
         travelPlanDTO.setTravelLocations(new ArrayList<>());

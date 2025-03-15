@@ -25,7 +25,4 @@ public class TravelPlanRequest {
 
     @NotNull(message = "End date is required")
     private LocalDate endDate;
-
-    @NotNull(message = "Is shared is required")
-    private Boolean isShared;
 }

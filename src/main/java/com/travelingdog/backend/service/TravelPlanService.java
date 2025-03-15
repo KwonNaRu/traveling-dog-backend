@@ -34,6 +34,7 @@ import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 import jakarta.transaction.Transactional;
 
@@ -163,7 +164,6 @@ public class TravelPlanService {
                 .city(request.getCity())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .isShared(request.getIsShared())
                 .user(user)
                 .travelLocations(new ArrayList<>()) // 빈 리스트로 초기화
                 .build();
@@ -236,7 +236,7 @@ public class TravelPlanService {
                         location.setLocationOrder(order++);
                         location.setDescription("");
                         location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
-                        location.setTravelPlan(travelPlan);  // 여기서 travelPlan 설정
+                        location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
                         locations.add(location);
                     }
 
@@ -261,7 +261,7 @@ public class TravelPlanService {
                         location.setLocationOrder(order++);
                         location.setDescription("대체 추천 장소");
                         location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
-                        location.setTravelPlan(travelPlan);  // 여기서 travelPlan 설정
+                        location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
                         fallbackLocations.add(location);
                     }
                     return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
@@ -295,7 +295,8 @@ public class TravelPlanService {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
 
-        if (!travelPlan.getIsShared() && !travelPlan.getUser().getId().equals(user.getId())) {
+        if (!travelPlan.getStatus().equals(PlanStatus.PUBLISHED)
+                && !travelPlan.getUser().getId().equals(user.getId())) {
             throw new ForbiddenResourceAccessException("접근 금지된 여행 계획입니다.");
         }
 
@@ -352,7 +353,7 @@ public class TravelPlanService {
      * 여행 장소의 순서를 변경합니다.
      *
      * @param locationId 이동할 장소 ID
-     * @param newOrder 새로운 순서 위치
+     * @param newOrder   새로운 순서 위치
      * @return 업데이트된 여행 계획 DTO
      * @throws ResourceNotFoundException 장소를 찾을 수 없는 경우
      */

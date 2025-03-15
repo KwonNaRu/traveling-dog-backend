@@ -23,6 +23,7 @@ import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -65,7 +66,7 @@ public class TravelPlanIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 travelPlanRepository.save(travelPlan);
@@ -87,7 +88,7 @@ public class TravelPlanIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 user.addTravelPlan(travelPlan);
@@ -119,7 +120,7 @@ public class TravelPlanIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 travelPlanRepository.save(travelPlan);
@@ -151,7 +152,7 @@ public class TravelPlanIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);
@@ -191,7 +192,7 @@ public class TravelPlanIntegrationTest {
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
 
                 travelPlan.addTravelLocation(travelLocation);

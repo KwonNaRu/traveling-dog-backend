@@ -22,6 +22,7 @@ import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.status.PlanStatus;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -58,7 +59,7 @@ public class TravelLocationIntegrationTest {
                                 .city("Osaka")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
-                                .isShared(false)
+                                .status(PlanStatus.PRIVATE)
                                 .build();
                 travelPlanRepository.save(travelPlan);
         }
