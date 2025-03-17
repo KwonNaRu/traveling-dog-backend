@@ -43,6 +43,7 @@ import com.travelingdog.backend.repository.TravelLocationRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.AuthService;
+import com.travelingdog.backend.service.SessionService;
 import com.travelingdog.backend.service.TravelPlanService;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -272,6 +273,11 @@ public class TravelPlanControllerUnitTest {
         @Bean
         public UserRepository userRepository() {
             return Mockito.mock(UserRepository.class);
+        }
+
+        @Bean
+        public SessionService sessionService() {
+            return Mockito.mock(SessionService.class);
         }
     }
 

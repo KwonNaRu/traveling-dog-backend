@@ -293,7 +293,7 @@ public class TravelPlanService {
     public TravelPlanDTO getTravelPlanDetail(Long id, User user)
             throws ForbiddenResourceAccessException, ResourceNotFoundException {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
         if (!travelPlan.getStatus().equals(PlanStatus.PUBLISHED)
                 && !travelPlan.getUser().getId().equals(user.getId())) {
@@ -309,7 +309,7 @@ public class TravelPlanService {
     public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user)
             throws ForbiddenResourceAccessException, ResourceNotFoundException {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
         if (!travelPlan.getUser().getId().equals(user.getId())) {
             throw new ForbiddenResourceAccessException("수정할 수 없는 여행 계획입니다.");
@@ -340,7 +340,7 @@ public class TravelPlanService {
     public void deleteTravelPlan(Long id, User user)
             throws ForbiddenResourceAccessException, ResourceNotFoundException {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("travelPlan", "여행 계획을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
         if (!travelPlan.getUser().getId().equals(user.getId())) {
             throw new ForbiddenResourceAccessException("삭제할 수 없는 여행 계획입니다.");
@@ -362,7 +362,7 @@ public class TravelPlanService {
         // 1. 이동할 장소 찾기
         TravelLocation locationToMove = travelLocationRepository.findById(locationId)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("travelLocation", "해당 여행 장소를 찾을 수 없습니다: " + locationId));
+                        () -> new ResourceNotFoundException("해당 여행 장소를 찾을 수 없습니다: " + locationId));
 
         // 2. 해당 장소가 속한 여행 계획 가져오기
         TravelPlan travelPlan = locationToMove.getTravelPlan();

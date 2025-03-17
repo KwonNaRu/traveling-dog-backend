@@ -1,22 +1,19 @@
 package com.travelingdog.backend.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+/**
+ * 요청한 리소스를 찾을 수 없을 때 발생하는 예외
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
 public class ResourceNotFoundException extends RuntimeException {
 
-    private final String resourceName;
-    private final String message;
-
-    public ResourceNotFoundException(String resourceName, String message) {
+    public ResourceNotFoundException(String message) {
         super(message);
-        this.resourceName = resourceName;
-        this.message = message;
     }
 
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
+    public ResourceNotFoundException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

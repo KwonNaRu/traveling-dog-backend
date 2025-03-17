@@ -102,7 +102,7 @@ public class GlobalExceptionHandlerTest {
 
         @GetMapping("/resource-not-found")
         public void throwResourceNotFoundException() {
-            throw new ResourceNotFoundException("여행 계획", "요청한 여행 계획을 찾을 수 없습니다.");
+            throw new ResourceNotFoundException("요청한 여행 계획을 찾을 수 없습니다.");
         }
 
         @GetMapping("/invalid-request")

@@ -19,7 +19,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +28,7 @@ import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
+import com.travelingdog.backend.service.SessionService;
 import com.travelingdog.backend.service.UserService;
 
 @Tag("unit")
@@ -42,6 +42,9 @@ public class UserControllerUnitTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private SessionService sessionService;
 
     private User testUser;
 

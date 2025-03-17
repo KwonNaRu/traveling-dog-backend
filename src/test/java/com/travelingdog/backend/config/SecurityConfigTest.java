@@ -27,6 +27,7 @@ import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.AuthService;
+import com.travelingdog.backend.service.SessionService;
 
 @WebMvcTest(controllers = ProtectedController.class)
 @Import({ SecurityConfig.class, SecurityConfigTest.MockConfig.class })
@@ -105,6 +106,11 @@ public class SecurityConfigTest {
         @Bean
         public UserRepository userRepository() {
             return Mockito.mock(UserRepository.class);
+        }
+
+        @Bean
+        public SessionService sessionService() {
+            return Mockito.mock(SessionService.class);
         }
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.travelingdog.backend.jwt.JwtAuthenticationFilter;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
+import com.travelingdog.backend.service.SessionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class SecurityConfig {
 
         private final UserDetailsService userDetailsService;
         private final JwtTokenProvider jwtTokenProvider;
+        private final SessionService sessionService;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -47,7 +49,7 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
+                http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, sessionService),
                                 UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

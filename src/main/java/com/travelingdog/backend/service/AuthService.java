@@ -8,6 +8,7 @@ import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
+import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
@@ -53,5 +54,17 @@ public class AuthService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
         return JwtResponse.of(token, 3600, refreshToken);
+    }
+
+    /**
+     * 이메일로 사용자를 조회합니다.
+     * 
+     * @param email 사용자 이메일
+     * @return 사용자 객체
+     * @throws ResourceNotFoundException 사용자를 찾을 수 없는 경우
+     */
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 }
