@@ -112,7 +112,6 @@ public class TravelPlanService {
                         location.setCoordinates(dto.getLongitude(), dto.getLatitude());
                         location.setLocationOrder(order++);
                         location.setDescription("");
-                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
                         // travelPlan 연관 관계는 저장할 때 할당
                         locations.add(location);
                     }
@@ -140,7 +139,6 @@ public class TravelPlanService {
                         location.setCoordinates(dto.getLongitude(), dto.getLatitude());
                         location.setLocationOrder(order++);
                         location.setDescription("대체 추천 장소");
-                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
                         fallbackLocations.add(location);
                     }
                     return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
@@ -235,7 +233,6 @@ public class TravelPlanService {
                                 .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())));
                         location.setLocationOrder(order++);
                         location.setDescription("");
-                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
                         location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
                         locations.add(location);
                     }
@@ -260,7 +257,6 @@ public class TravelPlanService {
                         location.setCoordinates(dto.getLongitude(), dto.getLatitude());
                         location.setLocationOrder(order++);
                         location.setDescription("대체 추천 장소");
-                        location.setAvailableDate(LocalDate.parse(dto.getAvailableDate()));
                         location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
                         fallbackLocations.add(location);
                     }

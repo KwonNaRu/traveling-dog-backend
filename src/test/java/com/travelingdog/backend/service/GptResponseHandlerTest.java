@@ -74,8 +74,7 @@ public class GptResponseHandlerTest {
     @DisplayName("정상적인 JSON 배열 응답을 파싱할 수 있어야 한다")
     void testParseValidJsonArray() {
         // Given
-        String validJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
-                + today.format(formatter) + "\"}]";
+        String validJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
 
         // When
         List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(validJson);
@@ -86,7 +85,6 @@ public class GptResponseHandlerTest {
         assertEquals("Gyeongbokgung Palace", result.get(0).getName());
         assertEquals(37.5796, result.get(0).getLatitude());
         assertEquals(126.9770, result.get(0).getLongitude());
-        assertEquals(today.format(formatter), result.get(0).getAvailableDate());
     }
 
     /**
@@ -104,8 +102,7 @@ public class GptResponseHandlerTest {
     @DisplayName("코드 블록으로 감싸진 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonInCodeBlock() {
         // Given
-        String jsonInCodeBlock = "```json\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
-                + today.format(formatter) + "\"}]\n```";
+        String jsonInCodeBlock = "```json\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]\n```";
 
         // When
         List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(jsonInCodeBlock);
@@ -130,8 +127,7 @@ public class GptResponseHandlerTest {
     @DisplayName("추가 텍스트가 포함된 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonWithAdditionalText() {
         // Given
-        String jsonWithText = "여기 서울의 추천 장소입니다:\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
-                + today.format(formatter) + "\"}]";
+        String jsonWithText = "여기 서울의 추천 장소입니다:\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
 
         // When
         List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(jsonWithText);
@@ -140,30 +136,6 @@ public class GptResponseHandlerTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Gyeongbokgung Palace", result.get(0).getName());
-    }
-
-    /**
-     * 필수 필드가 누락된 JSON 응답 처리 테스트
-     *
-     * 이 테스트는 GptResponseHandler가 필수 필드(availableDate)가 누락된 JSON 응답을 처리할 때 적절한
-     * 예외를 발생시키는지 검증합니다.
-     *
-     * 테스트 과정: 1. 필수 필드가 누락된 JSON 문자열 생성 2. GptResponseHandler를 사용하여 JSON 파싱 시도
-     * 3. 결과 검증: ExternalApiException 예외 발생 및 메시지 확인
-     */
-    @Test
-    @DisplayName("필수 필드가 누락된 JSON 응답을 처리할 수 있어야 한다")
-    void testHandleMissingFields() {
-        // Given
-        String invalidJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]"; // availableDate
-        // 누락
-
-        // When & Then
-        Exception exception = assertThrows(ExternalApiException.class, () -> {
-            gptResponseHandler.parseGptResponse(invalidJson);
-        });
-
-        assertTrue(exception.getMessage().contains("필수 필드가 누락"));
     }
 
     /**
@@ -237,7 +209,6 @@ public class GptResponseHandlerTest {
         assertTrue(enhancedPrompt.contains("\"name\": \"장소명(문자열)\""));
         assertTrue(enhancedPrompt.contains("\"latitude\": 위도(숫자, 구글맵 기준)"));
         assertTrue(enhancedPrompt.contains("\"longitude\": 경도(숫자, 구글맵 기준)"));
-        assertTrue(enhancedPrompt.contains("\"availableDate\": \"yyyy-MM-dd 형식의 날짜(문자열)\""));
         assertTrue(enhancedPrompt.contains(country));
         assertTrue(enhancedPrompt.contains(city));
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
@@ -275,13 +246,6 @@ public class GptResponseHandlerTest {
             assertNotNull(location.getName());
             assertNotEquals(0.0, location.getLatitude());
             assertNotEquals(0.0, location.getLongitude());
-            assertNotNull(location.getAvailableDate());
-            // 날짜 형식 검증 추가
-            try {
-                LocalDate.parse(location.getAvailableDate(), formatter);
-            } catch (Exception e) {
-                fail("날짜 형식이 올바르지 않습니다: " + location.getAvailableDate());
-            }
         }
     }
 }

@@ -141,7 +141,6 @@ public class TravelPlanServiceIntegrationTest {
                             .createPoint(new Coordinate(37.5 + i * 0.1, 127.0 + i * 0.1)))
                     .locationOrder(i + 1)
                     .travelPlan(travelPlan) // 이미 생성된 travelPlan 참조
-                    .availableDate(today.plusDays(i)) // 각 장소마다 다른 날짜 설정
                     .build();
             travelLocationRepository.save(location);
             travelLocations.add(location);
@@ -311,7 +310,6 @@ public class TravelPlanServiceIntegrationTest {
                             .createPoint(new Coordinate(37.5 + i * 0.1, 127.0 + i * 0.1)))
                     .locationOrder(i + 1)
                     .travelPlan(travelPlan)
-                    .availableDate(LocalDate.now().plusDays(i)) // 각 장소마다 다른 날짜 설정
                     .build();
             travelLocationRepository.save(location);
             travelLocations.add(location);
@@ -643,20 +641,16 @@ public class TravelPlanServiceIntegrationTest {
 
         // 첫째 날 장소들
         jsonBuilder.append(
-                "{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\"")
-                .append(startDate.format(formatter)).append("\"},");
+                "{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770},");
         jsonBuilder.append(
-                "{\"name\":\"Insadong\",\"latitude\":37.5746,\"longitude\":126.9850,\"availableDate\":\"")
-                .append(startDate.format(formatter)).append("\"},");
+                "{\"name\":\"Insadong\",\"latitude\":37.5746,\"longitude\":126.9850},");
 
         // 둘째 날 장소들
         LocalDate secondDay = startDate.plusDays(1);
         jsonBuilder
-                .append("{\"name\":\"Namsan Tower\",\"latitude\":37.5512,\"longitude\":126.9882,\"availableDate\":\"")
-                .append(secondDay.format(formatter)).append("\"},");
+                .append("{\"name\":\"Namsan Tower\",\"latitude\":37.5512,\"longitude\":126.9882},");
         jsonBuilder.append(
-                "{\"name\":\"Myeongdong\",\"latitude\":37.5635,\"longitude\":126.9850,\"availableDate\":\"")
-                .append(secondDay.format(formatter)).append("\"}");
+                "{\"name\":\"Myeongdong\",\"latitude\":37.5635,\"longitude\":126.9850}");
 
         jsonBuilder.append("]");
         return jsonBuilder.toString();

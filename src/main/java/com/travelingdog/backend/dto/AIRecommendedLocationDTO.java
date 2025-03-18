@@ -4,7 +4,6 @@ public class AIRecommendedLocationDTO {
     private String name;
     private double latitude;
     private double longitude;
-    private String availableDate; // yyyy-MM-dd 형식
 
     public String getName() {
         return name;
@@ -28,13 +27,5 @@ public class AIRecommendedLocationDTO {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
-    }
-
-    public String getAvailableDate() {
-        return availableDate;
-    }
-
-    public void setAvailableDate(String availableDate) {
-        this.availableDate = availableDate;
     }
 }

@@ -19,8 +19,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(of = { "id", "placeName", "locationOrder", "availableDate" })
-@ToString(of = { "id", "placeName", "description", "locationOrder", "availableDate" })
+@EqualsAndHashCode(of = { "id", "placeName", "locationOrder" })
+@ToString(of = { "id", "placeName", "description", "locationOrder" })
 public class TravelLocation {
 
     @Id
@@ -46,11 +46,6 @@ public class TravelLocation {
     @ManyToOne
     @JoinColumn(name = "travel_plan_id", nullable = false)
     private TravelPlan travelPlan; // 여행 계획과의 관계
-
-    // 여행 가능 날짜 (이제 DB에 저장됨)
-    @NotNull
-    @Column(name = "available_date", nullable = false)
-    private LocalDate availableDate;
 
     public void setCoordinates(double longitude, double latitude) {
         this.coordinates = new GeometryFactory().createPoint(new Coordinate(longitude, latitude));

@@ -106,7 +106,6 @@ public class RouteOptimizationServiceUnitTest {
         location.setCoordinates(geometryFactory.createPoint(new Coordinate(longitude, latitude)));
         location.setLocationOrder(order);
         location.setDescription("테스트 설명");
-        location.setAvailableDate(date);
         locations.add(location);
     }
 
@@ -120,7 +119,7 @@ public class RouteOptimizationServiceUnitTest {
     @Test
     @DisplayName("빈 위치 리스트에 대한 경로 최적화 테스트")
     void testOptimizeRoute_EmptyList() {
-        List<TravelLocation> result = routeOptimizationService.optimizeRoute(new ArrayList<>());
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(new ArrayList<>());
         assertTrue(result.isEmpty());
     }
 
@@ -137,7 +136,7 @@ public class RouteOptimizationServiceUnitTest {
         List<TravelLocation> singleLocation = new ArrayList<>();
         singleLocation.add(locations.get(0));
 
-        List<TravelLocation> result = routeOptimizationService.optimizeRoute(singleLocation);
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(singleLocation);
 
         assertEquals(1, result.size());
         assertEquals("경복궁", result.get(0).getPlaceName());
@@ -153,53 +152,10 @@ public class RouteOptimizationServiceUnitTest {
     @Test
     @DisplayName("다중 위치에 대한 경로 최적화 테스트")
     void testOptimizeRoute_MultipleLocations() {
-        List<TravelLocation> result = routeOptimizationService.optimizeRoute(locations);
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
 
         // 결과 리스트의 크기가 원본과 같은지 확인
         assertEquals(locations.size(), result.size());
-
-        // 날짜별로 그룹화되어 있는지 확인
-        LocalDate firstDay = LocalDate.now();
-        LocalDate secondDay = LocalDate.now().plusDays(1);
-
-        // 첫째 날 위치들이 먼저 오는지 확인
-        for (int i = 0; i < 3; i++) {
-            assertEquals(firstDay, result.get(i).getAvailableDate());
-        }
-
-        // 둘째 날 위치들이 나중에 오는지 확인
-        for (int i = 3; i < 6; i++) {
-            assertEquals(secondDay, result.get(i).getAvailableDate());
-        }
-    }
-
-    /**
-     * 같은 날짜의 위치들에 대한 경로 최적화 테스트
-     * 
-     * 이 테스트는 모든 위치가 같은 날짜인 경우 경로 최적화 서비스가
-     * 정상적으로 최적화를 수행하는지 검증합니다. 결과 리스트의 모든 위치가
-     * 동일한 날짜를 가져야 합니다.
-     */
-    @Test
-    @DisplayName("같은 날짜의 위치들에 대한 경로 최적화 테스트")
-    void testOptimizeRoute_LocationsWithSameDate() {
-        // 같은 날짜의 위치만 포함하는 리스트 생성
-        List<TravelLocation> sameDay = new ArrayList<>();
-        for (TravelLocation loc : locations) {
-            if (loc.getAvailableDate().equals(LocalDate.now())) {
-                sameDay.add(loc);
-            }
-        }
-
-        List<TravelLocation> result = routeOptimizationService.optimizeRoute(sameDay);
-
-        // 결과 리스트의 크기가 원본과 같은지 확인
-        assertEquals(sameDay.size(), result.size());
-
-        // 모든 위치가 같은 날짜인지 확인
-        for (TravelLocation loc : result) {
-            assertEquals(LocalDate.now(), loc.getAvailableDate());
-        }
     }
 
     /**
@@ -215,27 +171,15 @@ public class RouteOptimizationServiceUnitTest {
     @Test
     @DisplayName("시뮬레이티드 어닐링 알고리즘을 이용한 경로 최적화 테스트")
     void testSimulatedAnnealing_OptimizesRoute() {
-        // 같은 날짜의 위치만 포함하는 리스트 생성
-        List<TravelLocation> sameDay = new ArrayList<>();
-        for (TravelLocation loc : locations) {
-            if (loc.getAvailableDate().equals(LocalDate.now())) {
-                sameDay.add(loc);
-            }
-        }
 
         // 시뮬레이티드 어닐링 알고리즘으로 최적화
-        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(sameDay);
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
 
         // 결과 리스트의 크기가 원본과 같은지 확인
-        assertEquals(sameDay.size(), result.size());
-
-        // 모든 위치가 같은 날짜인지 확인
-        for (TravelLocation loc : result) {
-            assertEquals(LocalDate.now(), loc.getAvailableDate());
-        }
+        assertEquals(locations.size(), result.size());
 
         // 최적화된 경로의 총 거리가 계산되는지 확인
-        double totalDistance = routeOptimizationService.calculateTotalDistance(result);
+        double totalDistance = routeOptimizationService.calculateTotalDistance(locations);
         assertTrue(totalDistance > 0);
     }
 
@@ -297,23 +241,10 @@ public class RouteOptimizationServiceUnitTest {
         // Google Maps API 응답 모킹
         when(responseSpec.toEntity(eq(Map.class))).thenReturn(ResponseEntity.ok(distanceResponse));
 
-        // 같은 날짜의 위치만 포함하는 리스트 생성
-        List<TravelLocation> sameDay = new ArrayList<>();
-        for (TravelLocation loc : locations) {
-            if (loc.getAvailableDate().equals(LocalDate.now())) {
-                sameDay.add(loc);
-            }
-        }
-
         // 실제 거리 기반 최적화
-        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithRealDistances(sameDay);
+        List<TravelLocation> result = routeOptimizationService.optimizeRouteWithRealDistances(locations);
 
         // 결과 리스트의 크기가 원본과 같은지 확인
-        assertEquals(sameDay.size(), result.size());
-
-        // 모든 위치가 같은 날짜인지 확인
-        for (TravelLocation loc : result) {
-            assertEquals(LocalDate.now(), loc.getAvailableDate());
-        }
+        assertEquals(locations.size(), result.size());
     }
 }

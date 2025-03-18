@@ -23,7 +23,6 @@ public class TravelLocationDTO {
     private double latitude;
     private String description;
     private int locationOrder;
-    private LocalDate availableDate;
 
     public static TravelLocationDTO fromEntity(TravelLocation entity) {
         if (entity == null) {
@@ -37,7 +36,6 @@ public class TravelLocationDTO {
                 .latitude(entity.getCoordinates() != null ? entity.getCoordinates().getY() : 0)
                 .description(entity.getDescription())
                 .locationOrder(entity.getLocationOrder())
-                .availableDate(entity.getAvailableDate())
                 .build();
     }
 
@@ -47,7 +45,6 @@ public class TravelLocationDTO {
                 .coordinates(new GeometryFactory().createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
                 .description(dto.getDescription())
                 .locationOrder(dto.getLocationOrder())
-                .availableDate(dto.getAvailableDate())
                 .build();
     }
 

@@ -105,16 +105,6 @@ public class GptResponseHandler {
                 errorMessage.append("name 필드가 누락되었습니다. ");
             }
 
-            if (dto.getAvailableDate() == null || dto.getAvailableDate().trim().isEmpty()) {
-                errorMessage.append("availableDate 필드가 누락되었습니다. ");
-            } else {
-                try {
-                    LocalDate.parse(dto.getAvailableDate(), formatter);
-                } catch (DateTimeParseException e) {
-                    errorMessage.append("availableDate 형식이 잘못되었습니다(yyyy-MM-dd 형식이어야 함). ");
-                }
-            }
-
             if (errorMessage.length() > 0) {
                 logFailedResponse(originalContent, "필수 필드가 누락되었거나 형식이 잘못되었습니다: " + errorMessage.toString());
                 throw new ExternalApiException("필수 필드가 누락되었거나 형식이 잘못되었습니다: " + errorMessage.toString());
@@ -147,7 +137,6 @@ public class GptResponseHandler {
                 + "\"name\": \"장소명(문자열)\", "
                 + "\"latitude\": 위도(숫자, 구글맵 기준), "
                 + "\"longitude\": 경도(숫자, 구글맵 기준), "
-                + "\"availableDate\": \"yyyy-MM-dd 형식의 날짜(문자열)\""
                 + "} "
                 + "위도와 경도는 반드시 구글맵에서 사용하는 좌표계(WGS84)를 기준으로 정확한 값을 제공해야 함. "
                 + "각 장소의 정확한 위치를 구글맵 기준으로 제공하고, 실제 존재하는 장소만 추천해줘. "
@@ -172,14 +161,12 @@ public class GptResponseHandler {
             location1.setName("Gyeongbokgung Palace");
             location1.setLatitude(37.5796);
             location1.setLongitude(126.9770);
-            location1.setAvailableDate(startDate.format(formatter));
             fallbackList.add(location1);
 
             AIRecommendedLocationDTO location2 = new AIRecommendedLocationDTO();
             location2.setName("Namsan Tower");
             location2.setLatitude(37.5512);
             location2.setLongitude(126.9882);
-            location2.setAvailableDate(startDate.plusDays(1).format(formatter));
             fallbackList.add(location2);
         } // 다른 도시의 경우 기본 응답 제공
         else {
@@ -187,7 +174,6 @@ public class GptResponseHandler {
             location.setName("Popular Attraction in " + city);
             location.setLatitude(37.5665);
             location.setLongitude(126.9780);
-            location.setAvailableDate(startDate.format(formatter));
             fallbackList.add(location);
         }
 

@@ -46,34 +46,6 @@ public class RouteOptimizationService {
     }
 
     /**
-     * TravelLocation 리스트를 availableDate별로 그룹화한 후,
-     * 각 날짜 내에서 최근접 이웃 방식으로 정렬하여 전체 리스트를 반환합니다.
-     */
-    public List<TravelLocation> optimizeRoute(List<TravelLocation> locations) {
-        if (locations == null || locations.isEmpty()) {
-            return Collections.emptyList();
-        }
-        // availableDate 기준 그룹화
-        Map<LocalDate, List<TravelLocation>> grouped = locations.stream()
-                .collect(Collectors.groupingBy(TravelLocation::getAvailableDate));
-
-        List<LocalDate> sortedDates = new ArrayList<>(grouped.keySet());
-        Collections.sort(sortedDates);
-
-        List<TravelLocation> result = new ArrayList<>();
-        for (LocalDate date : sortedDates) {
-            List<TravelLocation> dailyList = new ArrayList<>(grouped.get(date));
-            if (dailyList.isEmpty())
-                continue;
-
-            // 시뮬레이티드 어닐링 알고리즘 사용
-            List<TravelLocation> sortedDaily = optimizeRouteWithSimulatedAnnealing(dailyList);
-            result.addAll(sortedDaily);
-        }
-        return result;
-    }
-
-    /**
      * 시뮬레이티드 어닐링 알고리즘을 사용하여 경로를 최적화합니다.
      * 이 알고리즘은 지역 최적해에 빠지는 것을 방지하고 전역 최적해를 찾는 데 도움이 됩니다.
      */

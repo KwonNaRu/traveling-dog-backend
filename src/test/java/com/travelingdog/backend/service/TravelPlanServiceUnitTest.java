@@ -116,8 +116,7 @@ public class TravelPlanServiceUnitTest {
                 mockResponse = new AIChatResponse();
                 AIChatResponse.Choice choice = new AIChatResponse.Choice();
                 AIChatMessage message = new AIChatMessage();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770,\"availableDate\":\""
-                                + today.format(formatter) + "\"}]";
+                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
                 message.setContent(jsonContent);
                 choice.setMessage(message);
                 List<AIChatResponse.Choice> choices = new ArrayList<>();
@@ -142,7 +141,6 @@ public class TravelPlanServiceUnitTest {
                                 .createPoint(new Coordinate(126.9770, 37.5796)));
                 location.setLocationOrder(0);
                 location.setDescription("");
-                location.setAvailableDate(today);
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
                 mockLocations.add(location);
         }
@@ -183,8 +181,7 @@ public class TravelPlanServiceUnitTest {
 
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
-                                .thenReturn(List.of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770,
-                                                today.format(formatter))));
+                                .thenReturn(List.of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770)));
                 when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
                                 .thenReturn("테스트 프롬프트");
 
@@ -318,19 +315,17 @@ public class TravelPlanServiceUnitTest {
          * 이 메소드는 테스트에 사용할 AIRecommendedLocationDTO 객체를 생성합니다. GPT 응답에서 파싱된 위치 정보를
          * 시뮬레이션하는 데 사용됩니다.
          *
-         * @param name          장소 이름
-         * @param latitude      위도
-         * @param longitude     경도
-         * @param availableDate 방문 가능 날짜 (문자열 형식)
+         * @param name      장소 이름
+         * @param latitude  위도
+         * @param longitude 경도
          * @return 모의 AIRecommendedLocationDTO 객체
          */
         private AIRecommendedLocationDTO createMockLocationDTO(
-                        String name, double latitude, double longitude, String availableDate) {
+                        String name, double latitude, double longitude) {
                 AIRecommendedLocationDTO dto = new AIRecommendedLocationDTO();
                 dto.setName(name);
                 dto.setLatitude(latitude);
                 dto.setLongitude(longitude);
-                dto.setAvailableDate(availableDate);
                 return dto;
         }
 }
