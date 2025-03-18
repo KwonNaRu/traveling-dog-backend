@@ -47,8 +47,6 @@ jobs:
       - name: Deploy to Azure VM
         run: |
           sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
-          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
           docker-compose down
           docker-compose up -d
