@@ -6,7 +6,7 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # CI=true 환경 변수 설정 및 테스트 실행 (Azure Redis Cache 포트 사용)
-RUN CI=true SPRING_REDIS_PORT=6380 SPRING_PROFILES_ACTIVE=build ./gradlew test
+RUN SPRING_PROFILES_ACTIVE=build ./gradlew test
 
 # 테스트 성공 후 application-build.yml 삭제
 RUN rm -f ./src/main/resources/application-build.yml

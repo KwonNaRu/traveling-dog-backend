@@ -9,6 +9,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # GitHub Actions에서 Redis 서비스 추가 - Azure Redis Cache와 같은 포트(6380) 사용
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379 # 호스트의 6380 포트를 컨테이너의 6379 포트에 매핑
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

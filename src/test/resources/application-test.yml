@@ -22,13 +22,10 @@ spring:
   data:
     redis:
       host: localhost
-      # 포트는 동적으로 설정됨 (CI 환경: 6380, 로컬: 동적 포트)
+      port: 6379
       database: 1 # 테스트용 데이터베이스 (0이 아닌 다른 번호 사용)
       timeout: 2000
       connect-timeout: 2000
-      # Azure Redis Cache SSL 설정 (CI 환경에서만 적용)
-      ssl:
-        enabled: ${CI:false}
 
   # 세션 설정 추가
   session:
