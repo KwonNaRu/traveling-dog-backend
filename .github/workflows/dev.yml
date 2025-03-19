@@ -20,6 +20,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # CI 환경변수 설정
+      - name: Set CI environment variable
+        run: echo "CI=true" >> $GITHUB_ENV
+
       # Config 파일 저장소 복사
       - name: Clone Config Repository
         run: |
