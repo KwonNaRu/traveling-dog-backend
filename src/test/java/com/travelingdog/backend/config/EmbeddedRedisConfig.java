@@ -20,9 +20,21 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
     private static RedisServer redisServer;
     private static final int REDIS_PORT = findAvailablePort();
     private static boolean started = false;
+    private static final boolean IS_CI = System.getenv("CI") != null
+            || Boolean.parseBoolean(System.getProperty("CI", "false"));
+    // Azure Redis Cache에서 사용하는 포트
+    private static final int AZURE_REDIS_PORT = 6380;
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
+        if (IS_CI) {
+            // CI 환경에서는 GitHub Actions에서 제공하는 Redis 서비스 사용
+            // Azure Redis Cache와 동일한 포트(6380) 사용
+            System.out.println("CI 환경에서 실행 중입니다. GitHub Actions의 Redis 서비스를 사용합니다. (포트: " + AZURE_REDIS_PORT + ")");
+            System.setProperty("spring.redis.port", String.valueOf(AZURE_REDIS_PORT));
+            return;
+        }
+
         if (!started) {
             startRedis();
             started = true;
@@ -31,11 +43,18 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        // 테스트 완료 후 Redis 서버 중지
-        stopRedis();
+        // CI 환경에서는 Redis 서버 종료 안함
+        if (!IS_CI) {
+            stopRedis();
+        }
     }
 
     public static void startRedis() throws IOException {
+        // CI 환경에서는 Redis 시작 안함
+        if (IS_CI) {
+            return;
+        }
+
         // 이미 실행 중인지 확인
         if (redisServer != null && redisServer.isActive()) {
             return;
