@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
@@ -15,13 +17,20 @@ import org.springframework.test.context.TestPropertySource;
 @ExtendWith(EmbeddedRedisConfig.class)
 @TestPropertySource(properties = {
         "spring.redis.host=localhost",
-        "spring.redis.port=6379",
         "spring.session.store-type=redis"
 })
 public class RedisSessionConfigTest {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    // 동적으로 시스템 프로퍼티에서 포트 설정을 가져옴
+    @DynamicPropertySource
+    static void redisProperties(DynamicPropertyRegistry registry) {
+        String redisPort = System.getProperty("spring.redis.port", "6379");
+        registry.add("spring.redis.port", () -> redisPort);
+        System.out.println("테스트에 사용되는 Redis 포트: " + redisPort);
+    }
 
     @Test
     void redisConnectionTest() {

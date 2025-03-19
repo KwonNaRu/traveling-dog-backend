@@ -5,16 +5,20 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.util.StringUtils;
 
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.Arrays;
 
 @Configuration
 @ActiveProfiles("test")
 public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback {
 
     private static RedisServer redisServer;
-    private static final int REDIS_PORT = 6379;
+    private static final int REDIS_PORT = findAvailablePort();
     private static boolean started = false;
 
     @Override
@@ -27,9 +31,8 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        // 애플리케이션 종료 시 Redis 서버 종료
-        // 이 메서드는 마지막 테스트가 완료된 후에만 호출됩니다
-        // 모든 테스트 클래스에서 공유할 수 있도록 종료 로직은 비워둡니다
+        // 테스트 완료 후 Redis 서버 중지
+        stopRedis();
     }
 
     public static void startRedis() throws IOException {
@@ -38,22 +41,55 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
             return;
         }
 
-        // Windows에서 실행 중인지 확인
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        // OS 확인
+        String osName = System.getProperty("os.name");
+        boolean isWindows = osName.toLowerCase().contains("win");
 
         try {
+            System.out.println("현재 운영체제: " + osName);
+            System.out.println("사용할 Redis 포트: " + REDIS_PORT);
+            System.setProperty("spring.redis.port", String.valueOf(REDIS_PORT));
+
+            RedisServerBuilder builder = RedisServer.builder();
+            builder.port(REDIS_PORT);
+
+            // Windows에서는 다른 방식으로 설정
             if (isWindows) {
-                // Windows에서는 maxheap 설정으로 메모리 제한
-                redisServer = RedisServer.builder()
-                        .port(REDIS_PORT)
-                        .setting("maxheap 128mb") // 메모리 제한 설정
-                        .build();
+                // Windows에서는 exe 파일 경로를 직접 지정할 수 있음 (선택 사항)
+                // 최소 설정으로 시작
+                builder.setting("maxheap 128mb");
+                // bind 설정 제거
             } else {
-                redisServer = new RedisServer(REDIS_PORT);
+                builder.setting("bind 127.0.0.1");
             }
+
+            redisServer = builder.build();
             redisServer.start();
+
+            System.out.println("임베디드 Redis 서버가 시작되었습니다. 포트: " + REDIS_PORT);
         } catch (Exception e) {
             System.err.println("Redis 서버 시작 실패: " + e.getMessage());
+            if (e.getMessage() != null && e.getMessage().contains("bind: No such file or directory")) {
+                System.err.println("Windows에서 바인딩 오류가 발생했습니다. 포트 바인딩 문제 해결 중...");
+
+                // 다른 방식으로 시도 (일부 Windows 시스템에서 작동할 수 있음)
+                try {
+                    RedisServerBuilder alternativeBuilder = RedisServer.builder()
+                            .port(REDIS_PORT + 1) // 다른 포트 시도
+                            .setting("maxheap 128mb");
+
+                    redisServer = alternativeBuilder.build();
+                    redisServer.start();
+
+                    System.out.println("대체 포트로 Redis 서버가 시작되었습니다. 포트: " + (REDIS_PORT + 1));
+                    System.setProperty("spring.redis.port", String.valueOf(REDIS_PORT + 1));
+
+                    return;
+                } catch (Exception ex) {
+                    System.err.println("대체 방식으로도 실패: " + ex.getMessage());
+                }
+            }
+
             e.printStackTrace();
             throw e;
         }
@@ -64,6 +100,28 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
             redisServer.stop();
             redisServer = null;
             started = false;
+            System.out.println("임베디드 Redis 서버가 중지되었습니다.");
+        }
+    }
+
+    // 사용 가능한 포트 찾기
+    private static int findAvailablePort() {
+        // 고정 포트 목록에서 시도
+        int[] PORTS = { 16379, 26379, 36379, 46379, 56379 };
+
+        for (int port : PORTS) {
+            try (ServerSocket socket = new ServerSocket(port)) {
+                return port;
+            } catch (IOException e) {
+                // 다음 포트 시도
+            }
+        }
+
+        // 모든 포트가 사용 중이면 임의의 포트 반환
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            return 6370; // 마지막 대안
         }
     }
 }
