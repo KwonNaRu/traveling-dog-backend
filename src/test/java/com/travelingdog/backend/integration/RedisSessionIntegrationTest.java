@@ -19,8 +19,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,6 +32,7 @@ import com.travelingdog.backend.service.SessionService;
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
         "spring.redis.host=localhost",
+        "spring.redis.port=6379",
         "spring.session.store-type=redis"
 })
 public class RedisSessionIntegrationTest {
@@ -57,14 +56,6 @@ public class RedisSessionIntegrationTest {
     private String authHeader;
     private static final String TEST_KEY_PREFIX = "token:*";
     private static final String USER_KEY_PREFIX = "user:*";
-
-    // 동적으로 시스템 프로퍼티에서 포트 설정을 가져옴
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        String redisPort = System.getProperty("spring.redis.port", "6379");
-        registry.add("spring.redis.port", () -> redisPort);
-        System.out.println("Redis 세션 테스트에 사용되는 Redis 포트: " + redisPort);
-    }
 
     private String encodeBasic(String email, String password) {
         String credentials = email + ":" + password;

@@ -20,8 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
@@ -45,14 +43,6 @@ public class UserControllerIntegrationTest {
 
     private User testUser;
     private String jwtCookie;
-
-    // 동적으로 시스템 프로퍼티에서 포트 설정을 가져옴
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        String redisPort = System.getProperty("spring.redis.port", "6379");
-        registry.add("spring.redis.port", () -> redisPort);
-        System.out.println("사용자 컨트롤러 테스트에 사용되는 Redis 포트: " + redisPort);
-    }
 
     private String encodeBasic(String email, String password) {
         String credentials = email + ":" + password;

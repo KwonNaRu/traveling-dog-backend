@@ -5,8 +5,8 @@ COPY . .
 # gradlew 파일에 실행 권한 추가
 RUN chmod +x ./gradlew
 
-# 테스트 실행 (application-build.yml 사용) - CI 환경으로 설정
-RUN CI=true SPRING_PROFILES_ACTIVE=build ./gradlew test
+# 테스트 실행 (application-build.yml 사용)
+RUN SPRING_PROFILES_ACTIVE=build ./gradlew test
 
 # 테스트 성공 후 application-build.yml 삭제
 RUN rm -f ./src/main/resources/application-build.yml

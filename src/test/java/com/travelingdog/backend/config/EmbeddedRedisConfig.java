@@ -20,17 +20,9 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
     private static RedisServer redisServer;
     private static final int REDIS_PORT = findAvailablePort();
     private static boolean started = false;
-    private static final boolean IS_CI = System.getenv("CI") != null;
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        if (IS_CI) {
-            // CI 환경에서는 외부 Redis 사용 (GitHub Actions에서 제공하는 Redis)
-            System.out.println("CI 환경에서 실행 중입니다. 외부 Redis 서비스를 사용합니다.");
-            System.setProperty("spring.redis.port", "6379");
-            return;
-        }
-
         if (!started) {
             startRedis();
             started = true;
@@ -39,18 +31,11 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        // CI 환경에서는 Redis 서버를 시작하지 않았으므로 중지할 필요 없음
-        if (!IS_CI) {
-            stopRedis();
-        }
+        // 테스트 완료 후 Redis 서버 중지
+        stopRedis();
     }
 
     public static void startRedis() throws IOException {
-        // CI 환경에서는 Redis 시작 안함
-        if (IS_CI) {
-            return;
-        }
-
         // 이미 실행 중인지 확인
         if (redisServer != null && redisServer.isActive()) {
             return;
