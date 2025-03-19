@@ -1,9 +1,9 @@
-name: Deploy to Oracle Instance
+name: Dev Environment Deploy
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   deploy:
