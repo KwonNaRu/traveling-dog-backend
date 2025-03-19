@@ -53,14 +53,14 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
             RedisServerBuilder builder = RedisServer.builder();
             builder.port(REDIS_PORT);
 
-            // Windows에서는 다른 방식으로 설정
+            // OS에 따라 다른 설정 적용
             if (isWindows) {
-                // Windows에서는 exe 파일 경로를 직접 지정할 수 있음 (선택 사항)
-                // 최소 설정으로 시작
+                // Windows용 설정
                 builder.setting("maxheap 128mb");
-                // bind 설정 제거
             } else {
+                // Linux용 설정 (GitHub Actions)
                 builder.setting("bind 127.0.0.1");
+                builder.setting("maxheap 128mb");
             }
 
             redisServer = builder.build();
