@@ -17,7 +17,7 @@ jobs:
       - name: Clone Config Repository
         run: |
           git clone https://${{ secrets.CONFIG_REPO_PAT }}@${{ secrets.CONFIG_REPO_URL }} config-repo
-          # cp -r config-repo/travelingdog-dev.yml ./src/main/resources/application-build.yml
+          cp -r config-repo/travelingdog-dev.yml ./src/main/resources/application-build.yml
 
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.5.3
