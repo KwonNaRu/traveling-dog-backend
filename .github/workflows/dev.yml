@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     # GitHub Actions에서 Redis 서비스 추가 - Azure Redis Cache와 같은 포트(6380) 사용
     services:
