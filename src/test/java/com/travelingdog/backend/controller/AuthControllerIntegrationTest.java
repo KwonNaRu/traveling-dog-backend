@@ -47,7 +47,7 @@ public class AuthControllerIntegrationTest {
     // 동적으로 시스템 프로퍼티에서 포트 설정을 가져옴
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
-        String redisPort = System.getProperty("spring.redis.port", "6379");
+        String redisPort = System.getProperty("spring.redis.port", "6381");
         registry.add("spring.redis.port", () -> redisPort);
         System.out.println("인증 컨트롤러 테스트에 사용되는 Redis 포트: " + redisPort);
     }
