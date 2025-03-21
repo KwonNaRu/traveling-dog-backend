@@ -18,11 +18,14 @@ spring:
     config:
       enabled: false
 
-  # Redis 설정 추가
+  # Redis 설정 - 실제 Redis 서버 사용
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
       database: 1 # 테스트용 데이터베이스 (0이 아닌 다른 번호 사용)
       timeout: 2000
       connect-timeout: 2000

@@ -3,7 +3,6 @@ package com.travelingdog.backend.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,7 +13,6 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@ExtendWith(EmbeddedRedisConfig.class)
 @TestPropertySource(properties = {
         "spring.redis.host=redis",
         "spring.session.store-type=redis"

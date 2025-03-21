@@ -8,23 +8,29 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-20.04
-
-    services:
-      redis:
-        image: redis:6.2-alpine # 최신 Redis 컨테이너 사용
-        ports:
-          - 6379:6379
+    env:
+      CI: true
+      REDIS_HOST: traveling.redis.cache.windows.net # Azure Redis 호스트
+      REDIS_PORT: 6380 # SSL 포트 (일반적으로 6380 사용)
+      REDIS_PASSWORD: ${{ secrets.REDIS_ACCESS_KEY }} # Azure Redis 액세스 키
+      REDIS_SSL: true # SSL 사용
 
     steps:
-      # wait-for-it을 사용하여 Redis가 준비될 때까지 대기
-      - name: Wait for Redis to be ready
-        run: |
-          curl -sS https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh
-          chmod +x wait-for-it.sh
-          ./wait-for-it.sh redis:6379 --timeout=30 -- echo "Redis is ready!"
-
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
 
       # Config 파일 저장소 복사
       - name: Clone Config Repository
