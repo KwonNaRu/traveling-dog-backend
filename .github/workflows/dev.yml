@@ -12,7 +12,7 @@ jobs:
       CI: true
       REDIS_HOST: traveling.redis.cache.windows.net # Azure Redis 호스트
       REDIS_PORT: 6380 # SSL 포트 (일반적으로 6380 사용)
-      REDIS_PASSWORD: ${{ secrets.REDIS_ACCESS_KEY }} # Azure Redis 액세스 키
+      REDIS_PASSWORD: ${{ secrets.AZURE_REDIS_ACCESS_KEY }} # Azure Redis 액세스 키
       REDIS_SSL: true # SSL 사용
 
     steps:
