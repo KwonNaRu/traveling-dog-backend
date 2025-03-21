@@ -1,24 +1,22 @@
 package com.travelingdog.backend.config;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.util.StringUtils;
 
 import redis.embedded.RedisServer;
 import redis.embedded.RedisServerBuilder;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Arrays;
 
 @Configuration
 @ActiveProfiles("test")
 public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback {
 
     private static RedisServer redisServer;
-    private static final int REDIS_PORT = findAvailablePort();
+    private static final int REDIS_PORT = 6379;
     private static boolean started = false;
     private static final boolean IS_CI = System.getenv("CI") != null
             || Boolean.parseBoolean(System.getProperty("CI", "false"));
@@ -110,27 +108,6 @@ public class EmbeddedRedisConfig implements BeforeAllCallback, AfterAllCallback 
             redisServer = null;
             started = false;
             System.out.println("임베디드 Redis 서버가 중지되었습니다.");
-        }
-    }
-
-    // 사용 가능한 포트 찾기
-    private static int findAvailablePort() {
-        // 고정 포트 목록에서 시도
-        int[] PORTS = { 16379, 26379, 36379, 46379, 56379 };
-
-        for (int port : PORTS) {
-            try (ServerSocket socket = new ServerSocket(port)) {
-                return port;
-            } catch (IOException e) {
-                // 다음 포트 시도
-            }
-        }
-
-        // 모든 포트가 사용 중이면 임의의 포트 반환
-        try (ServerSocket socket = new ServerSocket(0)) {
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            return 6370; // 마지막 대안
         }
     }
 }
