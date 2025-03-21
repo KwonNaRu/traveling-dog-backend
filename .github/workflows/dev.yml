@@ -11,10 +11,9 @@ jobs:
 
     services:
       redis:
-        image: redis
+        image: redis:6.2-alpine # 최신 Redis 컨테이너 사용
         ports:
           - 6379:6379
-        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - name: Checkout code
