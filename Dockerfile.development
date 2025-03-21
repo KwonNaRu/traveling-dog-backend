@@ -5,6 +5,18 @@ COPY . .
 # gradlew 파일에 실행 권한 추가
 RUN chmod +x ./gradlew
 
+# 빌드 인자를 환경 변수로 설정
+ARG REDIS_HOST
+ARG REDIS_PORT
+ARG REDIS_PASSWORD
+ARG REDIS_SSL
+
+ENV REDIS_HOST=${REDIS_HOST}
+ENV REDIS_PORT=${REDIS_PORT}
+ENV REDIS_PASSWORD=${REDIS_PASSWORD}
+ENV REDIS_SSL=${REDIS_SSL}
+ENV CI=true
+
 # CI=true 환경 변수 설정 및 테스트 실행 (Azure Redis Cache 포트 사용)
 RUN SPRING_PROFILES_ACTIVE=build ./gradlew test
 

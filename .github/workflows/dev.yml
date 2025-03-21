@@ -8,12 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-20.04
-    env:
-      CI: true
-      REDIS_HOST: traveling.redis.cache.windows.net # Azure Redis 호스트
-      REDIS_PORT: 6380 # SSL 포트 (일반적으로 6380 사용)
-      REDIS_PASSWORD: ${{ secrets.AZURE_REDIS_ACCESS_KEY }} # Azure Redis 액세스 키
-      REDIS_SSL: true # SSL 사용
 
     steps:
       - name: Checkout code
@@ -54,7 +48,12 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker buildx build --no-cache -f Dockerfile.development -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
+          docker buildx build --no-cache -f Dockerfile.development \
+            --build-arg REDIS_HOST="traveling.redis.cache.windows.net" \
+            --build-arg REDIS_PORT="6380" \
+            --build-arg REDIS_PASSWORD="${{ secrets.AZURE_REDIS_ACCESS_KEY }}" \
+            --build-arg REDIS_SSL="true" \
+            -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
 
       - name: Push Docker image to Docker Hub
         run: |
