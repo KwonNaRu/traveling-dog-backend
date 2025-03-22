@@ -44,14 +44,6 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Redis 설정 업데이트 - 최신 Spring Boot 형식 사용
-    // @DynamicPropertySource
-    // static void redisProperties(DynamicPropertyRegistry registry) {
-    // // 테스트 설정 파일의 속성을 덮어쓰지 않음
-    // // application-test.yml에 이미 설정된 값을 사용
-    // System.out.println("인증 컨트롤러 테스트에서 application-test.yml의 Redis 설정 사용");
-    // }
-
     private String encodeBasic(String email, String password) {
         String credentials = email + ":" + password;
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
