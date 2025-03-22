@@ -1,67 +1,82 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    datasource:
+        url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        driverClassName: org.h2.Driver
+        username: sa
+        password:
 
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-        show_sql: true
-  cloud:
-    config:
-      enabled: false
+    jpa:
+        database-platform: org.hibernate.dialect.H2Dialect
+        hibernate:
+            ddl-auto: create-drop
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.H2Dialect
+                format_sql: true
+                show_sql: true
+    cloud:
+        config:
+            enabled: false
 
-  # Redis 설정 - 실제 Redis 서버 사용
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      ssl:
-        enabled: ${REDIS_SSL:false}
-      database: 1 # 테스트용 데이터베이스 (0이 아닌 다른 번호 사용)
-      timeout: 2000
-      connect-timeout: 2000
+    # Redis 설정 - 실제 Redis 서버 사용
+    data:
+        redis:
+            host: ${REDIS_HOST:localhost}
+            port: ${REDIS_PORT:6379}
+            password: ${REDIS_PASSWORD:}
+            ssl:
+                enabled: ${REDIS_SSL:false}
+            database: 1 # 테스트용 데이터베이스 (0이 아닌 다른 번호 사용)
+            timeout: 10000 # 타임아웃 증가 (10초)
+            connect-timeout: 10000 # 연결 타임아웃 증가 (10초)
+            client-name: "test-client-${random.uuid}" # 테스트용 고유 클라이언트 이름
 
-  # 세션 설정 추가
-  session:
-    redis:
-      namespace: traveling-dog:session:test
-      flush-mode: on-save
-    timeout: 3600
-    store-type: redis
+    # 세션 설정 추가
+    session:
+        redis:
+            namespace: "traveling-dog:session:test:${random.uuid}" # 테스트마다 고유한 네임스페이스 사용
+            flush-mode: immediate
+            repository-type: indexed
+        timeout: 3600
+        store-type: redis
+        cookie:
+            name: "jwt"
+            http-only: true
+            secure: false # 테스트 환경에서는 secure 비활성화
+            max-age: 3600
 
 google:
-  maps:
-    api:
-      key: test_api_key
+    maps:
+        api:
+            key: test_api_key
 
 jwt:
-  secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
-  accessTokenValidityInSeconds: 86400 # 24시간
-  refreshTokenValidityInSeconds: 604800 # 7일
+    secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
+    accessTokenValidityInSeconds: 86400 # 24시간
+    refreshTokenValidityInSeconds: 604800 # 7일
 
 # 테스트용 더미 API 키
 openai:
-  api:
-    key: sk-test-dummy-key-for-testing-purposes-only
-    url: https://api.openai.com/v1/chat/completions
-    model: gpt-3.5-turbo
+    api:
+        key: sk-test-dummy-key-for-testing-purposes-only
+        url: https://api.openai.com/v1/chat/completions
+        model: gpt-3.5-turbo
+
+# 속도 제한 설정 비활성화
+rate:
+    limiting:
+        enabled: false
+        capacity: 1000
+        refill-rate: 1000
+        wait-for-refill: false
 
 logging:
-  level:
-    root: DEBUG
-    "org.springframework": DEBUG
-    "org.hibernate": DEBUG
-    "org.springframework.web": DEBUG
-    "org.springframework.security": DEBUG
-    "org.springframework.test": DEBUG
-    "org.springframework.session": DEBUG
-    "org.springframework.data.redis": DEBUG
+    level:
+        root: DEBUG
+        "org.springframework": DEBUG
+        "org.hibernate": DEBUG
+        "org.springframework.web": DEBUG
+        "org.springframework.security": DEBUG
+        "org.springframework.test": DEBUG
+        "org.springframework.session": DEBUG
+        "org.springframework.data.redis": DEBUG

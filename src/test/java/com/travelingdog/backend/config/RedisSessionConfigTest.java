@@ -14,7 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "spring.redis.host=redis",
+        "spring.redis.host=localhost",
         "spring.session.store-type=redis"
 })
 public class RedisSessionConfigTest {
