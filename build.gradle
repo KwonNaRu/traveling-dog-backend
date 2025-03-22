@@ -69,6 +69,14 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    
+   	testLogging {
+        events "skipped", "failed"
+        showExceptions true
+        showCauses true
+		showStackTraces true
+        exceptionFormat "full"
+    }
 }
 
 // 단위 테스트를 위한 태스크 추가
