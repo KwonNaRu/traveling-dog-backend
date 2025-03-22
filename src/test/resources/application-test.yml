@@ -46,10 +46,11 @@ rate:
 logging:
     level:
         root: DEBUG
-        "org.springframework": DEBUG
-        "org.hibernate": DEBUG
-        "org.springframework.web": DEBUG
-        "org.springframework.security": DEBUG
-        "org.springframework.test": DEBUG
-        "org.springframework.session": DEBUG
-        "org.springframework.data.redis": DEBUG
+        "[org.springframework]": DEBUG
+        "[org.hibernate]": DEBUG
+        "[org.springframework.web]": DEBUG
+        "[org.springframework.security]": DEBUG
+        "[org.springframework.test]": DEBUG
+        "[org.springframework.session]": DEBUG
+        "[org.springframework.data.redis]": DEBUG
+        "[io.lettuce.core]": DEBUG

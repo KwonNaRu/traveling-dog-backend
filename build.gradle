@@ -66,6 +66,9 @@ dependencies {
     // Redis 테스트를 위한 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis'
     testImplementation 'org.springframework.session:spring-session-data-redis'
+
+	// Lettuce-core 버전 명시적으로 추가
+    implementation 'io.lettuce.core:lettuce-core:6.3.2'
 }
 
 tasks.named('test') {
