@@ -46,13 +46,13 @@ public class UserControllerIntegrationTest {
     private User testUser;
     private String jwtCookie;
 
-    // 동적으로 시스템 프로퍼티에서 포트 설정을 가져옴
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        String redisPort = System.getProperty("spring.redis.port", "6379");
-        registry.add("spring.redis.port", () -> redisPort);
-        System.out.println("사용자 컨트롤러 테스트에 사용되는 Redis 포트: " + redisPort);
-    }
+    // // Redis 설정 업데이트 - 최신 Spring Boot 형식 사용
+    // @DynamicPropertySource
+    // static void redisProperties(DynamicPropertyRegistry registry) {
+    // // 테스트 설정 파일의 속성을 덮어쓰지 않음
+    // // application-test.yml에 이미 설정된 값을 사용
+    // System.out.println("사용자 컨트롤러 테스트에서 application-test.yml의 Redis 설정 사용");
+    // }
 
     private String encodeBasic(String email, String password) {
         String credentials = email + ":" + password;

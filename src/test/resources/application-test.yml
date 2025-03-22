@@ -18,6 +18,11 @@ spring:
         config:
             enabled: false
 
+    # Redis 설정 추가
+    data:
+        redis:
+            port: 6379
+
 google:
     maps:
         api:
