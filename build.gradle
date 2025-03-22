@@ -66,42 +66,10 @@ dependencies {
     // Redis 테스트를 위한 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis'
     testImplementation 'org.springframework.session:spring-session-data-redis'
-
-	testImplementation ('it.ozimov:embedded-redis:0.7.2') {
-		// slf4j-simple을 제외시켜 로깅 충돌 방지
-		exclude group: 'org.slf4j', module: 'slf4j-simple'
-	}
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    
-    // 테스트 격리 및 병렬 실행 방지
-    forkEvery = 1
-    maxParallelForks = 1
-    
-    // 실패한 테스트가 있어도 계속 실행하도록 설정
-    ignoreFailures = false
-    
-    // 메모리 설정 추가
-    jvmArgs = ['-Xmx1g', '-Xms512m', '-XX:MaxMetaspaceSize=256m']
-    
-    // Redis 설정 추가
-    systemProperty 'spring.redis.host', 'localhost'
-    systemProperty 'spring.redis.port', '6379'
-    systemProperty 'spring.redis.database', '1'
-    systemProperty 'spring.session.store-type', 'redis'
-    systemProperty 'rate.limiting.enabled', 'false'
-    systemProperty 'spring.session.redis.flush-mode', 'immediate'
-    
-    // 테스트 실행 후 보고서 표시
-    testLogging {
-        events "passed", "skipped", "failed", "standardOut", "standardError"
-        showExceptions = true
-        showCauses = true
-        showStackTraces = true
-        exceptionFormat = 'full'
-    }
 }
 
 // 단위 테스트를 위한 태스크 추가
