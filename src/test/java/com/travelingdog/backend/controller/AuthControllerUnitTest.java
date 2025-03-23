@@ -139,7 +139,7 @@ public class AuthControllerUnitTest {
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(cookie().exists("jwt"));
     }
 
@@ -166,7 +166,7 @@ public class AuthControllerUnitTest {
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(cookie().httpOnly("jwt", true))
                 .andExpect(cookie().secure("jwt", true))
                 .andExpect(cookie().path("jwt", "/"));

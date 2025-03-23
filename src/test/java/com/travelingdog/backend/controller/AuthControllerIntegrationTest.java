@@ -111,7 +111,7 @@ public class AuthControllerIntegrationTest {
                 Void.class);
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
     }
 
