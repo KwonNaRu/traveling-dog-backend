@@ -37,8 +37,10 @@ import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
 import com.travelingdog.backend.handler.GlobalExceptionHandler;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
+import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.AuthService;
 import com.travelingdog.backend.service.SessionService;
+import com.travelingdog.backend.service.UserService;
 
 /**
  * AuthController 단위 테스트
@@ -62,6 +64,9 @@ public class AuthControllerUnitTest {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
 
     @InjectMocks
     private AuthController authController;
@@ -92,6 +97,11 @@ public class AuthControllerUnitTest {
         public SessionService sessionService() {
             return mock(SessionService.class);
         }
+
+        @Bean
+        public UserService userService() {
+            return mock(UserService.class);
+        }
     }
 
     private String encodeBasic(String email, String password) {
@@ -109,7 +119,7 @@ public class AuthControllerUnitTest {
      */
     @BeforeEach
     void setUp() {
-        authController = new AuthController(authService, sessionService);
+        authController = new AuthController(authService, sessionService, userService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -135,12 +145,20 @@ public class AuthControllerUnitTest {
         String token = "dummy-token";
         String refreshToken = "dummy-refresh-token";
 
+        User user = User.builder()
+                .email(email)
+                .nickname("test")
+                .password(password)
+                .build();
+
+        when(authService.getUserByEmail(any(String.class))).thenReturn(user);
         when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
-                .andExpect(status().isCreated())
-                .andExpect(cookie().exists("jwt"));
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(jsonPath("$.email").value(email));
     }
 
     /**
@@ -162,14 +180,22 @@ public class AuthControllerUnitTest {
         String token = "dummy-token";
         String refreshToken = "dummy-refresh-token";
 
+        User user = User.builder()
+                .email(email)
+                .nickname("test")
+                .password(password)
+                .build();
+
+        when(authService.getUserByEmail(any(String.class))).thenReturn(user);
         when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(cookie().httpOnly("jwt", true))
                 .andExpect(cookie().secure("jwt", true))
-                .andExpect(cookie().path("jwt", "/"));
+                .andExpect(cookie().path("jwt", "/"))
+                .andExpect(jsonPath("$.email").value(email));
     }
 
     /**
@@ -211,7 +237,7 @@ public class AuthControllerUnitTest {
      * 3. 결과 검증: 201 상태 코드 및 쿠키 존재 여부
      */
     @Test
-    @DisplayName("유효한 회원가입 정보로 회원가입 시 201 응답과 쿠키를 반환한다")
+    @DisplayName("유효한 회원가입 정보로 회원가입 시 200 응답과 프로필 정보, 토큰을 반환한다")
     void signUp_ValidRequest_ReturnsCreated() throws Exception {
         // Given
         String email = "new@test.com";
@@ -220,14 +246,22 @@ public class AuthControllerUnitTest {
         String token = "dummy-token";
         String refreshToken = "dummy-refresh-token";
 
+        User user = User.builder()
+                .email(email)
+                .nickname("newUser")
+                .password(password)
+                .build();
+
+        when(authService.getUserByEmail(any(String.class))).thenReturn(user);
         when(authService.signUp(any(SignUpRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
 
         // When & Then
         mockMvc.perform(post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(cookie().exists("jwt"));
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(jsonPath("$.email").value(email));
     }
 
     /**

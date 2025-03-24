@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.AuthService;
 import com.travelingdog.backend.service.SessionService;
+import com.travelingdog.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,6 +43,7 @@ public class AuthController {
 
         private final AuthService authService;
         private final SessionService sessionService;
+        private final UserService userService;
 
         private LoginRequest decodeBasicAuth(String authHeader) {
                 if (authHeader == null || !authHeader.startsWith("Basic ")) {
@@ -60,7 +63,7 @@ public class AuthController {
                         @ApiResponse(responseCode = "409", description = "이메일 중복")
         })
         @PostMapping("/signup")
-        public ResponseEntity<Void> signUp(
+        public ResponseEntity<UserProfileDTO> signUp(
                         @Parameter(description = "회원가입 정보", required = true) @Valid @RequestBody SignUpRequest signUpRequestBody) {
                 // DTO에 Basic 인증 정보 적용
                 SignUpRequest signUpRequest = new SignUpRequest(
@@ -81,9 +84,11 @@ public class AuthController {
                                 .maxAge(jwtResponse.expiresIn())
                                 .build();
 
-                return ResponseEntity.status(HttpStatus.CREATED)
+                UserProfileDTO profile = UserProfileDTO.fromEntity(user);
+
+                return ResponseEntity.status(HttpStatus.OK)
                                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                                .build();
+                                .body(profile);
         }
 
         @Operation(summary = "로그인", description = "사용자 인증을 수행합니다. Basic 인증 헤더에 Base64로 인코딩된 'email:password' 형식으로 전송하세요.", security = {
@@ -94,7 +99,7 @@ public class AuthController {
                         @ApiResponse(responseCode = "401", description = "인증 실패")
         })
         @PostMapping("/login")
-        public ResponseEntity<Void> login(
+        public ResponseEntity<UserProfileDTO> login(
                         @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
                 LoginRequest loginRequest = decodeBasicAuth(authHeader);
                 JwtResponse token = authService.login(loginRequest);
@@ -110,9 +115,11 @@ public class AuthController {
                                 .maxAge(token.expiresIn())
                                 .build();
 
-                return ResponseEntity.status(HttpStatus.CREATED)
+                UserProfileDTO profile = UserProfileDTO.fromEntity(user);
+
+                return ResponseEntity.status(HttpStatus.OK)
                                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                                .build();
+                                .body(profile);
         }
 
         @Operation(summary = "로그아웃", description = "사용자 로그아웃을 수행합니다. 토큰을 무효화하고 JWT 쿠키를 삭제합니다.")
@@ -146,7 +153,7 @@ public class AuthController {
                                 .maxAge(0)
                                 .build();
 
-                return ResponseEntity.ok()
+                return ResponseEntity.status(HttpStatus.CREATED)
                                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                                 .build();
         }

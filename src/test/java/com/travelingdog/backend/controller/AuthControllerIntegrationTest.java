@@ -20,11 +20,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import com.travelingdog.backend.dto.ErrorResponse;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
@@ -66,15 +65,16 @@ public class AuthControllerIntegrationTest {
         SignUpRequest request = new SignUpRequest("newUser", "new@test.com", "password123!");
 
         // When
-        ResponseEntity<Void> response = restTemplate.exchange(
+        ResponseEntity<UserProfileDTO> response = restTemplate.exchange(
                 "/api/auth/signup",
                 HttpMethod.POST,
                 new HttpEntity<>(request),
-                Void.class);
+                UserProfileDTO.class);
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
+        assertThat(response.getBody()).isNotNull();
         assertThat(userRepository.findByEmail("new@test.com")).isPresent();
     }
 
@@ -104,14 +104,15 @@ public class AuthControllerIntegrationTest {
         headers.set("Authorization", encodeBasic("existing@test.com", "password123!"));
 
         // When
-        ResponseEntity<Void> response = restTemplate.exchange(
+        ResponseEntity<UserProfileDTO> response = restTemplate.exchange(
                 "/api/auth/login",
                 HttpMethod.POST,
                 new HttpEntity<>(headers),
-                Void.class);
+                UserProfileDTO.class);
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
     }
 
