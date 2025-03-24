@@ -18,6 +18,7 @@ import com.travelingdog.backend.jwt.JwtAuthenticationFilter;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.service.SessionService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -47,7 +48,13 @@ public class SecurityConfig {
                                                 .requestMatchers("/webjars/**").permitAll()
                                                 .anyRequest().permitAll())
                                 .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                        response.getWriter().write("인증이 필요합니다.");
+                                                }));
+                ;
 
                 http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, sessionService),
                                 UsernamePasswordAuthenticationFilter.class);

@@ -42,7 +42,7 @@ public class SecurityConfigTest {
     @Test
     void accessProtectedResource_Unauthenticated_ReturnsUnauthorized() throws Exception {
         mockMvc.perform(get("/api/protected"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

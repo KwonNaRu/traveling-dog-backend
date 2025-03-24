@@ -104,9 +104,9 @@ public class UserControllerUnitTest {
 
     @Test
     @DisplayName("인증되지 않은 사용자는 프로필 정보를 조회할 수 없다")
-    void getProfile_UnauthenticatedUser_ReturnsForbidden() throws Exception {
+    void getProfile_UnauthenticatedUser_ReturnsUnauthorized() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/user/profile"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }

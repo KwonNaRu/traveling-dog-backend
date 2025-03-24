@@ -147,6 +147,6 @@ public class AuthControllerIntegrationTest {
     @Test
     void accessProtectedResource_WithoutCookie_ReturnsForbidden() {
         ResponseEntity<String> response = restTemplate.getForEntity("/api/protected", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

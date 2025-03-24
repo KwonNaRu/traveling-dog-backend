@@ -106,13 +106,13 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    void getProfile_UnauthenticatedUser_ReturnsForbidden() {
+    void getProfile_UnauthenticatedUser_ReturnsUnauthorized() {
         // When
-        ResponseEntity<UserProfileDTO> response = restTemplate.getForEntity(
+        ResponseEntity<Void> response = restTemplate.getForEntity(
                 "/api/user/profile",
-                UserProfileDTO.class);
+                Void.class);
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }
