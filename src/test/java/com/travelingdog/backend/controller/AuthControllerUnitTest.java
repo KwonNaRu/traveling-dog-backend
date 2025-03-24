@@ -195,6 +195,7 @@ public class AuthControllerUnitTest {
                 .andExpect(cookie().httpOnly("jwt", true))
                 .andExpect(cookie().secure("jwt", true))
                 .andExpect(cookie().path("jwt", "/"))
+                .andExpect(cookie().sameSite("jwt", "None"))
                 .andExpect(jsonPath("$.email").value(email));
     }
 

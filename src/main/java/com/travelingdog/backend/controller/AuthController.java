@@ -82,6 +82,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(jwtResponse.expiresIn())
+                                .sameSite("None")
                                 .build();
 
                 UserProfileDTO profile = UserProfileDTO.fromEntity(user);
@@ -113,6 +114,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(token.expiresIn())
+                                .sameSite("None")
                                 .build();
 
                 UserProfileDTO profile = UserProfileDTO.fromEntity(user);
@@ -151,6 +153,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(0)
+                                .sameSite("None")
                                 .build();
 
                 return ResponseEntity.status(HttpStatus.CREATED)
