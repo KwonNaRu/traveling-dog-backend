@@ -1,14 +1,19 @@
 package com.travelingdog.backend.service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -17,12 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
@@ -30,17 +32,22 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
-import com.travelingdog.backend.dto.AIChatResponse;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO.Location;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO;
+import com.travelingdog.backend.dto.gpt.AIChatMessage;
+import com.travelingdog.backend.dto.gpt.AIChatRequest;
+import com.travelingdog.backend.dto.gpt.AIChatResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
-import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.Itinerary;
+import com.travelingdog.backend.model.ItineraryActivity;
+import com.travelingdog.backend.model.ItineraryLocation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
-import com.travelingdog.backend.repository.TravelLocationRepository;
+import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -60,16 +67,13 @@ public class TravelPlanServiceUnitTest {
         private RestClient restClient;
 
         @Mock
-        private RouteOptimizationService routeOptimizationService;
-
-        @Mock
         private GptResponseHandler gptResponseHandler;
 
         @Mock
         private TravelPlanRepository travelPlanRepository;
 
         @Mock
-        private TravelLocationRepository travelLocationRepository;
+        private ItineraryRepository itineraryRepository;
 
         @InjectMocks
         private TravelPlanService tripPlanService;
@@ -77,10 +81,14 @@ public class TravelPlanServiceUnitTest {
         private TravelPlanRequest request;
         private TravelPlan travelPlan;
         private AIChatResponse mockResponse;
-        private List<TravelLocation> mockLocations;
+        private List<Itinerary> mockLocations;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private LocalDate today;
         private User user;
+        private ItineraryActivity activity1;
+        private ItineraryActivity activity2;
+        private ItineraryLocation lunch;
+        private ItineraryLocation dinner;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -135,14 +143,41 @@ public class TravelPlanServiceUnitTest {
                                 .city("Seoul")
                                 .build();
 
-                TravelLocation location = new TravelLocation();
-                location.setPlaceName("Gyeongbokgung Palace");
-                location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                .createPoint(new Coordinate(126.9770, 37.5796)));
-                location.setLocationOrder(0);
-                location.setDescription("");
+                lunch = ItineraryLocation.builder()
+                                .name("Lunch")
+                                .description("Lunch")
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .build();
+
+                dinner = ItineraryLocation.builder()
+                                .name("Dinner")
+                                .description("Dinner")
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .build();
+
+                activity1 = ItineraryActivity.builder()
+                                .name("Activity")
+                                .description("Activity")
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .build();
+
+                activity2 = ItineraryActivity.builder().name("test2").description("test2")
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .build();
+
+                Itinerary itinerary = new Itinerary();
+                itinerary.setLocation("Gyeongbokgung Palace");
+                itinerary.setActivities(Arrays.asList(activity1, activity2));
+                itinerary.setLunch(lunch);
+                itinerary.setDinner(dinner);
+                itinerary.setDay(0);
+                itinerary.setTravelPlan(travelPlan);
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
-                mockLocations.add(location);
+                mockLocations.add(itinerary);
         }
 
         /**
@@ -181,18 +216,15 @@ public class TravelPlanServiceUnitTest {
 
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
-                                .thenReturn(List.of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770)));
-                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
+                                .thenReturn(createMockTravelPlanDTO("Gyeongbokgung Palace", 37.5796, 126.9770));
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
                                 .thenReturn("테스트 프롬프트");
-
-                // RouteOptimizationService 모킹
-                when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
-
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
 
-                // TravelLocationRepository 모킹
-                when(travelLocationRepository.save(any(TravelLocation.class))).thenReturn(mockLocations.get(0));
+                // ItineraryRepository 모킹
+                when(itineraryRepository.save(any(Itinerary.class))).thenReturn(mockLocations.get(0));
 
                 // When
                 TravelPlanDTO result = tripPlanService.createTravelPlan(request, user);
@@ -320,12 +352,38 @@ public class TravelPlanServiceUnitTest {
          * @param longitude 경도
          * @return 모의 AIRecommendedLocationDTO 객체
          */
-        private AIRecommendedLocationDTO createMockLocationDTO(
+        private AIRecommendedTravelPlanDTO createMockTravelPlanDTO(
                         String name, double latitude, double longitude) {
-                AIRecommendedLocationDTO dto = new AIRecommendedLocationDTO();
-                dto.setName(name);
-                dto.setLatitude(latitude);
-                dto.setLongitude(longitude);
+
+                Location location = new Location();
+                location.setName(name);
+                location.setLatitude(latitude);
+                location.setLongitude(longitude);
+
+                AIRecommendedItineraryDTO itinerary = new AIRecommendedItineraryDTO();
+                itinerary.setLocation(name);
+                itinerary.setDay(0);
+                itinerary.setActivities(Arrays.asList(location, location));
+                itinerary.setLunch(location);
+                itinerary.setDinner(location);
+
+                LocationDTO locationDTO = new LocationDTO();
+                locationDTO.setName(name);
+                locationDTO.setLatitude(latitude);
+                locationDTO.setLongitude(longitude);
+
+                AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
+                dto.setItinerary(Arrays.asList(itinerary, itinerary));
+                dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO));
+                dto.setAccommodationRecommendations(Arrays.asList(locationDTO, locationDTO));
+                dto.setTransportationTips("Transportation Tips");
+                dto.setTripName("Test Travel Plan");
+                dto.setStartDate(today.toString());
+                dto.setEndDate(today.plusDays(3).toString());
+                dto.setSeason("Spring");
+                dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
+                dto.setBudget("Budget");
+
                 return dto;
         }
 }

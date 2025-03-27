@@ -25,4 +25,23 @@ public class TravelPlanRequest {
 
     @NotNull(message = "End date is required")
     private LocalDate endDate;
+
+    @NotBlank(message = "Season is required")
+    private String season;
+
+    @NotBlank(message = "Travel style is required")
+    private String travelStyle;
+
+    @NotBlank(message = "Budget is required")
+    private String budget;
+
+    @NotBlank(message = "Interests are required")
+    private String interests;
+
+    @NotBlank(message = "Accommodation is required")
+    private String accommodation;
+
+    @NotBlank(message = "Transportation is required")
+    private String transportation;
+
 }

@@ -4,8 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.travelingdog.backend.dto.TravelLocationDTO;
+import com.travelingdog.backend.dto.ItineraryDTO;
+import com.travelingdog.backend.model.AccommodationType;
+import com.travelingdog.backend.model.Interest;
+import com.travelingdog.backend.model.Transportation;
 import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.status.PlanStatus;
 
 import lombok.AllArgsConstructor;
@@ -24,9 +28,15 @@ public class TravelPlanDTO {
     private String city;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String season;
+    private String travelStyle;
+    private String budget;
+    private String interests;
+    private String accommodation;
+    private String transportation;
     private Long userId;
     private String nickname;
-    private List<TravelLocationDTO> travelLocations;
+    private List<ItineraryDTO> itineraries;
     private int viewCount;
     private int likeCount;
     private PlanStatus status;
@@ -43,10 +53,24 @@ public class TravelPlanDTO {
                 .city(entity.getCity())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+                .season(entity.getSeason())
+                .travelStyle(entity.getTravelStyles().stream()
+                        .map(TravelStyle::getName)
+                        .collect(Collectors.joining(", ")))
+                .budget(entity.getBudget())
+                .interests(entity.getInterests().stream()
+                        .map(Interest::getName)
+                        .collect(Collectors.joining(", ")))
+                .accommodation(entity.getAccommodationTypes().stream()
+                        .map(AccommodationType::getName)
+                        .collect(Collectors.joining(", ")))
+                .transportation(entity.getTransportationTypes().stream()
+                        .map(Transportation::getName)
+                        .collect(Collectors.joining(", ")))
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .nickname(entity.getUser() != null ? entity.getUser().getNickname() : null)
-                .travelLocations(entity.getTravelLocations().stream()
-                        .map(TravelLocationDTO::fromEntity)
+                .itineraries(entity.getItineraries().stream()
+                        .map(ItineraryDTO::fromEntity)
                         .collect(Collectors.toList()))
                 .viewCount(entity.getViewCount())
                 .likeCount(entity.getLikes().size())

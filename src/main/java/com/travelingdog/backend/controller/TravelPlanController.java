@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.travelingdog.backend.dto.TravelLocationDTO;
+import com.travelingdog.backend.dto.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -42,7 +42,7 @@ public class TravelPlanController {
 
         @Operation(summary = "여행 계획 생성", description = "국가, 도시, 여행 날짜를 입력받아 여행 계획을 생성합니다.")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "여행 계획 생성 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelLocationDTO.class)))),
+                        @ApiResponse(responseCode = "200", description = "여행 계획 생성 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ItineraryDTO.class)))),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "503", description = "외부 API 오류")
         })

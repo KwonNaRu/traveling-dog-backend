@@ -1,4 +1,4 @@
-package com.travelingdog.backend.dto;
+package com.travelingdog.backend.dto.gpt;
 
 import java.util.List;
 

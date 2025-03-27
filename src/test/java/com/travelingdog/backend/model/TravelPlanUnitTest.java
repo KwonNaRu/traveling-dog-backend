@@ -55,13 +55,12 @@ public class TravelPlanUnitTest {
          * - 여행 계획이 정상적으로 생성되는지 검증합니다.
          */
         @Test
-
         public void testCreateTravelPlan() {
                 // 여행 계획 생성 테스트 코드 작성
                 assertThat(travelPlan).isNotNull();
                 assertThat(travelPlan.getTitle()).isEqualTo("여행 계획");
                 assertThat(travelPlan.getUser()).isEqualTo(user);
-                assertThat(travelPlan.getTravelLocations()).isEmpty();
+                assertThat(travelPlan.getItineraries()).isEmpty();
                 assertThat(travelPlan.getLikes()).isEmpty();
                 assertThat(travelPlan.getViewCount()).isEqualTo(0);
                 assertThat(travelPlan.getStatus()).isEqualTo(PlanStatus.DRAFT);
@@ -73,7 +72,10 @@ public class TravelPlanUnitTest {
          */
         @Test
         public void testUpdateTravelPlan() {
-                TravelLocation travelLocation = TravelLocation.builder()
+                Itinerary itinerary = Itinerary.builder()
+                                .day(1)
+                                .location("테스트 장소")
+                                .travelPlan(travelPlan)
                                 .build();
 
                 travelPlan.setTitle("업데이트된 여행 계획");
@@ -81,11 +83,11 @@ public class TravelPlanUnitTest {
                 travelPlan.setEndDate(LocalDate.now().plusDays(11));
                 travelPlan.setStatus(PlanStatus.PUBLISHED);
 
-                travelPlan.addTravelLocation(travelLocation);
+                travelPlan.addItinerary(itinerary);
 
                 assertThat(travelPlan.getTitle()).isEqualTo("업데이트된 여행 계획");
                 assertThat(travelPlan.getUser()).isEqualTo(user);
-                assertThat(travelPlan.getTravelLocations()).hasSize(1);
+                assertThat(travelPlan.getItineraries()).hasSize(1);
                 assertThat(travelPlan.getLikes()).isEmpty();
                 assertThat(travelPlan.getViewCount()).isEqualTo(0);
                 assertThat(travelPlan.getStatus()).isEqualTo(PlanStatus.PUBLISHED);
@@ -262,5 +264,4 @@ public class TravelPlanUnitTest {
                 assertThat(violations).extracting(ConstraintViolation::getMessage)
                                 .contains("must not be null");
         }
-
 }

@@ -1,16 +1,14 @@
 package com.travelingdog.backend.service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -19,7 +17,8 @@ import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
 import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.repository.FailedGptResponseRepository;
 
@@ -62,29 +61,46 @@ public class GptResponseHandlerTest {
     }
 
     /**
-     * 정상적인 JSON 배열 응답 파싱 테스트
+     * 정상적인 JSON 응답 파싱 테스트
      *
-     * 이 테스트는 GptResponseHandler가 정상적인 형식의 JSON 배열 응답을 올바르게 파싱하여
-     * AIRecommendedLocationDTO 객체 리스트로 변환하는지 검증합니다.
+     * 이 테스트는 GptResponseHandler가 정상적인 형식의 JSON 응답을 올바르게 파싱하여
+     * AIRecommendedTravelPlanDTO 객체로 변환하는지 검증합니다.
      *
-     * 테스트 과정: 1. 유효한 JSON 배열 문자열 생성 2. GptResponseHandler를 사용하여 JSON 파싱 3. 결과
-     * 검증: 파싱된 객체 수, 객체 속성 값
+     * 테스트 과정: 1. 유효한 JSON 응답 문자열 생성 2. GptResponseHandler를 사용하여 JSON 파싱 3. 결과
+     * 검증: 파싱된 객체의 속성 값
      */
     @Test
-    @DisplayName("정상적인 JSON 배열 응답을 파싱할 수 있어야 한다")
-    void testParseValidJsonArray() {
+    @DisplayName("정상적인 JSON 응답을 파싱할 수 있어야 한다")
+    void testParseValidJson() {
         // Given
-        String validJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
+        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"season\":\"여름\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}],\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}}]}";
 
         // When
-        List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(validJson);
+        AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(validJson);
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Gyeongbokgung Palace", result.get(0).getName());
-        assertEquals(37.5796, result.get(0).getLatitude());
-        assertEquals(126.9770, result.get(0).getLongitude());
+        assertEquals("제주도 3박 4일 여행", result.getTripName());
+        assertEquals("2024-07-01", result.getStartDate());
+        assertEquals("2024-07-04", result.getEndDate());
+        assertEquals("여름", result.getSeason());
+        assertEquals(2, result.getTravelStyle().size());
+        assertEquals("100만원", result.getBudget());
+        assertEquals("제주시", result.getDestination());
+        assertEquals(2, result.getInterests().size());
+        assertEquals(1, result.getAccommodation().size());
+        assertEquals(1, result.getTransportation().size());
+        assertEquals(1, result.getItinerary().size());
+
+        AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
+        assertEquals(1, firstDay.getDay());
+        assertEquals("성산일출봉", firstDay.getLocation());
+        assertEquals(1, firstDay.getActivities().size());
+        assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
+        assertEquals(33.458, firstDay.getActivities().get(0).getLatitude());
+        assertEquals(126.939, firstDay.getActivities().get(0).getLongitude());
+        assertEquals("제주 전통 흑돼지 구이 맛집", firstDay.getLunch().getName());
+        assertEquals("신선한 해산물 요리", firstDay.getDinner().getName());
     }
 
     /**
@@ -102,15 +118,16 @@ public class GptResponseHandlerTest {
     @DisplayName("코드 블록으로 감싸진 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonInCodeBlock() {
         // Given
-        String jsonInCodeBlock = "```json\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]\n```";
+        String jsonInCodeBlock = "```json\n{\"trip_name\":\"제주도 3박 4일 여행\",\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}]}]}\n```";
 
         // When
-        List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(jsonInCodeBlock);
+        AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonInCodeBlock);
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Gyeongbokgung Palace", result.get(0).getName());
+        assertEquals("제주도 3박 4일 여행", result.getTripName());
+        assertEquals(1, result.getItinerary().size());
+        assertEquals("성산일출봉", result.getItinerary().get(0).getLocation());
     }
 
     /**
@@ -127,15 +144,16 @@ public class GptResponseHandlerTest {
     @DisplayName("추가 텍스트가 포함된 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonWithAdditionalText() {
         // Given
-        String jsonWithText = "여기 서울의 추천 장소입니다:\n[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
+        String jsonWithText = "여기 제주도의 추천 여행 계획입니다:\n{\"trip_name\":\"제주도 3박 4일 여행\",\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}]}]}";
 
         // When
-        List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(jsonWithText);
+        AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonWithText);
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Gyeongbokgung Palace", result.get(0).getName());
+        assertEquals("제주도 3박 4일 여행", result.getTripName());
+        assertEquals(1, result.getItinerary().size());
+        assertEquals("성산일출봉", result.getItinerary().get(0).getLocation());
     }
 
     /**
@@ -161,28 +179,6 @@ public class GptResponseHandlerTest {
     }
 
     /**
-     * 빈 JSON 배열 응답 처리 테스트
-     *
-     * 이 테스트는 GptResponseHandler가 빈 JSON 배열 응답을 처리할 때 적절한 예외를 발생시키는지 검증합니다.
-     *
-     * 테스트 과정: 1. 빈 JSON 배열 문자열 생성 2. GptResponseHandler를 사용하여 JSON 파싱 시도 3. 결과
-     * 검증: ExternalApiException 예외 발생 및 메시지 확인
-     */
-    @Test
-    @DisplayName("빈 JSON 배열 응답을 처리할 수 있어야 한다")
-    void testHandleEmptyJsonArray() {
-        // Given
-        String emptyJson = "[]";
-
-        // When & Then
-        Exception exception = assertThrows(ExternalApiException.class, () -> {
-            gptResponseHandler.parseGptResponse(emptyJson);
-        });
-
-        assertTrue(exception.getMessage().contains("빈 응답"));
-    }
-
-    /**
      * 강화된 프롬프트 생성 테스트
      *
      * 이 테스트는 GptResponseHandler가 여행 계획 요청 정보를 기반으로 강화된 프롬프트를 올바르게 생성하는지 검증합니다.
@@ -196,23 +192,49 @@ public class GptResponseHandlerTest {
     @DisplayName("강화된 프롬프트를 생성할 수 있어야 한다")
     void testCreateEnhancedPrompt() {
         // Given
-        String country = "South Korea";
-        String city = "Seoul";
+        String country = "한국";
+        String city = "제주시";
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);
+        String season = "여름";
+        String travelStyle = "해변, 자연 풍경 감상";
+        String budget = "100만원";
+        String interests = "맛집, 자연";
+        String accommodation = "호텔";
+        String transportation = "렌터카";
 
         // When
-        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate);
+        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate, season,
+                travelStyle, budget, interests, accommodation, transportation);
 
         // Then
         assertNotNull(enhancedPrompt);
-        assertTrue(enhancedPrompt.contains("\"name\": \"장소명(문자열)\""));
-        assertTrue(enhancedPrompt.contains("\"latitude\": 위도(숫자, 구글맵 기준)"));
-        assertTrue(enhancedPrompt.contains("\"longitude\": 경도(숫자, 구글맵 기준)"));
+        assertTrue(enhancedPrompt.contains("\"trip_name\": \"여행 이름\""));
+        assertTrue(enhancedPrompt.contains("\"start_date\": \"여행 시작일\""));
+        assertTrue(enhancedPrompt.contains("\"end_date\": \"여행 종료일\""));
+        assertTrue(enhancedPrompt.contains("\"season\": \"여행 계절\""));
+        assertTrue(enhancedPrompt.contains("\"travel_style\": [\"여행 스타일1\""));
+        assertTrue(enhancedPrompt.contains("\"budget\": \"예산\""));
+        assertTrue(enhancedPrompt.contains("\"destination\": \"도시\""));
+        assertTrue(enhancedPrompt.contains("\"interests\": [\"관심사1\""));
+        assertTrue(enhancedPrompt.contains("\"accommodation\": [\"숙소 유형1\""));
+        assertTrue(enhancedPrompt.contains("\"transportation\": [\"교통 수단1\""));
+        assertTrue(enhancedPrompt.contains("\"itinerary\": ["));
+        assertTrue(enhancedPrompt.contains("\"activities\": ["));
+        assertTrue(enhancedPrompt.contains("\"lunch\": {"));
+        assertTrue(enhancedPrompt.contains("\"dinner\": {"));
+        assertTrue(enhancedPrompt.contains("\"latitude\": 위도"));
+        assertTrue(enhancedPrompt.contains("\"longitude\": 경도"));
         assertTrue(enhancedPrompt.contains(country));
         assertTrue(enhancedPrompt.contains(city));
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
         assertTrue(enhancedPrompt.contains(endDate.format(formatter)));
+        assertTrue(enhancedPrompt.contains(season));
+        assertTrue(enhancedPrompt.contains(travelStyle));
+        assertTrue(enhancedPrompt.contains(budget));
+        assertTrue(enhancedPrompt.contains(interests));
+        assertTrue(enhancedPrompt.contains(accommodation));
+        assertTrue(enhancedPrompt.contains(transportation));
     }
 
     /**
@@ -229,23 +251,19 @@ public class GptResponseHandlerTest {
     @DisplayName("대체 응답을 제공할 수 있어야 한다")
     void testProvideFallbackResponse() {
         // Given
-        String country = "South Korea";
-        String city = "Seoul";
+        String country = "한국";
+        String city = "제주시";
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);
 
         // When
-        List<AIRecommendedLocationDTO> fallbackResponse = gptResponseHandler.getFallbackResponse(country, city,
+        AIRecommendedTravelPlanDTO fallbackResponse = gptResponseHandler.getFallbackResponse(country, city,
                 startDate, endDate);
 
         // Then
         assertNotNull(fallbackResponse);
-        assertFalse(fallbackResponse.isEmpty());
-        // 대체 응답의 각 항목이 필수 필드를 모두 가지고 있는지 확인
-        for (AIRecommendedLocationDTO location : fallbackResponse) {
-            assertNotNull(location.getName());
-            assertNotEquals(0.0, location.getLatitude());
-            assertNotEquals(0.0, location.getLongitude());
-        }
+        assertNotNull(fallbackResponse.getTripName());
+        assertFalse(fallbackResponse.getItinerary().isEmpty());
+        assertNotNull(fallbackResponse.getItinerary().get(0).getLocation());
     }
 }

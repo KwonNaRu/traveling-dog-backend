@@ -1,20 +1,20 @@
 package com.travelingdog.backend.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,24 +24,29 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
-import com.travelingdog.backend.dto.AIChatResponse;
-import com.travelingdog.backend.dto.AIChatResponse.Choice;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
+import com.travelingdog.backend.dto.gpt.AIChatMessage;
+import com.travelingdog.backend.dto.gpt.AIChatRequest;
+import com.travelingdog.backend.dto.gpt.AIChatResponse;
+import com.travelingdog.backend.dto.gpt.AIChatResponse.Choice;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
-import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.Itinerary;
+import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.ItineraryRepository;
+import com.travelingdog.backend.repository.TravelPlanRepository;
+import com.travelingdog.backend.repository.UserRepository;
 
 /**
  * GPT 응답 처리 통합 테스트
  *
  * 이 테스트 클래스는 OpenAI GPT API와의 통합을 테스트합니다. 여행 계획 생성 요청에 대한 GPT 응답을 처리하고, 이를 통해
- * 여행 위치 목록을 생성하는 전체 프로세스를 검증합니다.
+ * 여행 일정을 생성하는 전체 프로세스를 검증합니다.
  *
- * 주요 테스트 대상: 1. GPT 응답 JSON 파싱 기능 2. 파싱된 데이터를 TravelLocation 객체로 변환 3. 경로 최적화
- * 서비스와의 통합
+ * 주요 테스트 대상: 1. GPT 응답 JSON 파싱 기능 2. 파싱된 데이터를 Itinerary 객체로 변환 3. 여행 계획과의 통합
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -54,17 +59,24 @@ public class GPTResponseIntegrationTest {
         @Autowired
         private GptResponseHandler gptResponseHandler;
 
-        @MockBean
-        private RestClient restClient;
+        @Autowired
+        private TravelPlanRepository travelPlanRepository;
+
+        @Autowired
+        private ItineraryRepository itineraryRepository;
+
+        @Autowired
+        private UserRepository userRepository;
 
         @MockBean
-        private RouteOptimizationService routeOptimizationService;
+        private RestClient restClient;
 
         private TravelPlanRequest request;
         private AIChatResponse mockResponse;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private ObjectMapper objectMapper = new ObjectMapper();
         private LocalDate today;
+        private User user;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -81,10 +93,25 @@ public class GPTResponseIntegrationTest {
                 LocalDate endDate = today.plusDays(3);
 
                 request = new TravelPlanRequest();
-                request.setCountry("South Korea");
-                request.setCity("Seoul");
+                request.setTitle("제주도 3박 4일 여행");
+                request.setCountry("한국");
+                request.setCity("제주시");
                 request.setStartDate(today);
                 request.setEndDate(endDate);
+                request.setSeason("여름");
+                request.setTravelStyle("해변, 자연 풍경 감상");
+                request.setBudget("100만원");
+                request.setInterests("맛집, 자연");
+                request.setAccommodation("호텔");
+                request.setTransportation("렌터카");
+
+                // 테스트용 사용자 생성
+                user = User.builder()
+                                .nickname("dogLover")
+                                .password("password123")
+                                .email("dogLover@example.com")
+                                .build();
+                userRepository.save(user);
 
                 // 모의 GPT 응답 데이터 설정
                 mockResponse = new AIChatResponse();
@@ -124,100 +151,47 @@ public class GPTResponseIntegrationTest {
          */
         private String createMockGptResponse(LocalDate startDate) {
                 StringBuilder jsonBuilder = new StringBuilder();
-                jsonBuilder.append("[");
+                jsonBuilder.append("{");
+                jsonBuilder.append("\"trip_name\":\"제주도 3박 4일 여행\",");
+                jsonBuilder.append("\"start_date\":\"").append(startDate.format(formatter)).append("\",");
+                jsonBuilder.append("\"end_date\":\"").append(startDate.plusDays(3).format(formatter)).append("\",");
+                jsonBuilder.append("\"season\":\"여름\",");
+                jsonBuilder.append("\"travel_style\":[\"해변\",\"자연 풍경 감상\"],");
+                jsonBuilder.append("\"budget\":\"100만원\",");
+                jsonBuilder.append("\"destination\":\"제주시\",");
+                jsonBuilder.append("\"interests\":[\"맛집\",\"자연\"],");
+                jsonBuilder.append("\"accommodation\":[\"호텔\"],");
+                jsonBuilder.append("\"transportation\":[\"렌터카\"],");
+                jsonBuilder.append("\"itinerary\":[");
 
-                // 첫째 날 장소들
+                // 첫째 날 일정
+                jsonBuilder.append("{\"day\":1,\"location\":\"성산일출봉\",");
+                jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770},");
+                                "{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"Insadong\",\"latitude\":37.5746,\"longitude\":126.9850},");
+                                "{\"name\":\"우도 자전거 투어\",\"latitude\":33.506,\"longitude\":126.953,\"description\":\"우도 섬 자전거 투어\"}");
+                jsonBuilder.append("],");
+                jsonBuilder.append(
+                                "\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},");
+                jsonBuilder.append(
+                                "\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}");
+                jsonBuilder.append("},");
 
-                // 둘째 날 장소들
-                LocalDate secondDay = startDate.plusDays(1);
-                jsonBuilder
-                                .append("{\"name\":\"Namsan Tower\",\"latitude\":37.5512,\"longitude\":126.9882},");
+                // 둘째 날 일정
+                jsonBuilder.append("{\"day\":2,\"location\":\"만장굴\",");
+                jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"Myeongdong\",\"latitude\":37.5635,\"longitude\":126.9850}");
+                                "{\"name\":\"만장굴 탐험\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
+                jsonBuilder.append("],");
+                jsonBuilder.append(
+                                "\"lunch\":{\"name\":\"제주 전복 요리\",\"latitude\":33.450,\"longitude\":126.790,\"description\":\"신선한 전복 요리 맛집\"},");
+                jsonBuilder.append(
+                                "\"dinner\":{\"name\":\"제주 한라산 고기\",\"latitude\":33.460,\"longitude\":126.780,\"description\":\"한라산 고기 맛집\"}");
+                jsonBuilder.append("}");
 
-                jsonBuilder.append("]");
+                jsonBuilder.append("]}");
                 return jsonBuilder.toString();
-        }
-
-        /**
-         * 모의 여행 위치 객체 생성 헬퍼 메소드
-         *
-         * 이 메소드는 테스트에 사용할 모의 TravelLocation 객체 리스트를 생성합니다. 서울의 주요 관광지 정보와 방문 날짜, 순서
-         * 등을 포함한 객체를 생성합니다.
-         *
-         * @return 모의 TravelLocation 객체 리스트
-         */
-        private List<TravelLocation> createMockLocations() {
-                List<TravelLocation> locations = new ArrayList<>();
-
-                // 첫째 날 장소들
-                TravelLocation location1 = new TravelLocation();
-                location1.setPlaceName("Gyeongbokgung Palace");
-                location1.setCoordinates(126.9770, 37.5796);
-                location1.setLocationOrder(0);
-                location1.setDescription("경복궁");
-                locations.add(location1);
-
-                TravelLocation location2 = new TravelLocation();
-                location2.setPlaceName("Insadong");
-                location2.setCoordinates(126.9850, 37.5746);
-                location2.setLocationOrder(1);
-                location2.setDescription("인사동");
-                locations.add(location2);
-
-                // 둘째 날 장소들
-                LocalDate secondDay = today.plusDays(1);
-                TravelLocation location3 = new TravelLocation();
-                location3.setPlaceName("Namsan Tower");
-                location3.setCoordinates(126.9882, 37.5512);
-                location3.setLocationOrder(2);
-                location3.setDescription("남산타워");
-                locations.add(location3);
-
-                TravelLocation location4 = new TravelLocation();
-                location4.setPlaceName("Myeongdong");
-                location4.setCoordinates(126.9850, 37.5635);
-                location4.setLocationOrder(3);
-                location4.setDescription("명동");
-                locations.add(location4);
-
-                return locations;
-        }
-
-        /**
-         * GPT 응답을 여행 계획 및 위치로 변환하는 기능 테스트
-         *
-         * 이 테스트는 TripPlanService가 GPT 응답을 처리하여 여행 위치 목록을 생성하는 전체 프로세스를 검증합니다.
-         *
-         * 테스트 과정: 1. 모의 GPT 응답 설정 2. 경로 최적화 서비스 모킹 3. 여행 계획 생성 요청 4. 결과 검증: 위치 수,
-         * 위치 이름, 날짜별 그룹화
-         *
-         * 이 테스트는 GPT 응답 처리와 경로 최적화의 통합을 검증합니다.
-         */
-        @Test
-        @DisplayName("GPT 응답을 여행 계획 및 위치로 변환하는 기능 테스트")
-        void testGptResponseToTravelPlanAndLocations() throws JsonProcessingException {
-                // 경로 최적화 서비스 모킹
-                List<TravelLocation> mockLocations = createMockLocations();
-                when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
-
-                // When
-                List<TravelLocation> result = tripPlanService.generateTripPlan(request);
-
-                // Then
-                assertNotNull(result);
-                assertEquals(4, result.size());
-
-                // 장소 이름 확인
-                assertTrue(result.stream().anyMatch(loc -> loc.getPlaceName().equals("Gyeongbokgung Palace")));
-                assertTrue(result.stream().anyMatch(loc -> loc.getPlaceName().equals("Insadong")));
-                assertTrue(result.stream().anyMatch(loc -> loc.getPlaceName().equals("Namsan Tower")));
-                assertTrue(result.stream().anyMatch(loc -> loc.getPlaceName().equals("Myeongdong")));
-
         }
 
         /**
@@ -234,14 +208,77 @@ public class GPTResponseIntegrationTest {
         @DisplayName("GPT 응답 JSON 파싱 기능 테스트")
         void testGptResponseHandlerParseValidJson() {
                 // Given
-                String validJson = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
+                String validJson = createMockGptResponse(today);
 
                 // When
-                List<AIRecommendedLocationDTO> result = gptResponseHandler.parseGptResponse(validJson);
+                AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(validJson);
 
                 // Then
                 assertNotNull(result);
-                assertEquals(1, result.size());
-                assertEquals("Gyeongbokgung Palace", result.get(0).getName());
+                assertEquals("제주도 3박 4일 여행", result.getTripName());
+                assertEquals(2, result.getItinerary().size());
+
+                // 첫째 날 일정 검증
+                AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
+                assertEquals(1, firstDay.getDay());
+                assertEquals("성산일출봉", firstDay.getLocation());
+                assertEquals(2, firstDay.getActivities().size());
+                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
+                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
+                assertEquals("제주 흑돼지 맛집", firstDay.getLunch().getName());
+                assertEquals("해녀의 집", firstDay.getDinner().getName());
+
+                // 둘째 날 일정 검증
+                AIRecommendedItineraryDTO secondDay = result.getItinerary().get(1);
+                assertEquals(2, secondDay.getDay());
+                assertEquals("만장굴", secondDay.getLocation());
+                assertEquals(1, secondDay.getActivities().size());
+                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
+                assertEquals("제주 전복 요리", secondDay.getLunch().getName());
+                assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
+        }
+
+        @Test
+        @DisplayName("여행 계획 생성 통합 테스트")
+        void testCreateTravelPlanWithItineraries() {
+                // Given
+                String validJson = createMockGptResponse(today);
+                AIRecommendedTravelPlanDTO travelPlanDTO = gptResponseHandler.parseGptResponse(validJson);
+
+                // When
+                TravelPlanDTO createdPlanDTO = tripPlanService.createTravelPlan(request, user);
+                TravelPlan travelPlan = travelPlanRepository.findById(createdPlanDTO.getId()).orElse(null);
+
+                // Then
+                assertNotNull(travelPlan);
+                assertEquals("제주도 3박 4일 여행", travelPlan.getTitle());
+                assertEquals("한국", travelPlan.getCountry());
+                assertEquals("제주시", travelPlan.getCity());
+                assertEquals(today, travelPlan.getStartDate());
+                assertEquals(today.plusDays(3), travelPlan.getEndDate());
+
+                // 일정 검증
+                List<Itinerary> itineraries = itineraryRepository
+                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                assertEquals(2, itineraries.size());
+
+                // 첫째 날 일정 검증
+                Itinerary firstDay = itineraries.get(0);
+                assertEquals(1, firstDay.getDay());
+                assertEquals("성산일출봉", firstDay.getLocation());
+                assertEquals(2, firstDay.getActivities().size());
+                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
+                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
+                assertEquals("제주 흑돼지 맛집", firstDay.getLunch().getName());
+                assertEquals("해녀의 집", firstDay.getDinner().getName());
+
+                // 둘째 날 일정 검증
+                Itinerary secondDay = itineraries.get(1);
+                assertEquals(2, secondDay.getDay());
+                assertEquals("만장굴", secondDay.getLocation());
+                assertEquals(1, secondDay.getActivities().size());
+                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
+                assertEquals("제주 전복 요리", secondDay.getLunch().getName());
+                assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
         }
 }

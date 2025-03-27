@@ -3,7 +3,7 @@ package com.travelingdog.backend.dto.travelPlan;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.travelingdog.backend.dto.TravelLocationDTO;
+import com.travelingdog.backend.dto.ItineraryDTO;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -31,5 +31,5 @@ public class TravelPlanUpdateRequest {
     @Future(message = "종료 날짜는 미래여야 합니다")
     private LocalDate endDate;
 
-    private List<TravelLocationDTO> travelLocations;
+    private List<ItineraryDTO> itineraries;
 }

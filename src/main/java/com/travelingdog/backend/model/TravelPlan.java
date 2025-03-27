@@ -61,13 +61,46 @@ public class TravelPlan extends BaseTimeEntity {
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
+    @Column(name = "season", length = 50)
+    private String season; // 여행 계절
+
+    @Column(name = "budget", length = 100)
+    private String budget; // 예산
+
+    @Column(name = "transportation_tips", length = 500)
+    private String transportationTips; // 교통 팁
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user; // 사용자와의 관계
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<TravelLocation> travelLocations = new ArrayList<>(); // 여행 위치 리스트
+    private List<Itinerary> itineraries = new ArrayList<>(); // 여행 위치 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TravelStyle> travelStyles = new ArrayList<>(); // 여행 스타일 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Interest> interests = new ArrayList<>(); // 관심사 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<AccommodationType> accommodationTypes = new ArrayList<>(); // 숙소 유형 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Transportation> transportationTypes = new ArrayList<>(); // 교통 수단 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RestaurantRecommendation> restaurantRecommendations = new ArrayList<>(); // 맛집 추천 리스트
+
+    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<AccommodationRecommendation> accommodationRecommendations = new ArrayList<>(); // 숙소 추천 리스트
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default
@@ -85,14 +118,44 @@ public class TravelPlan extends BaseTimeEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public void addTravelLocation(TravelLocation travelLocation) {
-        travelLocations.add(travelLocation);
-        travelLocation.setTravelPlan(this);
+    public void addItinerary(Itinerary itinerary) {
+        itineraries.add(itinerary);
+        itinerary.setTravelPlan(this);
     }
 
-    public void removeTravelLocation(TravelLocation travelLocation) {
-        travelLocations.remove(travelLocation);
-        travelLocation.setTravelPlan(null);
+    public void removeItinerary(Itinerary itinerary) {
+        itineraries.remove(itinerary);
+        itinerary.setTravelPlan(null);
+    }
+
+    public void addTravelStyle(TravelStyle style) {
+        travelStyles.add(style);
+        style.setTravelPlan(this);
+    }
+
+    public void addInterest(Interest interest) {
+        interests.add(interest);
+        interest.setTravelPlan(this);
+    }
+
+    public void addAccommodationType(AccommodationType type) {
+        accommodationTypes.add(type);
+        type.setTravelPlan(this);
+    }
+
+    public void addTransportation(Transportation transportation) {
+        transportationTypes.add(transportation);
+        transportation.setTravelPlan(this);
+    }
+
+    public void addRestaurantRecommendation(RestaurantRecommendation recommendation) {
+        restaurantRecommendations.add(recommendation);
+        recommendation.setTravelPlan(this);
+    }
+
+    public void addAccommodationRecommendation(AccommodationRecommendation recommendation) {
+        accommodationRecommendations.add(recommendation);
+        recommendation.setTravelPlan(this);
     }
 
     public void softDelete() {
@@ -113,5 +176,4 @@ public class TravelPlan extends BaseTimeEntity {
     public void incrementViewCount() {
         this.viewCount++;
     }
-
 }
