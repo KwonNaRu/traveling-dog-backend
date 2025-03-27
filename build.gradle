@@ -65,6 +65,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// H2GIS 의존성 추가
     testImplementation 'org.orbisgis:h2gis:2.2.0'
+    testImplementation 'org.orbisgis:h2gis-utilities:2.2.0'
 }
 
 tasks.named('test') {
