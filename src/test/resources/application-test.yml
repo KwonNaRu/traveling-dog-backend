@@ -1,18 +1,18 @@
 spring:
     datasource:
-        url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        url: jdbc:h2:mem:testdb;MODE=PostgreSQL
         driverClassName: org.h2.Driver
         username: sa
         password:
 
     jpa:
-        database-platform: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
         hibernate:
             ddl-auto: create-drop
         properties:
             hibernate:
-                dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+                dialect: org.hibernate.dialect.H2Dialect
                 format_sql: true
+
     cloud:
         config:
             enabled: false
@@ -34,6 +34,12 @@ google:
     maps:
         api:
             key: test_api_key
+
+gemini:
+    api:
+        key: sk-test-dummy-key-for-testing-purposes-only
+        url: https://api.openai.com/v1/chat/completions
+        model: gpt-3.5-turbo
 
 jwt:
     secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장

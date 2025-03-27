@@ -23,8 +23,8 @@ import com.travelingdog.backend.status.PlanStatus;
 
 @Tag("integration")
 @DataJpaTest
-@ActiveProfiles("test")
 @Import(JpaAuditingConfigTest.class)
+@ActiveProfiles("test")
 public class UserIntegrationTest {
 
         @Autowired
