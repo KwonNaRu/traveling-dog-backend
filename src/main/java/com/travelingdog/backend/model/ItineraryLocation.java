@@ -38,8 +38,7 @@ public class ItineraryLocation {
     private Itinerary itinerary;
 
     public void setCoordinates(double longitude, double latitude) {
-        this.coordinates = new GeometryFactory(new PrecisionModel(), 4326)
-                .createPoint(new Coordinate(longitude, latitude));
+        this.coordinates = new GeometryFactory().createPoint(new Coordinate(longitude, latitude));
     }
 
     // coordinates 필드 문자열 반환
