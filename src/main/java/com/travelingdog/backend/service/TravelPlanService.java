@@ -85,18 +85,19 @@ public class TravelPlanService {
                     .build();
 
             // 3. Itinerary 객체들 생성 및 연결
-            List<Itinerary> itineraries = new ArrayList<>();
+            // List<Itinerary> itineraries = new ArrayList<>();
             for (AIRecommendedItineraryDTO dto : aiRecommendedPlan.getItinerary()) {
                 Itinerary itinerary = Itinerary.fromDto(dto, travelPlan);
-                itineraries.add(itinerary);
+                travelPlan.addItinerary(itinerary);
+                // itineraries.add(itinerary);
             }
-            travelPlan.setItineraries(itineraries);
+            // travelPlan.setItineraries(itineraries);
 
             // 4. 한 번에 저장
-            TravelPlan savedPlan = travelPlanRepository.save(travelPlan);
+            travelPlanRepository.save(travelPlan);
 
             // 5. DTO 반환
-            return TravelPlanDTO.fromEntity(savedPlan);
+            return TravelPlanDTO.fromEntity(travelPlan);
         } catch (ExternalApiException e) {
             log.error("AI 추천 실패: {}", e.getMessage());
             throw new InvalidRequestException("AI 추천을 받지 못했습니다: " + e.getMessage());

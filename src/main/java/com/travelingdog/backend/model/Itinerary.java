@@ -34,7 +34,7 @@ import lombok.ToString;
 @Builder
 @EqualsAndHashCode(of = { "id", "day", "location" })
 @ToString(of = { "id", "day", "location" })
-public class Itinerary extends BaseTimeEntity {
+public class Itinerary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,25 +52,56 @@ public class Itinerary extends BaseTimeEntity {
     @Builder.Default
     private List<ItineraryActivity> activities = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "lunch_id")
     private ItineraryLocation lunch;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "dinner_id")
     private ItineraryLocation dinner;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "travel_plan_id", nullable = false)
+    @JoinColumn(name = "travel_plan_id")
     private TravelPlan travelPlan; // 여행 계획과의 관계
 
-    // AIRecommendedItineraryDTO를 Itinerary 엔티티로 변환하는 메소드
+    public void addActivity(ItineraryActivity activity) {
+        activities.add(activity);
+        activity.setItinerary(this);
+    }
+
+    public void removeActivity(ItineraryActivity activity) {
+        activities.remove(activity);
+        activity.setItinerary(null);
+    }
+
+    public void addLunch(ItineraryLocation lunch) {
+        this.lunch = lunch;
+        lunch.setItinerary(this);
+    }
+
+    public void addDinner(ItineraryLocation dinner) {
+        this.dinner = dinner;
+        dinner.setItinerary(this);
+    }
+
+    public void removeLunch() {
+        if (lunch != null) {
+            lunch.setItinerary(null);
+            lunch = null;
+        }
+    }
+
+    public void removeDinner() {
+        if (dinner != null) {
+            dinner.setItinerary(null);
+            dinner = null;
+        }
+    }
+
     public static Itinerary fromDto(AIRecommendedItineraryDTO dto, TravelPlan travelPlan) {
         Itinerary itinerary = new Itinerary();
         itinerary.setDay(dto.getDay());
         itinerary.setLocation(dto.getLocation());
-        itinerary.setTravelPlan(travelPlan);
 
         // 점심 정보 변환
         if (dto.getLunch() != null) {

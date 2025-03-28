@@ -10,9 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -23,17 +21,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -43,7 +36,6 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.dto.gpt.AIChatMessage;
 import com.travelingdog.backend.dto.gpt.AIChatRequest;
 import com.travelingdog.backend.dto.gpt.AIChatResponse;
@@ -57,6 +49,8 @@ import com.travelingdog.backend.model.ItineraryActivity;
 import com.travelingdog.backend.model.ItineraryLocation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.ItineraryActivityRepository;
+import com.travelingdog.backend.repository.ItineraryLocationRepository;
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
@@ -77,28 +71,29 @@ import com.travelingdog.backend.status.PlanStatus;
 @Tag("integration")
 public class TravelPlanServiceIntegrationTest {
 
-        @InjectMocks
+        @Autowired
         private TravelPlanService travelPlanService;
 
         @Autowired
         private TravelPlanRepository travelPlanRepository;
 
         @Autowired
+        private UserRepository userRepository;
+
+        @Autowired
         private ItineraryRepository itineraryRepository;
 
         @Autowired
-        private UserRepository userRepository;
+        private ItineraryLocationRepository itineraryLocationRepository;
+
+        @Autowired
+        private ItineraryActivityRepository itineraryActivityRepository;
 
         @MockBean
         private RestClient restClient;
 
         private User user;
         private TravelPlan travelPlan;
-        private List<Itinerary> itineraries;
-        private ItineraryLocation lunch;
-        private ItineraryLocation dinner;
-        private ItineraryActivity activity1;
-        private ItineraryActivity activity2;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -111,6 +106,7 @@ public class TravelPlanServiceIntegrationTest {
          */
         @BeforeEach
         void setUp() {
+
                 // 테스트용 사용자 생성
                 user = User.builder()
                                 .nickname("testUser")
@@ -118,68 +114,84 @@ public class TravelPlanServiceIntegrationTest {
                                 .email("test@example.com")
                                 .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
                                 .build();
-                // userRepository.save(user);
+                user = userRepository.save(user);
 
                 // 현재 날짜와 미래 날짜 설정
                 LocalDate today = LocalDate.now();
                 LocalDate futureDate = today.plusDays(7);
 
-                // 먼저 여행 계획 생성 (빈 리스트로 초기화)
+                // 먼저 TravelPlan 생성 및 저장
                 travelPlan = TravelPlan.builder()
                                 .country("South Korea")
                                 .city("Seoul")
                                 .user(user)
                                 .title("Test Travel Plan")
-                                .startDate(today) // 현재 날짜로 설정
-                                .endDate(futureDate) // 미래 날짜로 설정
-                                .itineraries(new ArrayList<>()) // 빈 리스트로 초기화
+                                .startDate(today)
+                                .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
-                travelPlanRepository.save(travelPlan);
 
-                lunch = ItineraryLocation.builder()
-                                .name("Lunch")
-                                .description("Lunch")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
-                dinner = ItineraryLocation.builder()
-                                .name("Dinner")
-                                .description("Dinner")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
-                activity1 = ItineraryActivity.builder()
-                                .name("Activity")
-                                .description("Activity")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
-                activity2 = ItineraryActivity.builder().name("test2").description("test2")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
-                // 그 다음 여행 장소 생성 및 연결
-                itineraries = new ArrayList<>();
+                // Itineraries 생성
                 for (int i = 0; i < 3; i++) {
+                        // 먼저 Itinerary 생성
+
+                        // Location과 Activity 생성
+                        ItineraryLocation lunch = ItineraryLocation.builder()
+                                        .name("Lunch")
+                                        .description("Lunch")
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(37.5, 127.0)))
+                                        .build();
+
+                        itineraryLocationRepository.save(lunch);
+
+                        ItineraryLocation dinner = ItineraryLocation.builder()
+                                        .name("Dinner")
+                                        .description("Dinner")
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(37.5, 127.0)))
+                                        .build();
+
+                        itineraryLocationRepository.save(dinner);
+
+                        ItineraryActivity activity1 = ItineraryActivity.builder()
+                                        .name("Activity")
+                                        .description("Activity")
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(37.5, 127.0)))
+                                        .activityOrder(1)
+                                        .build();
+
+                        itineraryActivityRepository.save(activity1);
+
+                        ItineraryActivity activity2 = ItineraryActivity.builder()
+                                        .name("test2")
+                                        .description("test2")
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(37.5, 127.0)))
+                                        .activityOrder(2)
+                                        .build();
+
+                        itineraryActivityRepository.save(activity2);
+
                         Itinerary itinerary = Itinerary.builder()
                                         .location("Location " + (i + 1))
+                                        .activities(new ArrayList<>())
+                                        .lunch(null)
+                                        .dinner(null)
                                         .day(i + 1)
-                                        .activities(Arrays.asList(activity1, activity2))
-                                        .lunch(lunch)
-                                        .dinner(dinner)
-                                        .travelPlan(travelPlan)
                                         .build();
-                        itineraryRepository.save(itinerary);
-                        itineraries.add(itinerary);
+                        itinerary.addActivity(activity1);
+                        itinerary.addActivity(activity2);
+                        itinerary.addLunch(lunch);
+                        itinerary.addDinner(dinner);
+                        // itineraryRepository.save(itinerary);
+
+                        travelPlan.addItinerary(itinerary);
                 }
 
-                // 여행 장소 리스트 업데이트 (필요한 경우)
-                travelPlan.setItineraries(itineraries);
+                // TravelPlan의 itineraries 리스트 업데이트 (양방향 관계 유지)
+                travelPlanRepository.save(travelPlan);
 
                 // RestClient 모킹 설정
                 AIChatResponse mockResponse = new AIChatResponse();
@@ -234,6 +246,12 @@ public class TravelPlanServiceIntegrationTest {
                 request.setCity("Seoul");
                 request.setStartDate(LocalDate.now());
                 request.setEndDate(LocalDate.now().plusDays(7));
+                request.setSeason("Spring");
+                request.setTravelStyle("Adventure");
+                request.setBudget("Budget");
+                request.setInterests("Interests");
+                request.setAccommodation("Accommodation");
+                request.setTransportation("Transportation");
 
                 // When
                 TravelPlanDTO createdPlan = travelPlanService.createTravelPlan(request, user);
@@ -272,6 +290,12 @@ public class TravelPlanServiceIntegrationTest {
                 secondRequest.setCity("Tokyo");
                 secondRequest.setStartDate(LocalDate.now());
                 secondRequest.setEndDate(LocalDate.now().plusDays(7));
+                secondRequest.setSeason("Spring");
+                secondRequest.setTravelStyle("Adventure");
+                secondRequest.setBudget("Budget");
+                secondRequest.setInterests("Interests");
+                secondRequest.setAccommodation("Accommodation");
+                secondRequest.setTransportation("Transportation");
 
                 TravelPlanDTO secondTravelPlan = travelPlanService.createTravelPlan(secondRequest, user);
 
@@ -473,6 +497,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // When
                 travelPlanService.deleteTravelPlan(travelPlan.getId(), user);
+
                 // 삭제 후 엔티티가 존재하지 않는지 확인
                 Optional<TravelPlan> deletedPlan = travelPlanRepository.findById(travelPlan.getId());
                 assertTrue(deletedPlan.isEmpty(), "삭제된 여행 계획은 조회되지 않아야 합니다");
