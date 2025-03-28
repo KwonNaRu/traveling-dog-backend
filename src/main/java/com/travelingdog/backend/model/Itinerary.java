@@ -34,7 +34,6 @@ import lombok.ToString;
 @Builder
 @EqualsAndHashCode(of = { "id", "day", "location" })
 @ToString(of = { "id", "day", "location" })
-@Table(name = "itinerary")
 public class Itinerary extends BaseTimeEntity {
 
     @Id

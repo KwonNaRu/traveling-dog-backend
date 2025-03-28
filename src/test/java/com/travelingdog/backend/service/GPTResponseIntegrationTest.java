@@ -88,6 +88,11 @@ public class GPTResponseIntegrationTest {
          */
         @BeforeEach
         void setUp() {
+                // 데이터베이스 초기화
+                userRepository.deleteAll();
+                travelPlanRepository.deleteAll();
+                itineraryRepository.deleteAll();
+
                 // 테스트 요청 데이터 설정
                 today = LocalDate.now();
                 LocalDate endDate = today.plusDays(3);

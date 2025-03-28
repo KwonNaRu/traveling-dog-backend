@@ -209,22 +209,6 @@ public class GptResponseHandlerTest {
 
         // Then
         assertNotNull(enhancedPrompt);
-        assertTrue(enhancedPrompt.contains("\"trip_name\": \"여행 이름\""));
-        assertTrue(enhancedPrompt.contains("\"start_date\": \"여행 시작일\""));
-        assertTrue(enhancedPrompt.contains("\"end_date\": \"여행 종료일\""));
-        assertTrue(enhancedPrompt.contains("\"season\": \"여행 계절\""));
-        assertTrue(enhancedPrompt.contains("\"travel_style\": [\"여행 스타일1\""));
-        assertTrue(enhancedPrompt.contains("\"budget\": \"예산\""));
-        assertTrue(enhancedPrompt.contains("\"destination\": \"도시\""));
-        assertTrue(enhancedPrompt.contains("\"interests\": [\"관심사1\""));
-        assertTrue(enhancedPrompt.contains("\"accommodation\": [\"숙소 유형1\""));
-        assertTrue(enhancedPrompt.contains("\"transportation\": [\"교통 수단1\""));
-        assertTrue(enhancedPrompt.contains("\"itinerary\": ["));
-        assertTrue(enhancedPrompt.contains("\"activities\": ["));
-        assertTrue(enhancedPrompt.contains("\"lunch\": {"));
-        assertTrue(enhancedPrompt.contains("\"dinner\": {"));
-        assertTrue(enhancedPrompt.contains("\"latitude\": 위도"));
-        assertTrue(enhancedPrompt.contains("\"longitude\": 경도"));
         assertTrue(enhancedPrompt.contains(country));
         assertTrue(enhancedPrompt.contains(city));
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));

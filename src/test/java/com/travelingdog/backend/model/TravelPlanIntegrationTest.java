@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -151,6 +152,29 @@ public class TravelPlanIntegrationTest {
                                 .build();
 
                 travelPlanRepository.save(travelPlan);
+
+                ArrayList<ItineraryActivity> activities = new ArrayList<>();
+                ItineraryActivity activity = ItineraryActivity.builder()
+                                .name("Test Activity")
+                                .description("Test Description")
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .build();
+                activities.add(activity);
+
+                ItineraryLocation lunch = ItineraryLocation.builder()
+                                .name("Test Lunch")
+                                .description("Test Description")
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .build();
+
+                ItineraryLocation dinner = ItineraryLocation.builder()
+                                .name("Test Dinner")
+                                .description("Test Description")
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .build();
 
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()

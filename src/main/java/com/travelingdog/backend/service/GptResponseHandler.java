@@ -2,6 +2,7 @@ package com.travelingdog.backend.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -205,6 +206,8 @@ public class GptResponseHandler {
     public AIRecommendedTravelPlanDTO getFallbackResponse(String country, String city, LocalDate startDate,
             LocalDate endDate) {
         AIRecommendedTravelPlanDTO fallbackList = new AIRecommendedTravelPlanDTO();
+        fallbackList.setTripName(city + " 여행");
+        fallbackList.setItinerary(new ArrayList<>());
 
         // 서울의 경우 기본 관광지 제공
         if ("Seoul".equalsIgnoreCase(city)) {
