@@ -241,9 +241,6 @@ public class GPTResponseIntegrationTest {
         @Test
         @DisplayName("여행 계획 생성 통합 테스트")
         void testCreateTravelPlanWithItineraries() {
-                // Given
-                String validJson = createMockGptResponse(today);
-                AIRecommendedTravelPlanDTO travelPlanDTO = gptResponseHandler.parseGptResponse(validJson);
 
                 // When
                 TravelPlanDTO createdPlanDTO = tripPlanService.createTravelPlan(request, user);

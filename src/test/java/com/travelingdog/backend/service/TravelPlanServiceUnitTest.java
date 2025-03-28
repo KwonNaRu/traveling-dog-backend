@@ -223,9 +223,6 @@ public class TravelPlanServiceUnitTest {
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
 
-                // ItineraryRepository 모킹
-                when(itineraryRepository.save(any(Itinerary.class))).thenReturn(mockLocations.get(0));
-
                 // When
                 TravelPlanDTO result = tripPlanService.createTravelPlan(request, user);
 
