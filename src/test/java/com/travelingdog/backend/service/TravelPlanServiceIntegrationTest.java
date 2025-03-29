@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,10 +25,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -39,7 +36,6 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.travelingdog.backend.config.H2GisTestConfig;
 import com.travelingdog.backend.dto.gpt.AIChatMessage;
 import com.travelingdog.backend.dto.gpt.AIChatRequest;
 import com.travelingdog.backend.dto.gpt.AIChatResponse;
@@ -50,12 +46,10 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
-import com.travelingdog.backend.model.ItineraryLocation;
+import com.travelingdog.backend.model.ItineraryDinner;
+import com.travelingdog.backend.model.ItineraryLunch;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
-import com.travelingdog.backend.repository.ItineraryActivityRepository;
-import com.travelingdog.backend.repository.ItineraryLocationRepository;
-import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
@@ -72,9 +66,7 @@ import com.travelingdog.backend.status.PlanStatus;
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Tag("integration")
-@Import(H2GisTestConfig.class)
 public class TravelPlanServiceIntegrationTest {
 
         @Autowired
@@ -85,15 +77,6 @@ public class TravelPlanServiceIntegrationTest {
 
         @Autowired
         private UserRepository userRepository;
-
-        @Autowired
-        private ItineraryRepository itineraryRepository;
-
-        @Autowired
-        private ItineraryLocationRepository itineraryLocationRepository;
-
-        @Autowired
-        private ItineraryActivityRepository itineraryActivityRepository;
 
         @MockBean
         private RestClient restClient;
@@ -154,32 +137,33 @@ public class TravelPlanServiceIntegrationTest {
                         Itinerary itinerary = Itinerary.builder()
                                         .location("Location " + (i + 1))
                                         .activities(new ArrayList<>())
-                                        .lunch(null)
-                                        .dinner(null)
-                                        .day(i + 1)
+                                        .date(i + 1)
                                         .build();
                         // itinerary = itineraryRepository.save(itinerary);
 
                         ItineraryActivity activity1 = ItineraryActivity.builder()
                                         .name("Activity")
                                         .description("Activity")
-                                        // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                        // .createPoint(new Coordinate(123.456, 78.901)))
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(123.456, 78.901)))
                                         .activityOrder(1)
                                         .build();
                         // itineraryActivityRepository.save(activity1);
 
                         // Location과 Activity 생성
-                        ItineraryLocation lunch = ItineraryLocation.builder()
+                        ItineraryLunch lunch = ItineraryLunch.builder()
                                         .name("Lunch")
                                         .description("Lunch")
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(123.456, 78.901)))
                                         .build();
                         // lunch = itineraryLocationRepository.save(lunch);
 
-                        ItineraryLocation dinner = ItineraryLocation.builder()
+                        ItineraryDinner dinner = ItineraryDinner.builder()
                                         .name("Dinner")
                                         .description("Dinner")
-                                        // .itinerary(itinerary)
+                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                        .createPoint(new Coordinate(123.456, 78.901)))
                                         .build();
                         // dinner = itineraryLocationRepository.save(dinner);
 

@@ -1,13 +1,19 @@
 package com.travelingdog.backend.model;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -15,8 +21,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItineraryLocation {
-
+public class ItineraryDinner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,8 +32,8 @@ public class ItineraryLocation {
     @Column(length = 500)
     private String description; // 장소 설명
 
-    // @Column(columnDefinition = "GEOMETRY(Point, 4326)")
-    // private Point coordinates;
+    @Column(columnDefinition = "GEOMETRY(Point, 4326)")
+    private Point coordinates;
 
     @OneToOne
     @JoinColumn(name = "itinerary_id")

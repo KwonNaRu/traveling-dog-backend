@@ -11,7 +11,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +76,7 @@ public class ItineraryIntegrationTest {
         public void testAddItineraryToTravelPlan() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -85,14 +84,14 @@ public class ItineraryIntegrationTest {
                 // when
                 Itinerary savedItinerary = itineraryRepository.save(itinerary);
                 List<Itinerary> itineraries = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
 
                 // then
                 assertNotNull(savedItinerary);
                 assertNotNull(itineraries);
                 assertEquals(1, itineraries.size());
                 assertEquals(itinerary.getLocation(), itineraries.get(0).getLocation());
-                assertEquals(itinerary.getDay(), itineraries.get(0).getDay());
+                assertEquals(itinerary.getDate(), itineraries.get(0).getDate());
                 assertEquals(travelPlan.getId(), itinerary.getTravelPlan().getId());
         }
 
@@ -103,7 +102,7 @@ public class ItineraryIntegrationTest {
         public void testDeleteTravelPlan() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -111,10 +110,10 @@ public class ItineraryIntegrationTest {
 
                 // when
                 List<Itinerary> beforeDelete = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
                 travelPlanRepository.delete(travelPlan);
                 List<Itinerary> afterDelete = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
 
                 // then
                 assertEquals(1, beforeDelete.size());
@@ -130,13 +129,13 @@ public class ItineraryIntegrationTest {
         public void testItineraryBelongsToTravelPlan() {
                 // given
                 Itinerary itinerary1 = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
 
                 Itinerary itinerary2 = Itinerary.builder()
-                                .day(2)
+                                .date(2)
                                 .location("만장굴")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -144,14 +143,14 @@ public class ItineraryIntegrationTest {
                 // when
                 itineraryRepository.saveAll(List.of(itinerary1, itinerary2));
                 List<Itinerary> itineraries = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
 
                 // then
                 assertEquals(2, itineraries.size());
                 assertTrue(itineraries.stream()
                                 .allMatch(itinerary -> itinerary.getTravelPlan().getId().equals(travelPlan.getId())));
-                assertEquals(1, itineraries.get(0).getDay());
-                assertEquals(2, itineraries.get(1).getDay());
+                assertEquals(1, itineraries.get(0).getDate());
+                assertEquals(2, itineraries.get(1).getDate());
         }
 
         /**
@@ -161,7 +160,7 @@ public class ItineraryIntegrationTest {
         public void testAddActivitiesToItinerary() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -204,20 +203,20 @@ public class ItineraryIntegrationTest {
         public void testAddMealLocationsToItinerary() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
                 itineraryRepository.save(itinerary);
 
-                ItineraryLocation lunch = ItineraryLocation.builder()
+                ItineraryLunch lunch = ItineraryLunch.builder()
                                 .name("제주 흑돼지 맛집")
                                 .description("제주 전통 흑돼지 구이 맛집")
                                 // .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
                                 .itinerary(itinerary)
                                 .build();
 
-                ItineraryLocation dinner = ItineraryLocation.builder()
+                ItineraryDinner dinner = ItineraryDinner.builder()
                                 .name("해녀의 집")
                                 .description("신선한 해산물 요리")
                                 // .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))

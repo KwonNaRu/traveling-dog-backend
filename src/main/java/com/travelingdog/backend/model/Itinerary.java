@@ -39,7 +39,7 @@ public class Itinerary {
     private Long id;
 
     @Column(nullable = false)
-    private int day; // 여행 일자
+    private int date; // 여행 일자
 
     @Column(nullable = false)
     private String location; // 일정 위치(지역명)
@@ -48,11 +48,11 @@ public class Itinerary {
     @Builder.Default
     private List<ItineraryActivity> activities = new ArrayList<>();
 
-    @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ItineraryLocation lunch;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private ItineraryLunch lunch;
 
-    @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ItineraryLocation dinner;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private ItineraryDinner dinner;
 
     @ManyToOne
     @JoinColumn(name = "travel_plan_id")
@@ -68,54 +68,30 @@ public class Itinerary {
         activity.setItinerary(null);
     }
 
-    public void addLunch(ItineraryLocation lunch) {
-        this.lunch = lunch;
-        lunch.setItinerary(this);
-    }
-
-    public void addDinner(ItineraryLocation dinner) {
-        this.dinner = dinner;
-        dinner.setItinerary(this);
-    }
-
-    public void removeLunch() {
-        if (lunch != null) {
-            lunch.setItinerary(null);
-            lunch = null;
-        }
-    }
-
-    public void removeDinner() {
-        if (dinner != null) {
-            dinner.setItinerary(null);
-            dinner = null;
-        }
-    }
-
     public static Itinerary fromDto(AIRecommendedItineraryDTO dto, TravelPlan travelPlan) {
         Itinerary itinerary = new Itinerary();
-        itinerary.setDay(dto.getDay());
+        itinerary.setDate(dto.getDate());
         itinerary.setLocation(dto.getLocation());
         itinerary.setTravelPlan(travelPlan); // TravelPlan 설정 추가
 
         // 점심 정보 변환
         if (dto.getLunch() != null) {
-            ItineraryLocation lunch = new ItineraryLocation();
+            ItineraryLunch lunch = new ItineraryLunch();
             lunch.setName(dto.getLunch().getName());
             lunch.setDescription(dto.getLunch().getDescription());
             // lunch.setCoordinates(dto.getLunch().getLongitude(),
             // dto.getLunch().getLatitude());
-            itinerary.addLunch(lunch); // 수정된 메서드 사용
+            itinerary.setLunch(lunch); // 수정된 메서드 사용
         }
 
         // 저녁 정보 변환
         if (dto.getDinner() != null) {
-            ItineraryLocation dinner = new ItineraryLocation();
+            ItineraryDinner dinner = new ItineraryDinner();
             dinner.setName(dto.getDinner().getName());
             dinner.setDescription(dto.getDinner().getDescription());
             // dinner.setCoordinates(dto.getDinner().getLongitude(),
             // dto.getDinner().getLatitude());
-            itinerary.addDinner(dinner); // 수정된 메서드 사용
+            itinerary.setDinner(dinner); // 수정된 메서드 사용
         }
 
         // 활동 정보 변환

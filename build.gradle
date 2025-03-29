@@ -63,12 +63,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	
 	// H2 및 H2GIS 의존성 추가
-	// testImplementation 'com.h2database:h2'
-	// testImplementation 'org.hibernate:hibernate-spatial:6.6.5.Final'
     testImplementation 'org.orbisgis:h2gis:2.2.0'
-    testImplementation 'org.orbisgis:h2gis-utilities:2.2.0'
 }
 
 tasks.named('test') {

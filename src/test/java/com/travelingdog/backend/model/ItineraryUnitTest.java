@@ -9,7 +9,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 
@@ -50,7 +49,7 @@ public class ItineraryUnitTest {
 
                 // Itinerary 초기화
                 itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -62,7 +61,7 @@ public class ItineraryUnitTest {
         @Test
         public void testItineraryCreation() {
                 assertThat(itinerary).isNotNull();
-                assertThat(itinerary.getDay()).isEqualTo(1);
+                assertThat(itinerary.getDate()).isEqualTo(1);
                 assertThat(itinerary.getLocation()).isEqualTo("제주시");
                 assertThat(itinerary.getTravelPlan()).isEqualTo(travelPlan);
                 assertThat(itinerary.getActivities()).isEmpty();
@@ -75,11 +74,11 @@ public class ItineraryUnitTest {
          */
         @Test
         public void testItineraryUpdate() {
-                itinerary.setDay(2);
+                itinerary.setDate(2);
                 itinerary.setLocation("서귀포시");
                 itinerary.setTravelPlan(travelPlan);
 
-                assertThat(itinerary.getDay()).isEqualTo(2);
+                assertThat(itinerary.getDate()).isEqualTo(2);
                 assertThat(itinerary.getLocation()).isEqualTo("서귀포시");
         }
 
@@ -89,7 +88,7 @@ public class ItineraryUnitTest {
         @Test
         public void testItineraryMealLocations() {
                 // 점심 장소 추가
-                ItineraryLocation lunch = ItineraryLocation.builder()
+                ItineraryLunch lunch = ItineraryLunch.builder()
                                 .name("제주 흑돼지 맛집")
                                 .description("제주 전통 흑돼지 구이 맛집")
                                 // .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
@@ -98,7 +97,7 @@ public class ItineraryUnitTest {
                 itinerary.setLunch(lunch);
 
                 // 저녁 장소 추가
-                ItineraryLocation dinner = ItineraryLocation.builder()
+                ItineraryDinner dinner = ItineraryDinner.builder()
                                 .name("해녀의 집")
                                 .description("신선한 해산물 요리")
                                 // .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
@@ -150,7 +149,7 @@ public class ItineraryUnitTest {
         @Test
         public void testLocationIsNull() {
                 Itinerary invalidItinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .travelPlan(travelPlan)
                                 .build();
 
@@ -166,7 +165,7 @@ public class ItineraryUnitTest {
         @Test
         public void testTravelPlanIsNull() {
                 Itinerary invalidItinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("제주시")
                                 .build();
 
@@ -180,7 +179,7 @@ public class ItineraryUnitTest {
         @Tag("unit")
         public void testItineraryCreation_success() {
                 Itinerary validItinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -194,14 +193,14 @@ public class ItineraryUnitTest {
                 // Given
                 Itinerary itinerary1 = Itinerary.builder()
                                 .id(1L)
-                                .day(1)
+                                .date(1)
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();
 
                 Itinerary itinerary2 = Itinerary.builder()
                                 .id(1L)
-                                .day(1)
+                                .date(1)
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -219,7 +218,7 @@ public class ItineraryUnitTest {
                 // Then
                 assertThat(toString).isNotNull();
                 assertThat(toString).contains("id=" + itinerary.getId());
-                assertThat(toString).contains("day=" + itinerary.getDay());
+                assertThat(toString).contains("date=" + itinerary.getDate());
                 assertThat(toString).contains("location=" + itinerary.getLocation());
         }
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ItineraryDTO {
     private Long id;
     private String location;
-    private int day;
+    private int date;
 
     public static ItineraryDTO fromEntity(Itinerary entity) {
         if (entity == null) {
@@ -24,14 +24,14 @@ public class ItineraryDTO {
         return ItineraryDTO.builder()
                 .id(entity.getId())
                 .location(entity.getLocation())
-                .day(entity.getDay())
+                .date(entity.getDate())
                 .build();
     }
 
     public static Itinerary toEntity(ItineraryDTO dto) {
         return Itinerary.builder()
                 .location(dto.getLocation())
-                .day(dto.getDay())
+                .date(dto.getDate())
                 .build();
     }
 

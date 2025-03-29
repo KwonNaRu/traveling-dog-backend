@@ -162,14 +162,14 @@ public class TravelPlanIntegrationTest {
                                 .build();
                 activities.add(activity);
 
-                ItineraryLocation lunch = ItineraryLocation.builder()
+                ItineraryLunch lunch = ItineraryLunch.builder()
                                 .name("Test Lunch")
                                 .description("Test Description")
                                 // .coordinates(geometryFactory
                                 // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .build();
 
-                ItineraryLocation dinner = ItineraryLocation.builder()
+                ItineraryLunch dinner = ItineraryLunch.builder()
                                 .name("Test Dinner")
                                 .description("Test Description")
                                 // .coordinates(geometryFactory
@@ -178,7 +178,7 @@ public class TravelPlanIntegrationTest {
 
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("Test Location")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -187,7 +187,7 @@ public class TravelPlanIntegrationTest {
 
                 // 일정이 여행 계획에 추가되었는지 확인
                 List<Itinerary> itineraries = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
                 assertEquals(1, itineraries.size());
                 assertEquals(itinerary.getTravelPlan(), travelPlan);
 
@@ -196,7 +196,8 @@ public class TravelPlanIntegrationTest {
 
                 // 일정이 삭제되었는지 확인
                 assertNull(itineraryRepository.findById(itinerary.getId()).orElse(null));
-                assertEquals(0, itineraryRepository.findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId()).size());
+                assertEquals(0, itineraryRepository.findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId())
+                                .size());
         }
 
         /*
@@ -218,7 +219,7 @@ public class TravelPlanIntegrationTest {
 
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("Test Location")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -226,36 +227,44 @@ public class TravelPlanIntegrationTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("Test Activity")
                                 .description("Test Description")
-                                // .coordinates(geometryFactory
-                                // .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .activityOrder(1)
                                 .itinerary(itinerary)
                                 .build();
 
-                ItineraryLocation location = ItineraryLocation.builder()
+                ItineraryLunch lunch = ItineraryLunch.builder()
                                 .name("Test Lunch")
                                 .description("Test Description")
-                                // .coordinates(geometryFactory
-                                // .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .itinerary(itinerary)
+                                .build();
+
+                ItineraryDinner dinner = ItineraryDinner.builder()
+                                .name("Test Dinner")
+                                .description("Test Description")
+                                .coordinates(geometryFactory
+                                                .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .itinerary(itinerary)
                                 .build();
 
                 itinerary.setActivities(List.of(activity));
-                itinerary.setLunch(location);
-                itinerary.setDinner(location);
+                itinerary.setLunch(lunch);
+                itinerary.setDinner(dinner);
 
                 itineraryRepository.save(itinerary);
 
                 // 일정 업데이트
                 List<Itinerary> itineraries = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
                 Itinerary updatedItinerary = itineraries.get(0);
                 updatedItinerary.setLocation("Updated Location");
                 itineraryRepository.save(updatedItinerary);
 
                 // 업데이트된 일정 확인
                 assertEquals("Updated Location",
-                                itineraryRepository.findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId())
+                                itineraryRepository.findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId())
                                                 .get(0).getLocation());
         }
 }

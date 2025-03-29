@@ -332,7 +332,7 @@ public class TravelPlanService {
         TravelPlan travelPlan = locationToMove.getTravelPlan();
 
         // 3. 현재 순서 저장
-        int currentOrder = locationToMove.getDay();
+        int currentOrder = locationToMove.getDate();
 
         // 4. 같은 순서면 아무것도 하지 않음
         if (currentOrder == newOrder) {
@@ -342,7 +342,7 @@ public class TravelPlanService {
         // 5. 모든 장소 가져와서 순서대로 정렬
         List<Itinerary> itineraries = travelPlan.getItineraries()
                 .stream()
-                .sorted(Comparator.comparing(Itinerary::getDay))
+                .sorted(Comparator.comparing(Itinerary::getDate))
                 .collect(Collectors.toList());
 
         // 6. 순서 재배치
@@ -350,24 +350,24 @@ public class TravelPlanService {
             // 현재 위치보다 뒤로 이동하는 경우 (예: 1→3)
             // 중간에 있는 장소들은 한 칸씩 앞으로 당김 (2→1, 3→2)
             for (Itinerary loc : itineraries) {
-                int order = loc.getDay();
+                int order = loc.getDate();
                 if (order > currentOrder && order <= newOrder) {
-                    loc.setDay(order - 1);
+                    loc.setDate(order - 1);
                 }
             }
         } else {
             // 현재 위치보다 앞으로 이동하는 경우 (예: 3→1)
             // 중간에 있는 장소들은 한 칸씩 뒤로 밀림 (1→2, 2→3)
             for (Itinerary loc : itineraries) {
-                int order = loc.getDay();
+                int order = loc.getDate();
                 if (order >= newOrder && order < currentOrder) {
-                    loc.setDay(order + 1);
+                    loc.setDate(order + 1);
                 }
             }
         }
 
         // 7. 이동할 장소의 순서 변경
-        locationToMove.setDay(newOrder);
+        locationToMove.setDate(newOrder);
 
         // 8. 변경사항 저장
         itineraryRepository.saveAll(itineraries);

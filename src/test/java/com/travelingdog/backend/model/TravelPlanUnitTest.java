@@ -73,7 +73,7 @@ public class TravelPlanUnitTest {
         @Test
         public void testUpdateTravelPlan() {
                 Itinerary itinerary = Itinerary.builder()
-                                .day(1)
+                                .date(1)
                                 .location("테스트 장소")
                                 .travelPlan(travelPlan)
                                 .build();

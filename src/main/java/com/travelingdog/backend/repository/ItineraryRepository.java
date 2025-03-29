@@ -10,5 +10,5 @@ import com.travelingdog.backend.model.TravelPlan;
 
 @Repository
 public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
-    List<Itinerary> findAllByTravelPlanIdOrderByDayAsc(Long travelPlanId);
+    List<Itinerary> findAllByTravelPlanIdOrderByDateAsc(Long travelPlanId);
 }

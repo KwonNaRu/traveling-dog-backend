@@ -225,7 +225,7 @@ public class GPTResponseIntegrationTest {
 
                 // 첫째 날 일정 검증
                 AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
-                assertEquals(1, firstDay.getDay());
+                assertEquals(1, firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
@@ -235,7 +235,7 @@ public class GPTResponseIntegrationTest {
 
                 // 둘째 날 일정 검증
                 AIRecommendedItineraryDTO secondDay = result.getItinerary().get(1);
-                assertEquals(2, secondDay.getDay());
+                assertEquals(2, secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
@@ -261,12 +261,12 @@ public class GPTResponseIntegrationTest {
 
                 // 일정 검증
                 List<Itinerary> itineraries = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDayAsc(travelPlan.getId());
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
                 assertEquals(2, itineraries.size());
 
                 // 첫째 날 일정 검증
                 Itinerary firstDay = itineraries.get(0);
-                assertEquals(1, firstDay.getDay());
+                assertEquals(1, firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
@@ -276,7 +276,7 @@ public class GPTResponseIntegrationTest {
 
                 // 둘째 날 일정 검증
                 Itinerary secondDay = itineraries.get(1);
-                assertEquals(2, secondDay.getDay());
+                assertEquals(2, secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());

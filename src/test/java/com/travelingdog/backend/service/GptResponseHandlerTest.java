@@ -93,7 +93,7 @@ public class GptResponseHandlerTest {
         assertEquals(1, result.getItinerary().size());
 
         AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
-        assertEquals(1, firstDay.getDay());
+        assertEquals(1, firstDay.getDate());
         assertEquals("성산일출봉", firstDay.getLocation());
         assertEquals(1, firstDay.getActivities().size());
         assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
