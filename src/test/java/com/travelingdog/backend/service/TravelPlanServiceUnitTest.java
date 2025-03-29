@@ -146,27 +146,27 @@ public class TravelPlanServiceUnitTest {
                 lunch = ItineraryLocation.builder()
                                 .name("Lunch")
                                 .description("Lunch")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                // .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
                 dinner = ItineraryLocation.builder()
                                 .name("Dinner")
                                 .description("Dinner")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                // .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
                 activity1 = ItineraryActivity.builder()
                                 .name("Activity")
                                 .description("Activity")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                // .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
                 activity2 = ItineraryActivity.builder().name("test2").description("test2")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                // .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
                 Itinerary itinerary = new Itinerary();

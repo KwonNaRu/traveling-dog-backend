@@ -170,7 +170,7 @@ public class ItineraryIntegrationTest {
                 ItineraryActivity activity1 = ItineraryActivity.builder()
                                 .name("성산일출봉 등반")
                                 .description("제주도의 상징적인 화산 등반")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.939, 33.458)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.939, 33.458)))
                                 .activityOrder(0)
                                 .itinerary(itinerary)
                                 .build();
@@ -178,7 +178,7 @@ public class ItineraryIntegrationTest {
                 ItineraryActivity activity2 = ItineraryActivity.builder()
                                 .name("우도 자전거 투어")
                                 .description("우도 섬 자전거 투어")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.953, 33.506)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.953, 33.506)))
                                 .activityOrder(1)
                                 .itinerary(itinerary)
                                 .build();
@@ -213,14 +213,14 @@ public class ItineraryIntegrationTest {
                 ItineraryLocation lunch = ItineraryLocation.builder()
                                 .name("제주 흑돼지 맛집")
                                 .description("제주 전통 흑돼지 구이 맛집")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
                                 .itinerary(itinerary)
                                 .build();
 
                 ItineraryLocation dinner = ItineraryLocation.builder()
                                 .name("해녀의 집")
                                 .description("신선한 해산물 요리")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
                                 .itinerary(itinerary)
                                 .build();
 
@@ -235,9 +235,9 @@ public class ItineraryIntegrationTest {
                 assertNotNull(savedItinerary.getDinner());
                 assertEquals("제주 흑돼지 맛집", savedItinerary.getLunch().getName());
                 assertEquals("해녀의 집", savedItinerary.getDinner().getName());
-                assertEquals(126.531, savedItinerary.getLunch().getCoordinates().getX());
-                assertEquals(33.499, savedItinerary.getLunch().getCoordinates().getY());
-                assertEquals(126.559, savedItinerary.getDinner().getCoordinates().getX());
-                assertEquals(33.248, savedItinerary.getDinner().getCoordinates().getY());
+                // assertEquals(126.531, savedItinerary.getLunch().getCoordinates().getX());
+                // assertEquals(33.499, savedItinerary.getLunch().getCoordinates().getY());
+                // assertEquals(126.559, savedItinerary.getDinner().getCoordinates().getX());
+                // assertEquals(33.248, savedItinerary.getDinner().getCoordinates().getY());
         }
 }

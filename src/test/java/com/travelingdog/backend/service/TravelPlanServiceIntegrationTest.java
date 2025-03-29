@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +26,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,6 +39,7 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
+import com.travelingdog.backend.config.H2GisTestConfig;
 import com.travelingdog.backend.dto.gpt.AIChatMessage;
 import com.travelingdog.backend.dto.gpt.AIChatRequest;
 import com.travelingdog.backend.dto.gpt.AIChatResponse;
@@ -68,7 +72,9 @@ import com.travelingdog.backend.status.PlanStatus;
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Tag("integration")
+@Import(H2GisTestConfig.class)
 public class TravelPlanServiceIntegrationTest {
 
         @Autowired
@@ -126,54 +132,25 @@ public class TravelPlanServiceIntegrationTest {
                                 .city("Seoul")
                                 .user(user)
                                 .title("Test Travel Plan")
+                                .itineraries(new ArrayList<>())
                                 .startDate(today)
+                                .season("Spring")
+                                .budget("Budget")
+                                .transportationTips("Transportation Tips")
+                                .travelStyles(new ArrayList<>())
+                                .interests(new ArrayList<>())
+                                .accommodationTypes(new ArrayList<>())
+                                .transportationTypes(new ArrayList<>())
+                                .restaurantRecommendations(new ArrayList<>())
+                                .accommodationRecommendations(new ArrayList<>())
                                 .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
+                // travelPlan = travelPlanRepository.save(travelPlan);
 
                 // Itineraries 생성
                 for (int i = 0; i < 3; i++) {
                         // 먼저 Itinerary 생성
-
-                        // Location과 Activity 생성
-                        ItineraryLocation lunch = ItineraryLocation.builder()
-                                        .name("Lunch")
-                                        .description("Lunch")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(37.5, 127.0)))
-                                        .build();
-
-                        itineraryLocationRepository.save(lunch);
-
-                        ItineraryLocation dinner = ItineraryLocation.builder()
-                                        .name("Dinner")
-                                        .description("Dinner")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(37.5, 127.0)))
-                                        .build();
-
-                        itineraryLocationRepository.save(dinner);
-
-                        ItineraryActivity activity1 = ItineraryActivity.builder()
-                                        .name("Activity")
-                                        .description("Activity")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(37.5, 127.0)))
-                                        .activityOrder(1)
-                                        .build();
-
-                        itineraryActivityRepository.save(activity1);
-
-                        ItineraryActivity activity2 = ItineraryActivity.builder()
-                                        .name("test2")
-                                        .description("test2")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(37.5, 127.0)))
-                                        .activityOrder(2)
-                                        .build();
-
-                        itineraryActivityRepository.save(activity2);
-
                         Itinerary itinerary = Itinerary.builder()
                                         .location("Location " + (i + 1))
                                         .activities(new ArrayList<>())
@@ -181,11 +158,34 @@ public class TravelPlanServiceIntegrationTest {
                                         .dinner(null)
                                         .day(i + 1)
                                         .build();
+                        // itinerary = itineraryRepository.save(itinerary);
+
+                        ItineraryActivity activity1 = ItineraryActivity.builder()
+                                        .name("Activity")
+                                        .description("Activity")
+                                        // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                        // .createPoint(new Coordinate(123.456, 78.901)))
+                                        .activityOrder(1)
+                                        .build();
+                        // itineraryActivityRepository.save(activity1);
+
+                        // Location과 Activity 생성
+                        ItineraryLocation lunch = ItineraryLocation.builder()
+                                        .name("Lunch")
+                                        .description("Lunch")
+                                        .build();
+                        // lunch = itineraryLocationRepository.save(lunch);
+
+                        ItineraryLocation dinner = ItineraryLocation.builder()
+                                        .name("Dinner")
+                                        .description("Dinner")
+                                        // .itinerary(itinerary)
+                                        .build();
+                        // dinner = itineraryLocationRepository.save(dinner);
+
+                        itinerary.setLunch(lunch);
+                        itinerary.setDinner(dinner);
                         itinerary.addActivity(activity1);
-                        itinerary.addActivity(activity2);
-                        itinerary.addLunch(lunch);
-                        itinerary.addDinner(dinner);
-                        // itineraryRepository.save(itinerary);
 
                         travelPlan.addItinerary(itinerary);
                 }

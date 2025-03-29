@@ -32,19 +32,15 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(of = { "id", "day", "location" })
-@ToString(of = { "id", "day", "location" })
 public class Itinerary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(nullable = false)
     private int day; // 여행 일자
 
-    @NotNull
     @Column(nullable = false)
     private String location; // 일정 위치(지역명)
 
@@ -53,11 +49,9 @@ public class Itinerary {
     private List<ItineraryActivity> activities = new ArrayList<>();
 
     @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "lunch_id")
     private ItineraryLocation lunch;
 
     @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "dinner_id")
     private ItineraryLocation dinner;
 
     @ManyToOne
@@ -102,15 +96,16 @@ public class Itinerary {
         Itinerary itinerary = new Itinerary();
         itinerary.setDay(dto.getDay());
         itinerary.setLocation(dto.getLocation());
+        itinerary.setTravelPlan(travelPlan); // TravelPlan 설정 추가
 
         // 점심 정보 변환
         if (dto.getLunch() != null) {
             ItineraryLocation lunch = new ItineraryLocation();
             lunch.setName(dto.getLunch().getName());
             lunch.setDescription(dto.getLunch().getDescription());
-            lunch.setCoordinates(dto.getLunch().getLongitude(), dto.getLunch().getLatitude());
-            lunch.setItinerary(itinerary);
-            itinerary.setLunch(lunch);
+            // lunch.setCoordinates(dto.getLunch().getLongitude(),
+            // dto.getLunch().getLatitude());
+            itinerary.addLunch(lunch); // 수정된 메서드 사용
         }
 
         // 저녁 정보 변환
@@ -118,25 +113,23 @@ public class Itinerary {
             ItineraryLocation dinner = new ItineraryLocation();
             dinner.setName(dto.getDinner().getName());
             dinner.setDescription(dto.getDinner().getDescription());
-            dinner.setCoordinates(dto.getDinner().getLongitude(), dto.getDinner().getLatitude());
-            dinner.setItinerary(itinerary);
-            itinerary.setDinner(dinner);
+            // dinner.setCoordinates(dto.getDinner().getLongitude(),
+            // dto.getDinner().getLatitude());
+            itinerary.addDinner(dinner); // 수정된 메서드 사용
         }
 
         // 활동 정보 변환
         if (dto.getActivities() != null) {
-            List<ItineraryActivity> activities = new ArrayList<>();
             int order = 0;
             for (AIRecommendedItineraryDTO.Location activity : dto.getActivities()) {
                 ItineraryActivity activityEntity = new ItineraryActivity();
                 activityEntity.setName(activity.getName());
                 activityEntity.setDescription(activity.getDescription());
-                activityEntity.setCoordinates(activity.getLongitude(), activity.getLatitude());
+                // activityEntity.setCoordinates(activity.getLongitude(),
+                // activity.getLatitude());
                 activityEntity.setActivityOrder(order++);
-                activityEntity.setItinerary(itinerary);
-                activities.add(activityEntity);
+                itinerary.addActivity(activityEntity); // 연관관계 메서드 사용
             }
-            itinerary.setActivities(activities);
         }
 
         return itinerary;

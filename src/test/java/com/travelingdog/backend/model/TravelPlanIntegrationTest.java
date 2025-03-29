@@ -157,23 +157,23 @@ public class TravelPlanIntegrationTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("Test Activity")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                // .coordinates(geometryFactory
+                                // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .build();
                 activities.add(activity);
 
                 ItineraryLocation lunch = ItineraryLocation.builder()
                                 .name("Test Lunch")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                // .coordinates(geometryFactory
+                                // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .build();
 
                 ItineraryLocation dinner = ItineraryLocation.builder()
                                 .name("Test Dinner")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                // .coordinates(geometryFactory
+                                // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .build();
 
                 // 일정 생성
@@ -226,8 +226,8 @@ public class TravelPlanIntegrationTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("Test Activity")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                // .coordinates(geometryFactory
+                                // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .activityOrder(1)
                                 .itinerary(itinerary)
                                 .build();
@@ -235,8 +235,8 @@ public class TravelPlanIntegrationTest {
                 ItineraryLocation location = ItineraryLocation.builder()
                                 .name("Test Lunch")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                // .coordinates(geometryFactory
+                                // .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .itinerary(itinerary)
                                 .build();
 

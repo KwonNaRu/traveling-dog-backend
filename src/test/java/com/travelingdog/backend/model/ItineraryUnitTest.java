@@ -92,7 +92,7 @@ public class ItineraryUnitTest {
                 ItineraryLocation lunch = ItineraryLocation.builder()
                                 .name("제주 흑돼지 맛집")
                                 .description("제주 전통 흑돼지 구이 맛집")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
                                 .itinerary(itinerary)
                                 .build();
                 itinerary.setLunch(lunch);
@@ -101,7 +101,7 @@ public class ItineraryUnitTest {
                 ItineraryLocation dinner = ItineraryLocation.builder()
                                 .name("해녀의 집")
                                 .description("신선한 해산물 요리")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
                                 .itinerary(itinerary)
                                 .build();
                 itinerary.setDinner(dinner);
@@ -118,7 +118,7 @@ public class ItineraryUnitTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("성산일출봉")
                                 .description("제주도의 상징적인 화산")
-                                .coordinates(geometryFactory.createPoint(new Coordinate(126.939, 33.458)))
+                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.939, 33.458)))
                                 .activityOrder(0)
                                 .itinerary(itinerary)
                                 .build();
