@@ -17,12 +17,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -38,6 +42,9 @@ public class ItineraryIntegrationTest {
 
         @Autowired
         private TravelPlanRepository travelPlanRepository;
+
+        @PersistenceContext
+        private EntityManager entityManager;
 
         private User user;
         private TravelPlan travelPlan;
@@ -99,6 +106,7 @@ public class ItineraryIntegrationTest {
          * 여행 계획이 삭제되면 여행 계획의 일정 리스트도 삭제된다.
          */
         @Test
+        @Transactional
         public void testDeleteTravelPlan() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
@@ -108,10 +116,25 @@ public class ItineraryIntegrationTest {
                                 .build();
                 itineraryRepository.save(itinerary);
 
+                // 영속성 컨텍스트 초기화
+                entityManager.flush();
+                entityManager.clear();
+
                 // when
+                // TravelPlan 다시 로드
+                TravelPlan reloadedTravelPlan = travelPlanRepository.findById(travelPlan.getId()).orElse(null);
                 List<Itinerary> beforeDelete = itineraryRepository
-                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
-                travelPlanRepository.delete(travelPlan);
+                                .findAllByTravelPlanIdOrderByDateAsc(reloadedTravelPlan.getId());
+
+                // TravelPlan에서 Itinerary 연관관계 제거
+                reloadedTravelPlan.getItineraries().clear();
+                travelPlanRepository.save(reloadedTravelPlan);
+                entityManager.flush();
+
+                // TravelPlan 삭제
+                travelPlanRepository.delete(reloadedTravelPlan);
+                entityManager.flush();
+
                 List<Itinerary> afterDelete = itineraryRepository
                                 .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
 
