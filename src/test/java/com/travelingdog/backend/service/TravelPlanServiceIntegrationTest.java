@@ -129,7 +129,7 @@ public class TravelPlanServiceIntegrationTest {
                                 .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
-                // travelPlan = travelPlanRepository.save(travelPlan);
+                travelPlan = travelPlanRepository.save(travelPlan);
 
                 // Itineraries 생성
                 for (int i = 0; i < 3; i++) {
@@ -183,10 +183,36 @@ public class TravelPlanServiceIntegrationTest {
                 Choice choice = new Choice();
                 AIChatMessage message = new AIChatMessage();
 
-                // Mock 장소 4개 생성
-                String jsonResponse = createMockGptResponse(today);
-                message.setContent(jsonResponse);
+                // Mock GPT 응답 생성 - 테스트에 적합한 전체 여행 계획 JSON
+                String jsonResponse = "{"
+                                + "\"trip_name\":\"서울 여행 계획\","
+                                + "\"start_date\":\"" + today + "\","
+                                + "\"end_date\":\"" + today.plusDays(3) + "\","
+                                + "\"season\":\"봄\","
+                                + "\"travel_style\":[\"도시\",\"문화\"],"
+                                + "\"budget\":\"중간\","
+                                + "\"destination\":\"서울\","
+                                + "\"interests\":[\"역사\",\"쇼핑\"],"
+                                + "\"accommodation\":[\"호텔\"],"
+                                + "\"transportation\":[\"지하철\",\"버스\"],"
+                                + "\"itinerary\":["
+                                + "  {\"date\":1,\"location\":\"종로구\","
+                                + "   \"activities\":[{\"name\":\"경복궁\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}],"
+                                + "   \"lunch\":{\"name\":\"인사동 한식당\",\"latitude\":37.5746,\"longitude\":126.9850,\"description\":\"전통 한식\"},"
+                                + "   \"dinner\":{\"name\":\"광화문 레스토랑\",\"latitude\":37.5720,\"longitude\":126.9760,\"description\":\"현대식 한식\"}"
+                                + "  },"
+                                + "  {\"date\":2,\"location\":\"용산구\","
+                                + "   \"activities\":[{\"name\":\"남산타워\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}],"
+                                + "   \"lunch\":{\"name\":\"이태원 레스토랑\",\"latitude\":37.5340,\"longitude\":126.9940,\"description\":\"다양한 세계 요리\"},"
+                                + "   \"dinner\":{\"name\":\"한남동 식당\",\"latitude\":37.5350,\"longitude\":127.0100,\"description\":\"고급 다이닝\"}"
+                                + "  }"
+                                + "],"
+                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"latitude\":37.5635,\"longitude\":126.9850,\"description\":\"인기 관광지의 맛집\"}],"
+                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"latitude\":37.5635,\"longitude\":126.9840,\"description\":\"편리한 위치의 호텔\"}],"
+                                + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
+                                + "}";
 
+                message.setContent(jsonResponse);
                 choice.setMessage(message);
                 choices.add(choice);
                 mockResponse.setChoices(choices);
@@ -223,6 +249,9 @@ public class TravelPlanServiceIntegrationTest {
         @Test
         @DisplayName("여행 계획 생성 테스트")
         void testCreateTravelPlan() {
+                // 소유자로 인증 설정
+                setAuthenticationUser(user);
+
                 // Given
                 TravelPlanRequest request = new TravelPlanRequest();
                 request.setTitle("Test Travel Plan");
@@ -250,7 +279,7 @@ public class TravelPlanServiceIntegrationTest {
                 // 생성된 여행 장소 확인
                 assertNotNull(createdPlan.getItineraries());
                 assertFalse(createdPlan.getItineraries().isEmpty());
-                assertEquals(4, createdPlan.getItineraries().size());
+                assertEquals(2, createdPlan.getItineraries().size());
         }
 
         /**
