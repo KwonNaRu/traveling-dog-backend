@@ -34,7 +34,8 @@ public class FailedGptResponse {
     @Column(columnDefinition = "TEXT")
     private String response;
 
-    @Column(length = 500)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
     private LocalDateTime timestamp;

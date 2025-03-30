@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -18,11 +19,14 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
@@ -51,6 +55,7 @@ import com.travelingdog.backend.repository.UserRepository;
 @SpringBootTest
 @ActiveProfiles("test")
 @Tag("integration")
+@Transactional
 public class GPTResponseIntegrationTest {
 
         @Autowired
@@ -170,7 +175,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"itinerary\":[");
 
                 // 첫째 날 일정
-                jsonBuilder.append("{\"day\":1,\"location\":\"성산일출봉\",");
+                jsonBuilder.append("{\"date\":1,\"location\":\"성산일출봉\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
                                 "{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
@@ -184,7 +189,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("},");
 
                 // 둘째 날 일정
-                jsonBuilder.append("{\"day\":2,\"location\":\"만장굴\",");
+                jsonBuilder.append("{\"date\":2,\"location\":\"만장굴\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
                                 "{\"name\":\"만장굴 탐험\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
@@ -212,6 +217,11 @@ public class GPTResponseIntegrationTest {
         @Test
         @DisplayName("GPT 응답 JSON 파싱 기능 테스트")
         void testGptResponseHandlerParseValidJson() {
+                // 인증 설정
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
                 // Given
                 String validJson = createMockGptResponse(today);
 
@@ -241,11 +251,18 @@ public class GPTResponseIntegrationTest {
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
                 assertEquals("제주 전복 요리", secondDay.getLunch().getName());
                 assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
+
+                // 테스트 종료 후 SecurityContext 정리
+                SecurityContextHolder.clearContext();
         }
 
         @Test
         @DisplayName("여행 계획 생성 통합 테스트")
         void testCreateTravelPlanWithItineraries() {
+                // 인증 설정
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 // When
                 TravelPlanDTO createdPlanDTO = tripPlanService.createTravelPlan(request, user);
@@ -282,5 +299,19 @@ public class GPTResponseIntegrationTest {
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
                 assertEquals("제주 전복 요리", secondDay.getLunch().getName());
                 assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
+
+                // 테스트 종료 후 SecurityContext 정리
+                SecurityContextHolder.clearContext();
+        }
+
+        @AfterEach
+        public void cleanup() {
+                // 테스트 후 SecurityContext 정리
+                SecurityContextHolder.clearContext();
+
+                // 데이터 정리 (외래 키 제약 조건을 고려한 삭제 순서)
+                itineraryRepository.deleteAll();
+                travelPlanRepository.deleteAll();
+                userRepository.deleteAll();
         }
 }
