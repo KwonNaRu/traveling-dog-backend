@@ -57,7 +57,7 @@ public class GptResponseHandler {
     }
 
     /**
-     * 응답에서 JSON 배열 부분만 추출합니다.
+     * 응답에서 JSON 객체 부분만 추출합니다.
      */
     private String normalizeGptResponse(String content) {
         if (content == null || content.trim().isEmpty()) {
@@ -71,11 +71,12 @@ public class GptResponseHandler {
             return codeBlockMatcher.group(1);
         }
 
-        // JSON 배열 추출 ([{...}])
-        Pattern jsonArrayPattern = Pattern.compile("\\[\\s*\\{.+?\\}\\s*\\]", Pattern.DOTALL);
-        Matcher jsonArrayMatcher = jsonArrayPattern.matcher(content);
-        if (jsonArrayMatcher.find()) {
-            return jsonArrayMatcher.group();
+        // JSON 객체 추출 - 전체 JSON 구조를 찾기 위해 trip_name부터 transportation_tips까지 포함하는 패턴 사용
+        Pattern jsonObjectPattern = Pattern.compile("\\{.*?\"trip_name\".*?\"transportation_tips\".*?\\}",
+                Pattern.DOTALL);
+        Matcher jsonObjectMatcher = jsonObjectPattern.matcher(content);
+        if (jsonObjectMatcher.find()) {
+            return jsonObjectMatcher.group();
         }
 
         // 정규화 실패 시 원본 반환 (파싱 시도)
@@ -144,7 +145,7 @@ public class GptResponseHandler {
                 + "\"transportation\": [\"교통 수단1(문자열, 예: 지하철)\", \"교통 수단2(문자열, 예: 버스)\", ...],"
                 + "\"itinerary\": ["
                 + "{"
-                + "\"day\": 일자(숫자),"
+                + "\"date\": 일자(숫자),"
                 + "\"location\": \"위치(문자열, 예: 나하 시내)\","
                 + "\"activities\": ["
                 + "{"

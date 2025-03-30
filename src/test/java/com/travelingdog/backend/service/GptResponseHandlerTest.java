@@ -73,7 +73,7 @@ public class GptResponseHandlerTest {
     @DisplayName("정상적인 JSON 응답을 파싱할 수 있어야 한다")
     void testParseValidJson() {
         // Given
-        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"season\":\"여름\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}],\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}}]}";
+        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"season\":\"여름\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}],\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}}],\"restaurant_recommendations\":[{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"accommodation_recommendations\":[{\"name\":\"제주 호텔\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 시내 중심가 호텔\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(validJson);
@@ -91,6 +91,9 @@ public class GptResponseHandlerTest {
         assertEquals(1, result.getAccommodation().size());
         assertEquals(1, result.getTransportation().size());
         assertEquals(1, result.getItinerary().size());
+        assertEquals(1, result.getRestaurantRecommendations().size());
+        assertEquals(1, result.getAccommodationRecommendations().size());
+        assertNotNull(result.getTransportationTips());
 
         AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
         assertEquals(1, firstDay.getDate());
@@ -99,8 +102,10 @@ public class GptResponseHandlerTest {
         assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
         assertEquals(33.458, firstDay.getActivities().get(0).getLatitude());
         assertEquals(126.939, firstDay.getActivities().get(0).getLongitude());
-        assertEquals("제주 전통 흑돼지 구이 맛집", firstDay.getLunch().getName());
-        assertEquals("신선한 해산물 요리", firstDay.getDinner().getName());
+        assertEquals("제주 전통 흑돼지 구이 맛집", firstDay.getLunch().getDescription());
+        assertEquals("제주 흑돼지 맛집", firstDay.getLunch().getName());
+        assertEquals("신선한 해산물 요리", firstDay.getDinner().getDescription());
+        assertEquals("해녀의 집", firstDay.getDinner().getName());
     }
 
     /**
@@ -118,7 +123,7 @@ public class GptResponseHandlerTest {
     @DisplayName("코드 블록으로 감싸진 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonInCodeBlock() {
         // Given
-        String jsonInCodeBlock = "```json\n{\"trip_name\":\"제주도 3박 4일 여행\",\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}]}]}\n```";
+        String jsonInCodeBlock = "```json\n{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"season\":\"여름\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}],\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}}],\"restaurant_recommendations\":[{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"accommodation_recommendations\":[{\"name\":\"제주 호텔\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 시내 중심가 호텔\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}\n```";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonInCodeBlock);
@@ -126,8 +131,19 @@ public class GptResponseHandlerTest {
         // Then
         assertNotNull(result);
         assertEquals("제주도 3박 4일 여행", result.getTripName());
+        assertEquals("2024-07-01", result.getStartDate());
+        assertEquals("2024-07-04", result.getEndDate());
+        assertEquals("여름", result.getSeason());
+        assertEquals(2, result.getTravelStyle().size());
+        assertEquals("100만원", result.getBudget());
+        assertEquals("제주시", result.getDestination());
+        assertEquals(2, result.getInterests().size());
+        assertEquals(1, result.getAccommodation().size());
+        assertEquals(1, result.getTransportation().size());
         assertEquals(1, result.getItinerary().size());
-        assertEquals("성산일출봉", result.getItinerary().get(0).getLocation());
+        assertEquals(1, result.getRestaurantRecommendations().size());
+        assertEquals(1, result.getAccommodationRecommendations().size());
+        assertNotNull(result.getTransportationTips());
     }
 
     /**
@@ -144,7 +160,7 @@ public class GptResponseHandlerTest {
     @DisplayName("추가 텍스트가 포함된 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonWithAdditionalText() {
         // Given
-        String jsonWithText = "여기 제주도의 추천 여행 계획입니다:\n{\"trip_name\":\"제주도 3박 4일 여행\",\"itinerary\":[{\"day\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}]}]}";
+        String jsonWithText = "여기 제주도의 추천 여행 계획입니다:\n{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"season\":\"여름\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"}],\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}}],\"restaurant_recommendations\":[{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"accommodation_recommendations\":[{\"name\":\"제주 호텔\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 시내 중심가 호텔\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonWithText);
@@ -152,8 +168,19 @@ public class GptResponseHandlerTest {
         // Then
         assertNotNull(result);
         assertEquals("제주도 3박 4일 여행", result.getTripName());
+        assertEquals("2024-07-01", result.getStartDate());
+        assertEquals("2024-07-04", result.getEndDate());
+        assertEquals("여름", result.getSeason());
+        assertEquals(2, result.getTravelStyle().size());
+        assertEquals("100만원", result.getBudget());
+        assertEquals("제주시", result.getDestination());
+        assertEquals(2, result.getInterests().size());
+        assertEquals(1, result.getAccommodation().size());
+        assertEquals(1, result.getTransportation().size());
         assertEquals(1, result.getItinerary().size());
-        assertEquals("성산일출봉", result.getItinerary().get(0).getLocation());
+        assertEquals(1, result.getRestaurantRecommendations().size());
+        assertEquals(1, result.getAccommodationRecommendations().size());
+        assertNotNull(result.getTransportationTips());
     }
 
     /**
