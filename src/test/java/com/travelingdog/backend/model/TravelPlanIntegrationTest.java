@@ -19,12 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.travelingdog.backend.config.JpaAuditingConfigTest;
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -40,6 +44,9 @@ public class TravelPlanIntegrationTest {
 
         @Autowired
         private ItineraryRepository itineraryRepository;
+
+        @PersistenceContext
+        private EntityManager entityManager;
 
         private User user;
         private GeometryFactory geometryFactory;
@@ -204,6 +211,7 @@ public class TravelPlanIntegrationTest {
          * 일정이 업데이트되면 여행 계획의 일정 리스트도 업데이트된다.
          */
         @Test
+        @Transactional
         public void testUpdateItinerary() {
                 // 여행 계획 생성
                 TravelPlan travelPlan = TravelPlan.builder()
@@ -249,11 +257,18 @@ public class TravelPlanIntegrationTest {
                                 .itinerary(itinerary)
                                 .build();
 
-                itinerary.setActivities(List.of(activity));
+                // List.of()는 불변 컬렉션을 생성하므로 ArrayList로 대체
+                List<ItineraryActivity> activities = new ArrayList<>();
+                activities.add(activity);
+                itinerary.setActivities(activities);
                 itinerary.setLunch(lunch);
                 itinerary.setDinner(dinner);
 
                 itineraryRepository.save(itinerary);
+
+                // 영속성 컨텍스트 초기화
+                entityManager.flush();
+                entityManager.clear();
 
                 // 일정 업데이트
                 List<Itinerary> itineraries = itineraryRepository
