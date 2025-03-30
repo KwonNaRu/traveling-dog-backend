@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +29,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.config.WithMockCustomUser;
-import com.travelingdog.backend.dto.ItineraryDTO;
+import com.travelingdog.backend.dto.travelPlan.AccommodationTypeDTO;
+import com.travelingdog.backend.dto.travelPlan.InterestDTO;
+import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
+import com.travelingdog.backend.dto.travelPlan.TransportationTypeDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelStyleDTO;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
@@ -84,6 +89,17 @@ public class TravelPlanControllerIntegrationTest {
                 testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
                 testTravelPlan.setUser(testUser);
                 testTravelPlan.setStatus(PlanStatus.PUBLISHED);
+                testTravelPlan.setSeason("Spring");
+                testTravelPlan.setBudget("1000000");
+                testTravelPlan.setTravelStyles(new ArrayList<>());
+                testTravelPlan.setInterests(new ArrayList<>());
+                testTravelPlan.setAccommodationTypes(new ArrayList<>());
+                testTravelPlan.setTransportationTypes(new ArrayList<>());
+                testTravelPlan.setItineraries(new ArrayList<>());
+                testTravelPlan.setRestaurantRecommendations(new ArrayList<>());
+                testTravelPlan.setAccommodationRecommendations(new ArrayList<>());
+                testTravelPlan.setLikes(new ArrayList<>());
+                testTravelPlan.setViewCount(0);
                 travelPlanRepository.save(testTravelPlan);
         }
 
@@ -104,22 +120,37 @@ public class TravelPlanControllerIntegrationTest {
                 request.setCity("Tokyo");
                 request.setStartDate(LocalDate.now().plusDays(10));
                 request.setEndDate(LocalDate.now().plusDays(15));
+                request.setSeason("Spring");
+                request.setTravelStyle("Adventure");
+                request.setBudget("1000000");
+                request.setInterests("Shopping, Food, Culture");
+                request.setAccommodation("Hotel");
+                request.setTransportation("Train, Bus");
 
                 List<ItineraryDTO> itineraries = new ArrayList<>();
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("도쿄 타워")
                                 .date(1)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("시부야")
                                 .date(2)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("하라주쿠")
                                 .date(3)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
 
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
@@ -130,6 +161,12 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setStartDate(LocalDate.now().plusDays(10));
                 mockResponse.setEndDate(LocalDate.now().plusDays(15));
                 mockResponse.setItineraries(itineraries);
+                mockResponse.setSeason("Spring");
+                mockResponse.setTravelStyles(new ArrayList<>());
+                mockResponse.setBudget("1000000");
+                mockResponse.setInterests(new ArrayList<>());
+                mockResponse.setAccommodation(new ArrayList<>());
+                mockResponse.setTransportation(new ArrayList<>());
 
                 when(travelPlanService.createTravelPlan(any(TravelPlanRequest.class), any())).thenReturn(mockResponse);
 
@@ -156,11 +193,17 @@ public class TravelPlanControllerIntegrationTest {
                                 .id(1L)
                                 .location("남산 타워")
                                 .date(1)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("홍대입구")
                                 .date(2)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
 
                 List<TravelPlanDTO> mockResponse = new ArrayList<>();
@@ -172,6 +215,20 @@ public class TravelPlanControllerIntegrationTest {
                 dto.setStartDate(testTravelPlan.getStartDate());
                 dto.setEndDate(testTravelPlan.getEndDate());
                 dto.setItineraries(itineraries);
+                dto.setSeason(testTravelPlan.getSeason());
+                dto.setTravelStyles(testTravelPlan.getTravelStyles().stream()
+                                .map(TravelStyleDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                dto.setBudget(testTravelPlan.getBudget());
+                dto.setInterests(testTravelPlan.getInterests().stream()
+                                .map(InterestDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                dto.setAccommodation(testTravelPlan.getAccommodationTypes().stream()
+                                .map(AccommodationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                dto.setTransportation(testTravelPlan.getTransportationTypes().stream()
+                                .map(TransportationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
                 mockResponse.add(dto);
 
                 when(travelPlanService.getTravelPlanList(any())).thenReturn(mockResponse);
@@ -195,16 +252,25 @@ public class TravelPlanControllerIntegrationTest {
                                 .id(1L)
                                 .location("강남")
                                 .date(1)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("잠실")
                                 .date(2)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("송파")
                                 .date(3)
+                                .activities(new ArrayList<>())
+                                .lunch(null)
+                                .dinner(null)
                                 .build());
 
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
@@ -215,6 +281,20 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setStartDate(testTravelPlan.getStartDate());
                 mockResponse.setEndDate(testTravelPlan.getEndDate());
                 mockResponse.setItineraries(itineraries);
+                mockResponse.setSeason(testTravelPlan.getSeason());
+                mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
+                                .map(TravelStyleDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setBudget(testTravelPlan.getBudget());
+                mockResponse.setInterests(testTravelPlan.getInterests().stream()
+                                .map(InterestDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setAccommodation(testTravelPlan.getAccommodationTypes().stream()
+                                .map(AccommodationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setTransportation(testTravelPlan.getTransportationTypes().stream()
+                                .map(TransportationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
 
                 when(travelPlanService.getTravelPlanDetail(any(Long.class), any())).thenReturn(mockResponse);
 
@@ -245,6 +325,20 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setCity(testTravelPlan.getCity());
                 mockResponse.setStartDate(LocalDate.now().plusDays(2));
                 mockResponse.setEndDate(LocalDate.now().plusDays(6));
+                mockResponse.setSeason(testTravelPlan.getSeason());
+                mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
+                                .map(TravelStyleDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setBudget(testTravelPlan.getBudget());
+                mockResponse.setInterests(testTravelPlan.getInterests().stream()
+                                .map(InterestDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setAccommodation(testTravelPlan.getAccommodationTypes().stream()
+                                .map(AccommodationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
+                mockResponse.setTransportation(testTravelPlan.getTransportationTypes().stream()
+                                .map(TransportationTypeDTO::fromEntity)
+                                .collect(Collectors.toList()));
 
                 when(travelPlanService.updateTravelPlan(any(Long.class), any(TravelPlanUpdateRequest.class), any()))
                                 .thenReturn(mockResponse);

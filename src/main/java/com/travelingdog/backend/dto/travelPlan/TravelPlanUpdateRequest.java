@@ -3,8 +3,6 @@ package com.travelingdog.backend.dto.travelPlan;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.travelingdog.backend.dto.ItineraryDTO;
-
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;

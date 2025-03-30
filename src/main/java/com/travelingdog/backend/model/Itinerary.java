@@ -24,7 +24,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Getter
@@ -38,9 +37,11 @@ public class Itinerary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(nullable = false)
-    private int date; // 여행 일자
+    private Integer date; // 여행 일자
 
+    @NotNull
     @Column(nullable = false)
     private String location; // 일정 위치(지역명)
 

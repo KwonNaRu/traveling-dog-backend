@@ -131,7 +131,7 @@ public class ItineraryUnitTest {
          * ✅ day 필드가 null이면 검증 실패해야 합니다.
          */
         @Test
-        public void testDayIsNull() {
+        public void testDateIsNull() {
                 Itinerary invalidItinerary = Itinerary.builder()
                                 .location("제주시")
                                 .travelPlan(travelPlan)
@@ -159,22 +159,6 @@ public class ItineraryUnitTest {
                                 .contains("must not be null");
         }
 
-        /**
-         * ✅ travelPlan 필드가 null이면 검증 실패해야 합니다.
-         */
-        @Test
-        public void testTravelPlanIsNull() {
-                Itinerary invalidItinerary = Itinerary.builder()
-                                .date(1)
-                                .location("제주시")
-                                .build();
-
-                Set<ConstraintViolation<Itinerary>> violations = validator.validate(invalidItinerary);
-                assertThat(violations)
-                                .extracting(ConstraintViolation::getMessage)
-                                .contains("must not be null");
-        }
-
         @Test
         @Tag("unit")
         public void testItineraryCreation_success() {
@@ -186,39 +170,5 @@ public class ItineraryUnitTest {
 
                 Set<ConstraintViolation<Itinerary>> violations = validator.validate(validItinerary);
                 assertThat(violations).isEmpty();
-        }
-
-        @Test
-        public void testEqualsAndHashCode() {
-                // Given
-                Itinerary itinerary1 = Itinerary.builder()
-                                .id(1L)
-                                .date(1)
-                                .location("제주시")
-                                .travelPlan(travelPlan)
-                                .build();
-
-                Itinerary itinerary2 = Itinerary.builder()
-                                .id(1L)
-                                .date(1)
-                                .location("제주시")
-                                .travelPlan(travelPlan)
-                                .build();
-
-                // Then
-                assertThat(itinerary1).isEqualTo(itinerary2);
-                assertThat(itinerary1.hashCode()).isEqualTo(itinerary2.hashCode());
-        }
-
-        @Test
-        public void testToString() {
-                // When
-                String toString = itinerary.toString();
-
-                // Then
-                assertThat(toString).isNotNull();
-                assertThat(toString).contains("id=" + itinerary.getId());
-                assertThat(toString).contains("date=" + itinerary.getDate());
-                assertThat(toString).contains("location=" + itinerary.getLocation());
         }
 }

@@ -1,4 +1,6 @@
-package com.travelingdog.backend.dto;
+package com.travelingdog.backend.dto.travelPlan;
+
+import java.util.List;
 
 import com.travelingdog.backend.model.Itinerary;
 
@@ -15,6 +17,9 @@ public class ItineraryDTO {
     private Long id;
     private String location;
     private int date;
+    private List<ItineraryActivityDTO> activities;
+    private ItineraryLunchDTO lunch;
+    private ItineraryDinnerDTO dinner;
 
     public static ItineraryDTO fromEntity(Itinerary entity) {
         if (entity == null) {
@@ -29,8 +34,13 @@ public class ItineraryDTO {
     }
 
     public static Itinerary toEntity(ItineraryDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
         return Itinerary.builder()
-                .location(dto.getLocation())
+                .id(dto.getId())
+                .location(dto.getLocation() != null ? dto.getLocation() : "")
                 .date(dto.getDate())
                 .build();
     }

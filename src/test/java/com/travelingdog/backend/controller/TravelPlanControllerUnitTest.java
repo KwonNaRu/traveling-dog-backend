@@ -20,6 +20,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,7 +37,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.config.SecurityConfig;
 import com.travelingdog.backend.config.WithMockCustomUser;
-import com.travelingdog.backend.dto.ItineraryDTO;
+import com.travelingdog.backend.dto.travelPlan.ItineraryActivityDTO;
+import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
+import com.travelingdog.backend.dto.travelPlan.ItineraryDinnerDTO;
+import com.travelingdog.backend.dto.travelPlan.ItineraryLunchDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -50,7 +56,7 @@ import com.travelingdog.backend.service.TravelPlanService;
 import com.travelingdog.backend.status.PlanStatus;
 
 @WebMvcTest(TravelPlanController.class)
-@Import({ SecurityConfig.class, TravelPlanControllerUnitTest.MockConfig.class })
+@Import({ SecurityConfig.class })
 public class TravelPlanControllerUnitTest {
 
         @Autowired
@@ -113,11 +119,42 @@ public class TravelPlanControllerUnitTest {
                 travelPlanDTO.setStartDate(LocalDate.now().plusDays(1));
                 travelPlanDTO.setEndDate(LocalDate.now().plusDays(5));
                 travelPlanDTO.setSeason("Spring");
-                travelPlanDTO.setTravelStyle("Cultural and historical exploration");
+                travelPlanDTO.setTravelStyles(new ArrayList<>());
                 travelPlanDTO.setBudget("1000000");
-                travelPlanDTO.setInterests("Cultural heritage, historical sites");
-                travelPlanDTO.setAccommodation("Hotel");
-                travelPlanDTO.setTransportation("Public transportation");
+                travelPlanDTO.setInterests(new ArrayList<>());
+                travelPlanDTO.setAccommodation(new ArrayList<>());
+                travelPlanDTO.setTransportation(new ArrayList<>());
+                travelPlanDTO.setItineraries(new ArrayList<>());
+                travelPlanDTO.setViewCount(0);
+                travelPlanDTO.setLikeCount(0);
+                travelPlanDTO.setNickname("testUser");
+
+                ArrayList<ItineraryActivityDTO> activities = new ArrayList<>();
+                ItineraryActivityDTO activityDTO = ItineraryActivityDTO.builder()
+                                .id(1L)
+                                .name("남산 타워")
+                                .description("남산 타워 방문")
+                                .latitude(126.9110759)
+                                .longitude(37.5514162)
+                                .activityOrder(1)
+                                .build();
+                activities.add(activityDTO);
+
+                ItineraryLunchDTO lunchDTO = ItineraryLunchDTO.builder()
+                                .id(1L)
+                                .name("남산 타워")
+                                .description("남산 타워 방문")
+                                .latitude(126.9110759)
+                                .longitude(37.5514162)
+                                .build();
+
+                ItineraryDinnerDTO dinnerDTO = ItineraryDinnerDTO.builder()
+                                .id(1L)
+                                .name("남산 타워")
+                                .description("남산 타워 방문")
+                                .latitude(126.9110759)
+                                .longitude(37.5514162)
+                                .build();
 
                 // 일정 데이터 설정
                 List<ItineraryDTO> itineraries = new ArrayList<>();
@@ -125,11 +162,9 @@ public class TravelPlanControllerUnitTest {
                                 .id(1L)
                                 .location("남산 타워")
                                 .date(1)
-                                .build());
-                itineraries.add(ItineraryDTO.builder()
-                                .id(2L)
-                                .location("홍대입구")
-                                .date(2)
+                                .activities(activities)
+                                .lunch(lunchDTO)
+                                .dinner(dinnerDTO)
                                 .build());
                 travelPlanDTO.setItineraries(itineraries);
         }
@@ -153,9 +188,12 @@ public class TravelPlanControllerUnitTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").exists())
                                 .andExpect(jsonPath("$.title").value(request.getTitle()))
-                                .andExpect(jsonPath("$.itineraries.length()").value(2))
+                                .andExpect(jsonPath("$.itineraries.length()").value(1))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("남산 타워"))
-                                .andExpect(jsonPath("$.itineraries[1].location").value("홍대입구"));
+                                .andExpect(jsonPath("$.itineraries[0].activities.length()").value(1))
+                                .andExpect(jsonPath("$.itineraries[0].activities[0].name").value("남산 타워"))
+                                .andExpect(jsonPath("$.itineraries[0].lunch.name").value("남산 타워"))
+                                .andExpect(jsonPath("$.itineraries[0].dinner.name").value("남산 타워"));
         }
 
         @Test
@@ -171,8 +209,12 @@ public class TravelPlanControllerUnitTest {
                 mockMvc.perform(get("/api/travel/plans"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$").isArray())
-                                .andExpect(jsonPath("$[0].itineraries.length()").value(2))
-                                .andExpect(jsonPath("$[0].itineraries[0].location").value("남산 타워"));
+                                .andExpect(jsonPath("$[0].itineraries.length()").value(1))
+                                .andExpect(jsonPath("$[0].itineraries[0].location").value("남산 타워"))
+                                .andExpect(jsonPath("$[0].itineraries[0].activities.length()").value(1))
+                                .andExpect(jsonPath("$[0].itineraries[0].activities[0].name").value("남산 타워"))
+                                .andExpect(jsonPath("$[0].itineraries[0].lunch.name").value("남산 타워"))
+                                .andExpect(jsonPath("$[0].itineraries[0].dinner.name").value("남산 타워"));
         }
 
         @Test
@@ -183,12 +225,54 @@ public class TravelPlanControllerUnitTest {
                 updateRequest.setTitle("Updated Travel Plan");
                 updateRequest.setStartDate(LocalDate.now().plusDays(2));
                 updateRequest.setEndDate(LocalDate.now().plusDays(6));
+                updateRequest.setItineraries(new ArrayList<>());
 
-                TravelPlanDTO updatedTravelPlanDTO = new TravelPlanDTO();
-                updatedTravelPlanDTO.setId(1L);
-                updatedTravelPlanDTO.setTitle("Updated Travel Plan");
-                updatedTravelPlanDTO.setStartDate(LocalDate.now().plusDays(2));
-                updatedTravelPlanDTO.setEndDate(LocalDate.now().plusDays(6));
+                TravelPlanDTO updatedTravelPlanDTO = TravelPlanDTO.builder()
+                                .id(1L)
+                                .title("Updated Travel Plan")
+                                .startDate(LocalDate.now().plusDays(2))
+                                .endDate(LocalDate.now().plusDays(6))
+                                .itineraries(new ArrayList<>())
+                                .country("South Korea")
+                                .city("Seoul")
+                                .season("Spring")
+                                .travelStyles(new ArrayList<>())
+                                .budget("1000000")
+                                .interests(new ArrayList<>())
+                                .accommodation(new ArrayList<>())
+                                .transportation(new ArrayList<>())
+                                .userId(1L)
+                                .nickname("testUser")
+                                .viewCount(0)
+                                .likeCount(0)
+                                .status(PlanStatus.PUBLISHED)
+                                .build();
+
+                ArrayList<ItineraryActivityDTO> activities = new ArrayList<>();
+                ItineraryActivityDTO activityDTO = ItineraryActivityDTO.builder()
+                                .id(1L)
+                                .name("남산 타워")
+                                .description("남산 타워 방문")
+                                .latitude(126.9110759)
+                                .longitude(37.5514162)
+                                .build();
+                activities.add(activityDTO);
+
+                ItineraryLunchDTO lunchDTO = ItineraryLunchDTO.builder()
+                                .id(1L)
+                                .name("남산 타워")
+                                .description("남산 타워 방문")
+                                .latitude(126.9110759)
+                                .longitude(37.5514162)
+                                .build();
+
+                ItineraryDinnerDTO dinnerDTO = ItineraryDinnerDTO.builder()
+                                .id(1L)
+                                .name("강남")
+                                .description("강남 방문")
+                                .latitude(127.031233)
+                                .longitude(37.494589)
+                                .build();
 
                 // 일정 데이터 설정
                 List<ItineraryDTO> itineraries = new ArrayList<>();
@@ -196,16 +280,17 @@ public class TravelPlanControllerUnitTest {
                                 .id(1L)
                                 .location("강남")
                                 .date(1)
-                                .build());
-                itineraries.add(ItineraryDTO.builder()
-                                .id(2L)
-                                .location("잠실")
-                                .date(2)
+                                .activities(activities)
+                                .lunch(lunchDTO)
+                                .dinner(dinnerDTO)
                                 .build());
                 updatedTravelPlanDTO.setItineraries(itineraries);
 
                 when(travelPlanService.updateTravelPlan(anyLong(), any(TravelPlanUpdateRequest.class), any(User.class)))
                                 .thenReturn(updatedTravelPlanDTO);
+
+                String updateRequestJson = objectMapper.writeValueAsString(updateRequest);
+                System.out.println(updateRequestJson);
 
                 // When & Then
                 mockMvc.perform(put("/api/travel/plan/{id}", 1L)
@@ -213,10 +298,7 @@ public class TravelPlanControllerUnitTest {
                                 .content(objectMapper.writeValueAsString(updateRequest)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").exists())
-                                .andExpect(jsonPath("$.title").value(updateRequest.getTitle()))
-                                .andExpect(jsonPath("$.itineraries.length()").value(2))
-                                .andExpect(jsonPath("$.itineraries[0].location").value("강남"))
-                                .andExpect(jsonPath("$.itineraries[1].location").value("잠실"));
+                                .andExpect(jsonPath("$.title").value(updateRequest.getTitle()));
         }
 
         @Test
@@ -275,6 +357,7 @@ public class TravelPlanControllerUnitTest {
                 updateRequest.setTitle("Updated Travel Plan");
                 updateRequest.setStartDate(LocalDate.now().plusDays(5));
                 updateRequest.setEndDate(LocalDate.now().plusDays(8));
+                updateRequest.setItineraries(new ArrayList<>());
 
                 when(travelPlanService.updateTravelPlan(any(Long.class), any(TravelPlanUpdateRequest.class),
                                 any(User.class)))

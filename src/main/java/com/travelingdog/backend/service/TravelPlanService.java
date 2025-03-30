@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClient;
 
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
-import com.travelingdog.backend.dto.ItineraryDTO;
 import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiGenerationConfig;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
@@ -24,6 +23,7 @@ import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.gpt.AIChatMessage;
 import com.travelingdog.backend.dto.gpt.AIChatRequest;
 import com.travelingdog.backend.dto.gpt.AIChatResponse;
+import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -279,21 +279,29 @@ public class TravelPlanService {
             throw new ForbiddenResourceAccessException("수정할 수 없는 여행 계획입니다.");
         }
 
-        // itineraries가 null일 경우 빈 리스트로 처리
-        List<Itinerary> itineraries = request.getItineraries() == null
-                ? new ArrayList<>()
-                : request.getItineraries().stream()
-                        .map(ItineraryDTO::toEntity)
-                        .collect(Collectors.toList());
+        // 기존 여행 계획의 속성만 업데이트
+        travelPlan.setTitle(request.getTitle());
+        travelPlan.setStartDate(request.getStartDate());
+        travelPlan.setEndDate(request.getEndDate());
 
-        TravelPlan newTravelPlan = TravelPlan.builder()
-                .id(travelPlan.getId())
-                .title(request.getTitle())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .itineraries(itineraries)
-                .build();
-        TravelPlan updatedTravelPlan = travelPlanRepository.save(newTravelPlan);
+        // itineraries가 null이 아닌 경우에만 업데이트
+        if (request.getItineraries() != null) {
+            // 기존 itineraries 삭제 (orphanRemoval=true로 자동 삭제됨)
+            travelPlan.getItineraries().clear();
+
+            // 새 itineraries 추가
+            for (ItineraryDTO itineraryDTO : request.getItineraries()) {
+                if (itineraryDTO != null) {
+                    Itinerary itinerary = ItineraryDTO.toEntity(itineraryDTO);
+                    if (itinerary != null) {
+                        travelPlan.addItinerary(itinerary);
+                    }
+                }
+            }
+        }
+
+        // 변경사항 저장
+        TravelPlan updatedTravelPlan = travelPlanRepository.save(travelPlan);
 
         return TravelPlanDTO.fromEntity(updatedTravelPlan);
     }
