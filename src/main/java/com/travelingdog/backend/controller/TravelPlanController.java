@@ -84,7 +84,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @GetMapping("/plan/{id}")
-        public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable Long id,
+        public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
                 // 인증 확인
                 if (user == null) {
@@ -105,7 +105,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @PutMapping("/plan/{id}")
-        public ResponseEntity<TravelPlanDTO> updateTravelPlan(@PathVariable Long id,
+        public ResponseEntity<TravelPlanDTO> updateTravelPlan(@PathVariable("id") Long id,
                         @RequestBody TravelPlanUpdateRequest request,
                         @AuthenticationPrincipal User user) {
                 // 인증 확인
@@ -127,7 +127,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @DeleteMapping("/plan/{id}")
-        public ResponseEntity<Void> deleteTravelPlan(@PathVariable Long id,
+        public ResponseEntity<Void> deleteTravelPlan(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
                 // 인증 확인
                 if (user == null) {

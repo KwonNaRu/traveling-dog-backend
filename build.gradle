@@ -79,6 +79,10 @@ tasks.named('test') {
     }
 }
 
+compileJava {
+    options.compilerArgs << '-parameters'
+}
+
 // 단위 테스트를 위한 태스크 추가
 tasks.register('unitTest', Test) {
     useJUnitPlatform {
