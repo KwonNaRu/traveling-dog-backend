@@ -1,6 +1,7 @@
 package com.travelingdog.backend.dto.travelPlan;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.travelingdog.backend.model.Itinerary;
 
@@ -30,6 +31,11 @@ public class ItineraryDTO {
                 .id(entity.getId())
                 .location(entity.getLocation())
                 .date(entity.getDate())
+                .activities(entity.getActivities().stream()
+                        .map(ItineraryActivityDTO::fromEntity)
+                        .collect(Collectors.toList()))
+                .lunch(entity.getLunch() != null ? ItineraryLunchDTO.fromEntity(entity.getLunch()) : null)
+                .dinner(entity.getDinner() != null ? ItineraryDinnerDTO.fromEntity(entity.getDinner()) : null)
                 .build();
     }
 
@@ -42,6 +48,11 @@ public class ItineraryDTO {
                 .id(dto.getId())
                 .location(dto.getLocation() != null ? dto.getLocation() : "")
                 .date(dto.getDate())
+                .activities(dto.getActivities().stream()
+                        .map(ItineraryActivityDTO::toEntity)
+                        .collect(Collectors.toList()))
+                .lunch(dto.getLunch() != null ? ItineraryLunchDTO.toEntity(dto.getLunch()) : null)
+                .dinner(dto.getDinner() != null ? ItineraryDinnerDTO.toEntity(dto.getDinner()) : null)
                 .build();
     }
 

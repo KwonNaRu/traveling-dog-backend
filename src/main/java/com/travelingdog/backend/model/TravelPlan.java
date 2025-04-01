@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.travelingdog.backend.auditing.BaseTimeEntity;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
 import com.travelingdog.backend.status.PlanStatus;
 
 import jakarta.persistence.CascadeType;
@@ -175,5 +177,49 @@ public class TravelPlan extends BaseTimeEntity {
 
     public void incrementViewCount() {
         this.viewCount++;
+    }
+
+    public static TravelPlan fromDTO(AIRecommendedTravelPlanDTO aiRecommendedPlan) {
+        return TravelPlan.builder()
+                .title(aiRecommendedPlan.getTripName())
+                .country(aiRecommendedPlan.getDestination())
+                .city(aiRecommendedPlan.getDestination())
+                .startDate(LocalDate.parse(aiRecommendedPlan.getStartDate()))
+                .endDate(LocalDate.parse(aiRecommendedPlan.getEndDate()))
+                .season(aiRecommendedPlan.getSeason())
+                .budget(aiRecommendedPlan.getBudget())
+                .transportationTips(aiRecommendedPlan.getTransportationTips())
+                .travelStyles(aiRecommendedPlan.getTravelStyle().stream()
+                        .map(style -> TravelStyle.builder()
+                                .name(style)
+                                .build())
+                        .collect(Collectors.toList()))
+                .interests(aiRecommendedPlan.getInterests().stream()
+                        .map(interest -> Interest.builder()
+                                .name(interest)
+                                .build())
+                        .collect(Collectors.toList()))
+                .accommodationTypes(aiRecommendedPlan.getAccommodation().stream()
+                        .map(accommodation -> AccommodationType.builder()
+                                .name(accommodation)
+                                .build())
+                        .collect(Collectors.toList()))
+                .transportationTypes(aiRecommendedPlan.getTransportation().stream()
+                        .map(transportation -> Transportation.builder()
+                                .name(transportation)
+                                .build())
+                        .collect(Collectors.toList()))
+                .restaurantRecommendations(aiRecommendedPlan.getRestaurantRecommendations().stream()
+                        .map(recommendation -> RestaurantRecommendation.builder()
+                                .name(recommendation.getName())
+                                .build())
+                        .collect(Collectors.toList()))
+                .accommodationRecommendations(aiRecommendedPlan.getAccommodationRecommendations().stream()
+                        .map(recommendation -> AccommodationRecommendation.builder()
+                                .name(recommendation.getName())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+
     }
 }

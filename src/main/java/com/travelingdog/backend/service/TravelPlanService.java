@@ -1,5 +1,6 @@
 package com.travelingdog.backend.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +34,7 @@ import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
@@ -74,24 +76,40 @@ public class TravelPlanService {
             // 1. AI 추천 먼저 받아오기
             AIRecommendedTravelPlanDTO aiRecommendedPlan = generateTripPlanWithGemini(request);
 
-            // 2. TravelPlan 객체 생성
-            TravelPlan travelPlan = TravelPlan.builder()
-                    .title(request.getTitle())
-                    .country(request.getCountry())
-                    .city(request.getCity())
-                    .startDate(request.getStartDate())
-                    .endDate(request.getEndDate())
-                    .user(user)
-                    .build();
+            // List<TravelStyle> travelStyles = aiRecommendedPlan.getTravelStyle().stream()
+            // .map(style -> TravelStyle.builder()
+            // .name(style)
+            // .build())
+            // .collect(Collectors.toList());
+            // // 2. TravelPlan 객체 생성
+            // TravelPlan travelPlan = TravelPlan.builder()
+            // .title(aiRecommendedPlan.getTripName())
+            // .country(aiRecommendedPlan.getDestination())
+            // .city(aiRecommendedPlan.getDestination())
+            // .startDate(LocalDate.parse(aiRecommendedPlan.getStartDate()))
+            // .endDate(LocalDate.parse(aiRecommendedPlan.getEndDate()))
+            // .user(user)
+            // .season(aiRecommendedPlan.getSeason())
+            // .budget(aiRecommendedPlan.getBudget())
+            // .transportationTips(aiRecommendedPlan.getTransportationTips())
+            // .build();
+
+            // travelPlan.setTravelStyles(travelStyles);
+
+            TravelPlan travelPlan = TravelPlan.fromDTO(aiRecommendedPlan);
+            List<Itinerary> itineraries = aiRecommendedPlan.getItinerary().stream()
+                    .map(dto -> Itinerary.fromDto(dto, travelPlan))
+                    .collect(Collectors.toList());
+            travelPlan.setUser(user);
 
             // 3. Itinerary 객체들 생성 및 연결
             // List<Itinerary> itineraries = new ArrayList<>();
-            for (AIRecommendedItineraryDTO dto : aiRecommendedPlan.getItinerary()) {
-                Itinerary itinerary = Itinerary.fromDto(dto, travelPlan);
-                travelPlan.addItinerary(itinerary);
-                // itineraries.add(itinerary);
-            }
-            // travelPlan.setItineraries(itineraries);
+            // for (AIRecommendedItineraryDTO dto : aiRecommendedPlan.getItinerary()) {
+            // Itinerary itinerary = Itinerary.fromDto(dto, travelPlan);
+            // travelPlan.addItinerary(itinerary);
+            // // itineraries.add(itinerary);
+            // }
+            travelPlan.setItineraries(itineraries);
 
             // 4. 한 번에 저장
             travelPlanRepository.save(travelPlan);

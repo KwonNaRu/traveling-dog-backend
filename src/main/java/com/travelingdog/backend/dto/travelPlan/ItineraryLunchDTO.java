@@ -1,5 +1,9 @@
 package com.travelingdog.backend.dto.travelPlan;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
+
 import com.travelingdog.backend.model.ItineraryLunch;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +29,16 @@ public class ItineraryLunchDTO {
                 .description(entity.getDescription())
                 .latitude(entity.getCoordinates().getX())
                 .longitude(entity.getCoordinates().getY())
+                .build();
+    }
+
+    public static ItineraryLunch toEntity(ItineraryLunchDTO dto) {
+        return ItineraryLunch.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                        .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
                 .build();
     }
 }

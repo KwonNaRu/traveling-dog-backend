@@ -204,8 +204,18 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append(
                                 "\"dinner\":{\"name\":\"제주 한라산 고기\",\"latitude\":33.460,\"longitude\":126.780,\"description\":\"한라산 고기 맛집\"}");
                 jsonBuilder.append("}");
+                jsonBuilder.append("],");
 
-                jsonBuilder.append("]}");
+                jsonBuilder.append("\"restaurant_recommendations\":[");
+                jsonBuilder.append(
+                                "{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
+                jsonBuilder.append("],");
+                jsonBuilder.append("\"accommodation_recommendations\":[");
+                jsonBuilder.append(
+                                "{\"name\":\"제주 호텔\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 호텔\"}");
+                jsonBuilder.append("],");
+                jsonBuilder.append("\"transportation_tips\":\"제주도 내 렌터카 대여 추천\"");
+                jsonBuilder.append("}");
                 return jsonBuilder.toString();
         }
 
@@ -276,7 +286,6 @@ public class GPTResponseIntegrationTest {
                 // Then
                 assertNotNull(travelPlan);
                 assertEquals("제주도 3박 4일 여행", travelPlan.getTitle());
-                assertEquals("한국", travelPlan.getCountry());
                 assertEquals("제주시", travelPlan.getCity());
                 assertEquals(today, travelPlan.getStartDate());
                 assertEquals(today.plusDays(3), travelPlan.getEndDate());

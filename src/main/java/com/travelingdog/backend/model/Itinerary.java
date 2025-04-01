@@ -3,6 +3,10 @@ package com.travelingdog.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
+
 import com.travelingdog.backend.auditing.BaseTimeEntity;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 
@@ -80,8 +84,8 @@ public class Itinerary {
             ItineraryLunch lunch = new ItineraryLunch();
             lunch.setName(dto.getLunch().getName());
             lunch.setDescription(dto.getLunch().getDescription());
-            // lunch.setCoordinates(dto.getLunch().getLongitude(),
-            // dto.getLunch().getLatitude());
+            lunch.setCoordinates(dto.getLunch().getLongitude(),
+                    dto.getLunch().getLatitude());
             itinerary.setLunch(lunch); // 수정된 메서드 사용
         }
 
@@ -90,8 +94,8 @@ public class Itinerary {
             ItineraryDinner dinner = new ItineraryDinner();
             dinner.setName(dto.getDinner().getName());
             dinner.setDescription(dto.getDinner().getDescription());
-            // dinner.setCoordinates(dto.getDinner().getLongitude(),
-            // dto.getDinner().getLatitude());
+            dinner.setCoordinates(dto.getDinner().getLongitude(),
+                    dto.getDinner().getLatitude());
             itinerary.setDinner(dinner); // 수정된 메서드 사용
         }
 
@@ -102,8 +106,8 @@ public class Itinerary {
                 ItineraryActivity activityEntity = new ItineraryActivity();
                 activityEntity.setName(activity.getName());
                 activityEntity.setDescription(activity.getDescription());
-                // activityEntity.setCoordinates(activity.getLongitude(),
-                // activity.getLatitude());
+                activityEntity.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                        .createPoint(new Coordinate(activity.getLongitude(), activity.getLatitude())));
                 activityEntity.setActivityOrder(order++);
                 itinerary.addActivity(activityEntity); // 연관관계 메서드 사용
             }

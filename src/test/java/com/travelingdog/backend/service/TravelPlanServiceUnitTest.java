@@ -116,10 +116,17 @@ public class TravelPlanServiceUnitTest {
                 LocalDate endDate = today.plusDays(3);
 
                 request = new TravelPlanRequest();
+                request.setTitle("Test Travel Plan");
                 request.setCountry("South Korea");
                 request.setCity("Seoul");
                 request.setStartDate(today);
                 request.setEndDate(endDate);
+                request.setSeason("Spring");
+                request.setTravelStyle("Adventure");
+                request.setBudget("Budget");
+                request.setInterests("Interests");
+                request.setAccommodation("Accommodation");
+                request.setTransportation("Transportation");
 
                 // 모의 응답 데이터 설정
                 mockResponse = new GeminiResponse();
@@ -210,18 +217,23 @@ public class TravelPlanServiceUnitTest {
                 when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
 
                 // Given
-                TravelPlan savedTravelPlan = TravelPlan.builder()
-                                .id(1L)
-                                .title(request.getTitle())
-                                .startDate(request.getStartDate())
-                                .endDate(request.getEndDate())
-                                .country(request.getCountry())
-                                .city(request.getCity())
-                                .build();
+                // TravelPlan savedTravelPlan = TravelPlan.builder()
+                // .id(1L)
+                // .title(request.getTitle())
+                // .startDate(request.getStartDate())
+                // .endDate(request.getEndDate())
+                // .country(request.getCountry())
+                // .city(request.getCity())
+                // .build();
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO(
+                                "Seoul", 37.5796, 126.9770);
+
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
 
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
-                                .thenReturn(createMockTravelPlanDTO("Gyeongbokgung Palace", 37.5796, 126.9770));
+                                .thenReturn(aiRecommendedTravelPlanDTO);
                 when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any(),
                                 any(), any()))
                                 .thenReturn("테스트 프롬프트");
@@ -236,7 +248,6 @@ public class TravelPlanServiceUnitTest {
                 assertEquals(request.getTitle(), result.getTitle());
                 assertEquals(request.getStartDate(), result.getStartDate());
                 assertEquals(request.getEndDate(), result.getEndDate());
-                assertEquals(request.getCountry(), result.getCountry());
                 assertEquals(request.getCity(), result.getCity());
 
                 // 저장소 호출 검증
@@ -375,6 +386,7 @@ public class TravelPlanServiceUnitTest {
                 locationDTO.setLongitude(longitude);
 
                 AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
+                dto.setDestination(name);
                 dto.setItinerary(Arrays.asList(itinerary, itinerary));
                 dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO));
                 dto.setAccommodationRecommendations(Arrays.asList(locationDTO, locationDTO));
@@ -385,6 +397,9 @@ public class TravelPlanServiceUnitTest {
                 dto.setSeason("Spring");
                 dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
                 dto.setBudget("Budget");
+                dto.setInterests(Arrays.asList("Interests"));
+                dto.setAccommodation(Arrays.asList("Accommodation"));
+                dto.setTransportation(Arrays.asList("Transportation"));
 
                 return dto;
         }

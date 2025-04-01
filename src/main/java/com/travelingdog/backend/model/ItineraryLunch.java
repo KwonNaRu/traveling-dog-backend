@@ -1,6 +1,9 @@
 package com.travelingdog.backend.model;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,16 +43,16 @@ public class ItineraryLunch {
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;
 
-    // public void setCoordinates(double longitude, double latitude) {
-    // this.coordinates = new GeometryFactory(new PrecisionModel(), 4326)
-    // .createPoint(new Coordinate(longitude, latitude));
-    // }
+    public void setCoordinates(double longitude, double latitude) {
+        this.coordinates = new GeometryFactory(new PrecisionModel(), 4326)
+                .createPoint(new Coordinate(longitude, latitude));
+    }
 
-    // // coordinates 필드 문자열 반환
-    // public String getCoordinatesString() {
-    // if (coordinates == null) {
-    // return "null";
-    // }
-    // return "Point(" + coordinates.getX() + ", " + coordinates.getY() + ")";
-    // }
+    // coordinates 필드 문자열 반환
+    public String getCoordinatesString() {
+        if (coordinates == null) {
+            return "null";
+        }
+        return "Point(" + coordinates.getX() + ", " + coordinates.getY() + ")";
+    }
 }
