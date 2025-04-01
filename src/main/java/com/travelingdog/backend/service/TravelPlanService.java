@@ -72,7 +72,7 @@ public class TravelPlanService {
     public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
         try {
             // 1. AI 추천 먼저 받아오기
-            AIRecommendedTravelPlanDTO aiRecommendedPlan = generateTripPlan(request);
+            AIRecommendedTravelPlanDTO aiRecommendedPlan = generateTripPlanWithGemini(request);
 
             // 2. TravelPlan 객체 생성
             TravelPlan travelPlan = TravelPlan.builder()
@@ -192,7 +192,7 @@ public class TravelPlanService {
                                             GeminiPart.builder()
                                                     .text(prompt)
                                                     .build()))
-                                    .role("user")
+                                    // .role("user")
                                     .build()))
                     .generationConfig(GeminiGenerationConfig.builder()
                             .temperature(0.3f)
@@ -206,7 +206,7 @@ public class TravelPlanService {
             GeminiResponse geminiResponse = restClient.post()
                     .uri(geminiApiUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .header("x-goog-api-key", geminiApiKey)
+                    // .header("x-goog-api-key", geminiApiKey)
                     .body(geminiRequest)
                     .retrieve()
                     .body(GeminiResponse.class);

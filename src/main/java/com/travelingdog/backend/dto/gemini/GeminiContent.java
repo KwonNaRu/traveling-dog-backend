@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GeminiContent {
     private List<GeminiPart> parts;
-    private String role;
+    // private String role;
 }
