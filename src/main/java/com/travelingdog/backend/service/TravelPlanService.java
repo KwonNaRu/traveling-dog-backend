@@ -218,7 +218,7 @@ public class TravelPlanService {
                             .temperature(0.3f)
                             .topK(1)
                             .topP(1)
-                            .maxOutputTokens(2048)
+                            .maxOutputTokens(4096)
                             .build())
                     .build();
 
