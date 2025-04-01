@@ -48,6 +48,9 @@ public class TravelPlanService {
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
+    @Value("${gemini.api.key}")
+    private String geminiApiKey;
+
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
@@ -205,7 +208,7 @@ public class TravelPlanService {
             GeminiResponse geminiResponse = restClient.post()
                     .uri(geminiApiUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    // .header("x-goog-api-key", geminiApiKey)
+                    .header("x-goog-api-key", geminiApiKey)
                     .body(geminiRequest)
                     .retrieve()
                     .body(GeminiResponse.class);

@@ -40,7 +40,7 @@ google:
 gemini:
   api:
     key: sk-test-dummy-key-for-testing-purposes-only
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=sk-test-dummy-key-for-testing-purposes-only
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
     model: gemini-2.0-flash
 
 jwt:
