@@ -48,9 +48,6 @@ public class TravelPlanService {
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
-    @Value("${gemini.api.key}")
-    private String geminiApiKey;
-
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
@@ -184,16 +181,18 @@ public class TravelPlanService {
                     request.getAccommodation(),
                     request.getTransportation());
 
+            List<GeminiPart> parts = new ArrayList<>();
+            parts.add(GeminiPart.builder()
+                    .text(prompt)
+                    .build());
+
+            List<GeminiContent> contents = new ArrayList<>();
+            contents.add(GeminiContent.builder()
+                    .parts(parts)
+                    .build());
             // Gemini API 요청 구성
             GeminiRequest geminiRequest = GeminiRequest.builder()
-                    .contents(List.of(
-                            GeminiContent.builder()
-                                    .parts(List.of(
-                                            GeminiPart.builder()
-                                                    .text(prompt)
-                                                    .build()))
-                                    // .role("user")
-                                    .build()))
+                    .contents(contents)
                     .generationConfig(GeminiGenerationConfig.builder()
                             .temperature(0.3f)
                             .topK(1)

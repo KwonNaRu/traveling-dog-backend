@@ -36,10 +36,11 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.travelingdog.backend.dto.gpt.AIChatMessage;
-import com.travelingdog.backend.dto.gpt.AIChatRequest;
-import com.travelingdog.backend.dto.gpt.AIChatResponse;
-import com.travelingdog.backend.dto.gpt.AIChatResponse.Choice;
+import com.travelingdog.backend.dto.gemini.GeminiCandidate;
+import com.travelingdog.backend.dto.gemini.GeminiContent;
+import com.travelingdog.backend.dto.gemini.GeminiPart;
+import com.travelingdog.backend.dto.gemini.GeminiRequest;
+import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -178,10 +179,10 @@ public class TravelPlanServiceIntegrationTest {
                 travelPlanRepository.save(travelPlan);
 
                 // RestClient 모킹 설정
-                AIChatResponse mockResponse = new AIChatResponse();
-                List<Choice> choices = new ArrayList<>();
-                Choice choice = new Choice();
-                AIChatMessage message = new AIChatMessage();
+                GeminiResponse mockResponse = new GeminiResponse();
+                List<GeminiCandidate> candidates = new ArrayList<>();
+                GeminiCandidate candidate = new GeminiCandidate();
+                GeminiContent content = new GeminiContent();
 
                 // Mock GPT 응답 생성 - 테스트에 적합한 전체 여행 계획 JSON
                 String jsonResponse = "{"
@@ -212,10 +213,14 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 
-                message.setContent(jsonResponse);
-                choice.setMessage(message);
-                choices.add(choice);
-                mockResponse.setChoices(choices);
+                List<GeminiPart> parts = new ArrayList<>();
+                parts.add(GeminiPart.builder()
+                                .text(jsonResponse)
+                                .build());
+                content.setParts(parts);
+                candidate.setContent(content);
+                candidates.add(candidate);
+                mockResponse.setCandidates(candidates);
 
                 RequestBodySpec requestBodySpec = mock(RequestBodySpec.class);
                 RequestBodyUriSpec requestBodyUriSpec = mock(RequestBodyUriSpec.class);
@@ -224,9 +229,9 @@ public class TravelPlanServiceIntegrationTest {
                 when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
 
                 // 테스트 후 SecurityContext 정리를 위해
                 SecurityContextHolder.clearContext();

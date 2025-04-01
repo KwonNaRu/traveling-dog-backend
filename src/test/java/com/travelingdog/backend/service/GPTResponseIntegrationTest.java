@@ -22,19 +22,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
-import com.travelingdog.backend.dto.gpt.AIChatMessage;
-import com.travelingdog.backend.dto.gpt.AIChatRequest;
-import com.travelingdog.backend.dto.gpt.AIChatResponse;
-import com.travelingdog.backend.dto.gpt.AIChatResponse.Choice;
+import com.travelingdog.backend.dto.gemini.GeminiCandidate;
+import com.travelingdog.backend.dto.gemini.GeminiContent;
+import com.travelingdog.backend.dto.gemini.GeminiPart;
+import com.travelingdog.backend.dto.gemini.GeminiRequest;
+import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.model.Itinerary;
@@ -77,7 +78,7 @@ public class GPTResponseIntegrationTest {
         private RestClient restClient;
 
         private TravelPlanRequest request;
-        private AIChatResponse mockResponse;
+        private GeminiResponse mockResponse;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private ObjectMapper objectMapper = new ObjectMapper();
         private LocalDate today;
@@ -124,18 +125,22 @@ public class GPTResponseIntegrationTest {
                 userRepository.save(user);
 
                 // 모의 GPT 응답 데이터 설정
-                mockResponse = new AIChatResponse();
-                AIChatResponse.Choice choice = new AIChatResponse.Choice();
-                AIChatMessage message = new AIChatMessage();
+                mockResponse = new GeminiResponse();
+                GeminiCandidate candidate = new GeminiCandidate();
+                GeminiContent content = new GeminiContent();
+                List<GeminiPart> parts = new ArrayList<>();
 
                 // 여러 장소를 포함하는 JSON 응답 생성
                 String jsonResponse = createMockGptResponse(today);
-                message.setContent(jsonResponse);
+                parts.add(GeminiPart.builder()
+                                .text(jsonResponse)
+                                .build());
+                content.setParts(parts);
+                candidate.setContent(content);
 
-                choice.setMessage(message);
-                List<Choice> choices = new ArrayList<>();
-                choices.add(choice);
-                mockResponse.setChoices(choices);
+                List<GeminiCandidate> candidates = new ArrayList<>();
+                candidates.add(candidate);
+                mockResponse.setCandidates(candidates);
 
                 // RestClient 모킹 설정
                 RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
@@ -145,9 +150,9 @@ public class GPTResponseIntegrationTest {
                 when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
         }
 
         /**

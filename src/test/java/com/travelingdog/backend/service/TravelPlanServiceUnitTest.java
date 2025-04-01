@@ -33,9 +33,11 @@ import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO.Location;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO;
-import com.travelingdog.backend.dto.gpt.AIChatMessage;
-import com.travelingdog.backend.dto.gpt.AIChatRequest;
-import com.travelingdog.backend.dto.gpt.AIChatResponse;
+import com.travelingdog.backend.dto.gemini.GeminiCandidate;
+import com.travelingdog.backend.dto.gemini.GeminiContent;
+import com.travelingdog.backend.dto.gemini.GeminiPart;
+import com.travelingdog.backend.dto.gemini.GeminiRequest;
+import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -78,7 +80,7 @@ public class TravelPlanServiceUnitTest {
 
         private TravelPlanRequest request;
         private TravelPlan travelPlan;
-        private AIChatResponse mockResponse;
+        private GeminiResponse mockResponse;
         private List<Itinerary> mockLocations;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private LocalDate today;
@@ -107,6 +109,7 @@ public class TravelPlanServiceUnitTest {
 
                 // API 키 설정
                 ReflectionTestUtils.setField(tripPlanService, "openAiApiKey", "test-api-key");
+                ReflectionTestUtils.setField(tripPlanService, "geminiApiUrl", "test-api-url");
 
                 // 테스트 요청 데이터 설정
                 today = LocalDate.now();
@@ -119,15 +122,19 @@ public class TravelPlanServiceUnitTest {
                 request.setEndDate(endDate);
 
                 // 모의 응답 데이터 설정
-                mockResponse = new AIChatResponse();
-                AIChatResponse.Choice choice = new AIChatResponse.Choice();
-                AIChatMessage message = new AIChatMessage();
+                mockResponse = new GeminiResponse();
+                GeminiCandidate candidate = new GeminiCandidate();
+                GeminiContent content = new GeminiContent();
+                List<GeminiPart> parts = new ArrayList<>();
                 String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
-                message.setContent(jsonContent);
-                choice.setMessage(message);
-                List<AIChatResponse.Choice> choices = new ArrayList<>();
-                choices.add(choice);
-                mockResponse.setChoices(choices);
+                parts.add(GeminiPart.builder()
+                                .text(jsonContent)
+                                .build());
+                content.setParts(parts);
+                candidate.setContent(content);
+                List<GeminiCandidate> candidates = new ArrayList<>();
+                candidates.add(candidate);
+                mockResponse.setCandidates(candidates);
 
                 // 모의 위치 데이터 설정
                 mockLocations = new ArrayList<>();
@@ -198,9 +205,9 @@ public class TravelPlanServiceUnitTest {
                 when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
 
                 // Given
                 TravelPlan savedTravelPlan = TravelPlan.builder()
