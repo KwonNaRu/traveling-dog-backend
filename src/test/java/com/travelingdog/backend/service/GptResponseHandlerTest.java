@@ -226,7 +226,7 @@ public class GptResponseHandlerTest {
         String transportation = "렌터카";
 
         // When
-        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate,
+        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(city, startDate, endDate,
                 travelStyle, budget, interests, accommodation, transportation);
 
         // Then
@@ -262,7 +262,7 @@ public class GptResponseHandlerTest {
         LocalDate endDate = today.plusDays(3);
 
         // When
-        AIRecommendedTravelPlanDTO fallbackResponse = gptResponseHandler.getFallbackResponse(country, city,
+        AIRecommendedTravelPlanDTO fallbackResponse = gptResponseHandler.getFallbackResponse(city,
                 startDate, endDate);
 
         // Then

@@ -104,12 +104,9 @@ public class GPTResponseIntegrationTest {
                 LocalDate endDate = today.plusDays(3);
 
                 request = new TravelPlanRequest();
-                request.setTitle("제주도 3박 4일 여행");
-                request.setCountry("한국");
                 request.setCity("제주시");
                 request.setStartDate(today);
                 request.setEndDate(endDate);
-                request.setSeason("여름");
                 request.setTravelStyle("해변, 자연 풍경 감상");
                 request.setBudget("100만원");
                 request.setInterests("맛집, 자연");
@@ -170,7 +167,6 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"trip_name\":\"제주도 3박 4일 여행\",");
                 jsonBuilder.append("\"start_date\":\"").append(startDate.format(formatter)).append("\",");
                 jsonBuilder.append("\"end_date\":\"").append(startDate.plusDays(3).format(formatter)).append("\",");
-                jsonBuilder.append("\"season\":\"여름\",");
                 jsonBuilder.append("\"travel_style\":[\"해변\",\"자연 풍경 감상\"],");
                 jsonBuilder.append("\"budget\":\"100만원\",");
                 jsonBuilder.append("\"destination\":\"제주시\",");

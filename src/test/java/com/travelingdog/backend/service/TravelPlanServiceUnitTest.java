@@ -112,12 +112,9 @@ public class TravelPlanServiceUnitTest {
                 LocalDate endDate = today.plusDays(3);
 
                 request = new TravelPlanRequest();
-                request.setTitle("Test Travel Plan");
-                request.setCountry("South Korea");
                 request.setCity("Seoul");
                 request.setStartDate(today);
                 request.setEndDate(endDate);
-                request.setSeason("Spring");
                 request.setTravelStyle("Adventure");
                 request.setBudget("Budget");
                 request.setInterests("Interests");
@@ -214,7 +211,7 @@ public class TravelPlanServiceUnitTest {
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
                                 .thenReturn(aiRecommendedTravelPlanDTO);
-                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any(),
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(),
                                 any()))
                                 .thenReturn("테스트 프롬프트");
                 // TravelPlanRepository 모킹
@@ -225,7 +222,6 @@ public class TravelPlanServiceUnitTest {
 
                 // Then
                 assertNotNull(result);
-                assertEquals(request.getTitle(), result.getTitle());
                 assertEquals(request.getStartDate(), result.getStartDate());
                 assertEquals(request.getEndDate(), result.getEndDate());
                 assertEquals(request.getCity(), result.getCity());

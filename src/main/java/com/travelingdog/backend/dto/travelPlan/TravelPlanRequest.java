@@ -11,12 +11,6 @@ import lombok.Setter;
 @Setter
 public class TravelPlanRequest {
 
-    @NotBlank(message = "Title is required")
-    private String title;
-
-    @NotBlank(message = "Country is required")
-    private String country;
-
     @NotBlank(message = "City is required")
     private String city;
 
@@ -25,9 +19,6 @@ public class TravelPlanRequest {
 
     @NotNull(message = "End date is required")
     private LocalDate endDate;
-
-    @NotBlank(message = "Season is required")
-    private String season;
 
     @NotBlank(message = "Travel style is required")
     private String travelStyle;

@@ -128,8 +128,8 @@ public class GptResponseHandler {
     /**
      * 강화된 프롬프트를 생성합니다.
      */
-    public String createEnhancedPrompt(String country, String city, LocalDate startDate, LocalDate endDate,
-            String travelStyle, String budget, String interests, String accommodation, String transportation) {
+    public String createEnhancedPrompt(String city, LocalDate startDate, LocalDate endDate, String travelStyle,
+            String budget, String interests, String accommodation, String transportation) {
         return "다음 정보를 기반으로, 사용자의 여행 계획을 JSON 형식으로 생성해줘. 각 날짜별 일정에는 활동 정보가 'activities' 배열에 포함되어야 하며, 각 항목은 활동 이름, 위도, 경도, 설명을 포함해야 해. 점심과 저녁 식사도 각각 하나의 활동으로 포함되어야 하며, 지도에 표시할 수 있도록 각 장소의 정확한 위도(latitude)와 경도(longitude) 정보를 포함해야 해. 'activities'에 포함되지 않은 추가적인 맛집과 숙소 추천 정보도 제공해줘. 여행 시작일과 종료일을 바탕으로 여행 시기를 고려하여 계획을 생성해줘. 반드시 다음 형식을 따라야 하며, 추가 텍스트나 설명 없이 순수 JSON 객체만 출력해줘."
                 + "{"
                 + "\"trip_name\": \"여행 이름(문자열, 예: 오키나와 5박 6일 자유여행)\","
@@ -210,8 +210,7 @@ public class GptResponseHandler {
     /**
      * GPT 응답 파싱에 실패했을 때 사용할 대체 응답을 제공합니다.
      */
-    public AIRecommendedTravelPlanDTO getFallbackResponse(String country, String city, LocalDate startDate,
-            LocalDate endDate) {
+    public AIRecommendedTravelPlanDTO getFallbackResponse(String city, LocalDate startDate, LocalDate endDate) {
         AIRecommendedTravelPlanDTO fallbackList = new AIRecommendedTravelPlanDTO();
         fallbackList.setTripName(city + " 여행");
         fallbackList.setItinerary(new ArrayList<>());

@@ -92,12 +92,9 @@ public class TravelPlanControllerUnitTest {
 
                 // 요청 객체 설정
                 request = new TravelPlanRequest();
-                request.setTitle("Test Travel Plan");
-                request.setCountry("South Korea");
                 request.setCity("Seoul");
                 request.setStartDate(LocalDate.now().plusDays(1));
                 request.setEndDate(LocalDate.now().plusDays(5));
-                request.setSeason("Spring");
                 request.setTravelStyle("Cultural and historical exploration");
                 request.setBudget("1000000");
                 request.setInterests("Cultural heritage, historical sites");
@@ -164,7 +161,6 @@ public class TravelPlanControllerUnitTest {
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").exists())
-                                .andExpect(jsonPath("$.title").value(request.getTitle()))
                                 .andExpect(jsonPath("$.itineraries.length()").value(1))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$.itineraries[0].activities.length()").value(1))
@@ -206,9 +202,7 @@ public class TravelPlanControllerUnitTest {
                                 .startDate(LocalDate.now().plusDays(2))
                                 .endDate(LocalDate.now().plusDays(6))
                                 .itineraries(new ArrayList<>())
-                                .country("South Korea")
                                 .city("Seoul")
-                                .season("Spring")
                                 .travelStyles(new ArrayList<>())
                                 .budget("1000000")
                                 .interests(new ArrayList<>())

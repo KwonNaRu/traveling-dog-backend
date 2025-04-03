@@ -115,12 +115,9 @@ public class TravelPlanControllerIntegrationTest {
         public void testGenerateTravelPlan() throws Exception {
                 // Given
                 TravelPlanRequest request = new TravelPlanRequest();
-                request.setTitle("New Travel Plan");
-                request.setCountry("Japan");
                 request.setCity("Tokyo");
                 request.setStartDate(LocalDate.now().plusDays(10));
                 request.setEndDate(LocalDate.now().plusDays(15));
-                request.setSeason("Spring");
                 request.setTravelStyle("Adventure");
                 request.setBudget("1000000");
                 request.setInterests("Shopping, Food, Culture");
@@ -169,8 +166,6 @@ public class TravelPlanControllerIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.title").value("New Travel Plan"))
-                                .andExpect(jsonPath("$.country").value("Japan"))
                                 .andExpect(jsonPath("$.city").value("Tokyo"))
                                 .andExpect(jsonPath("$.itineraries.length()").value(3))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("도쿄 타워"))
@@ -227,7 +222,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockMvc.perform(get("/api/travel/plans"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$[0].id").value(testTravelPlan.getId()))
-                                .andExpect(jsonPath("$[0].title").value(testTravelPlan.getTitle()))
                                 .andExpect(jsonPath("$[0].itineraries.length()").value(2))
                                 .andExpect(jsonPath("$[0].itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$[0].itineraries[1].location").value("홍대입구"));
@@ -286,7 +280,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockMvc.perform(get("/api/travel/plan/{id}", testTravelPlan.getId()))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(testTravelPlan.getId()))
-                                .andExpect(jsonPath("$.title").value(testTravelPlan.getTitle()))
                                 .andExpect(jsonPath("$.itineraries.length()").value(3))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("강남"))
                                 .andExpect(jsonPath("$.itineraries[1].location").value("잠실"))
@@ -331,8 +324,7 @@ public class TravelPlanControllerIntegrationTest {
                 mockMvc.perform(put("/api/travel/plan/{id}", testTravelPlan.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updateRequest)))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.title").value("Updated Travel Plan"));
+                                .andExpect(status().isOk());
         }
 
         @Test

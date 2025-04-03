@@ -231,12 +231,9 @@ public class TravelPlanServiceIntegrationTest {
 
                 // Given
                 TravelPlanRequest request = new TravelPlanRequest();
-                request.setTitle("Test Travel Plan");
-                request.setCountry("대한민국");
                 request.setCity("서울");
                 request.setStartDate(LocalDate.now());
                 request.setEndDate(LocalDate.now().plusDays(7));
-                request.setSeason("Spring");
                 request.setTravelStyle("Adventure");
                 request.setBudget("Budget");
                 request.setInterests("Interests");
@@ -274,12 +271,9 @@ public class TravelPlanServiceIntegrationTest {
 
                 // Given
                 TravelPlanRequest secondRequest = new TravelPlanRequest();
-                secondRequest.setTitle("Test Travel Plan 2");
-                secondRequest.setCountry("Japan");
                 secondRequest.setCity("Tokyo");
                 secondRequest.setStartDate(LocalDate.now());
                 secondRequest.setEndDate(LocalDate.now().plusDays(7));
-                secondRequest.setSeason("Spring");
                 secondRequest.setTravelStyle("Adventure");
                 secondRequest.setBudget("Budget");
                 secondRequest.setInterests("Interests");

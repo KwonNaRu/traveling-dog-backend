@@ -99,7 +99,6 @@ public class TravelPlanService {
         try {
             // 강화된 프롬프트 생성
             String prompt = gptResponseHandler.createEnhancedPrompt(
-                    request.getCountry(),
                     request.getCity(),
                     request.getStartDate(),
                     request.getEndDate(),
@@ -140,7 +139,6 @@ public class TravelPlanService {
                     log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
                     // 대체 응답 사용
                     return gptResponseHandler.getFallbackResponse(
-                            request.getCountry(),
                             request.getCity(),
                             request.getStartDate(),
                             request.getEndDate());
@@ -163,7 +161,6 @@ public class TravelPlanService {
         try {
             // 강화된 프롬프트 생성 (기존 프롬프트 재사용)
             String prompt = gptResponseHandler.createEnhancedPrompt(
-                    request.getCountry(),
                     request.getCity(),
                     request.getStartDate(),
                     request.getEndDate(),
@@ -216,7 +213,6 @@ public class TravelPlanService {
                     log.error("Gemini 응답 처리 중 오류 발생: {}", e.getMessage());
                     // 대체 응답 사용
                     return gptResponseHandler.getFallbackResponse(
-                            request.getCountry(),
                             request.getCity(),
                             request.getStartDate(),
                             request.getEndDate());
