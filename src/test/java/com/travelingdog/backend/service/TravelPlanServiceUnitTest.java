@@ -215,7 +215,7 @@ public class TravelPlanServiceUnitTest {
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
                                 .thenReturn(aiRecommendedTravelPlanDTO);
                 when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any(),
-                                any(), any()))
+                                any()))
                                 .thenReturn("테스트 프롬프트");
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);

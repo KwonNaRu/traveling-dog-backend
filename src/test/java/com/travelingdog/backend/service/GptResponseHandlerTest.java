@@ -219,7 +219,6 @@ public class GptResponseHandlerTest {
         String city = "제주시";
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);
-        String season = "여름";
         String travelStyle = "해변, 자연 풍경 감상";
         String budget = "100만원";
         String interests = "맛집, 자연";
@@ -227,7 +226,7 @@ public class GptResponseHandlerTest {
         String transportation = "렌터카";
 
         // When
-        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate, season,
+        String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(country, city, startDate, endDate,
                 travelStyle, budget, interests, accommodation, transportation);
 
         // Then
@@ -236,7 +235,6 @@ public class GptResponseHandlerTest {
         assertTrue(enhancedPrompt.contains(city));
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
         assertTrue(enhancedPrompt.contains(endDate.format(formatter)));
-        assertTrue(enhancedPrompt.contains(season));
         assertTrue(enhancedPrompt.contains(travelStyle));
         assertTrue(enhancedPrompt.contains(budget));
         assertTrue(enhancedPrompt.contains(interests));
