@@ -19,8 +19,6 @@ public class ItineraryDTO {
     private String location;
     private int date;
     private List<ItineraryActivityDTO> activities;
-    private ItineraryLunchDTO lunch;
-    private ItineraryDinnerDTO dinner;
 
     public static ItineraryDTO fromEntity(Itinerary entity) {
         if (entity == null) {
@@ -34,8 +32,6 @@ public class ItineraryDTO {
                 .activities(entity.getActivities().stream()
                         .map(ItineraryActivityDTO::fromEntity)
                         .collect(Collectors.toList()))
-                .lunch(entity.getLunch() != null ? ItineraryLunchDTO.fromEntity(entity.getLunch()) : null)
-                .dinner(entity.getDinner() != null ? ItineraryDinnerDTO.fromEntity(entity.getDinner()) : null)
                 .build();
     }
 
@@ -51,8 +47,6 @@ public class ItineraryDTO {
                 .activities(dto.getActivities().stream()
                         .map(ItineraryActivityDTO::toEntity)
                         .collect(Collectors.toList()))
-                .lunch(dto.getLunch() != null ? ItineraryLunchDTO.toEntity(dto.getLunch()) : null)
-                .dinner(dto.getDinner() != null ? ItineraryDinnerDTO.toEntity(dto.getDinner()) : null)
                 .build();
     }
 

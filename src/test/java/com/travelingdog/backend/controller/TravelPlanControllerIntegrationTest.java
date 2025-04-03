@@ -133,24 +133,18 @@ public class TravelPlanControllerIntegrationTest {
                                 .location("도쿄 타워")
                                 .date(1)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("시부야")
                                 .date(2)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("하라주쿠")
                                 .date(3)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
 
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
@@ -194,16 +188,12 @@ public class TravelPlanControllerIntegrationTest {
                                 .location("남산 타워")
                                 .date(1)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("홍대입구")
                                 .date(2)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
 
                 List<TravelPlanDTO> mockResponse = new ArrayList<>();
@@ -253,24 +243,18 @@ public class TravelPlanControllerIntegrationTest {
                                 .location("강남")
                                 .date(1)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("잠실")
                                 .date(2)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("송파")
                                 .date(3)
                                 .activities(new ArrayList<>())
-                                .lunch(null)
-                                .dinner(null)
                                 .build());
 
                 TravelPlanDTO mockResponse = new TravelPlanDTO();

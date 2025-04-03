@@ -43,8 +43,6 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
-import com.travelingdog.backend.model.ItineraryDinner;
-import com.travelingdog.backend.model.ItineraryLunch;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.ItineraryRepository;
@@ -87,8 +85,6 @@ public class TravelPlanServiceUnitTest {
         private User user;
         private ItineraryActivity activity1;
         private ItineraryActivity activity2;
-        private ItineraryLunch lunch;
-        private ItineraryDinner dinner;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -155,20 +151,6 @@ public class TravelPlanServiceUnitTest {
                                 .city("Seoul")
                                 .build();
 
-                lunch = ItineraryLunch.builder()
-                                .name("Lunch")
-                                .description("Lunch")
-                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                // .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
-                dinner = ItineraryDinner.builder()
-                                .name("Dinner")
-                                .description("Dinner")
-                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                // .createPoint(new Coordinate(37.5, 127.0)))
-                                .build();
-
                 activity1 = ItineraryActivity.builder()
                                 .name("Activity")
                                 .description("Activity")
@@ -184,8 +166,6 @@ public class TravelPlanServiceUnitTest {
                 Itinerary itinerary = new Itinerary();
                 itinerary.setLocation("Gyeongbokgung Palace");
                 itinerary.setActivities(Arrays.asList(activity1, activity2));
-                itinerary.setLunch(lunch);
-                itinerary.setDinner(dinner);
                 itinerary.setDate(0);
                 itinerary.setTravelPlan(travelPlan);
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
@@ -377,8 +357,6 @@ public class TravelPlanServiceUnitTest {
                 itinerary.setLocation(name);
                 itinerary.setDate(0);
                 itinerary.setActivities(Arrays.asList(location, location));
-                itinerary.setLunch(location);
-                itinerary.setDinner(location);
 
                 LocationDTO locationDTO = new LocationDTO();
                 locationDTO.setName(name);

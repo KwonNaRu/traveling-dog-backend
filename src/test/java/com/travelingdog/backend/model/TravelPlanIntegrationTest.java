@@ -169,20 +169,6 @@ public class TravelPlanIntegrationTest {
                                 .build();
                 activities.add(activity);
 
-                ItineraryLunch lunch = ItineraryLunch.builder()
-                                .name("Test Lunch")
-                                .description("Test Description")
-                                // .coordinates(geometryFactory
-                                // .createPoint(new Coordinate(126.915298, 37.554722)))
-                                .build();
-
-                ItineraryLunch dinner = ItineraryLunch.builder()
-                                .name("Test Dinner")
-                                .description("Test Description")
-                                // .coordinates(geometryFactory
-                                // .createPoint(new Coordinate(126.915298, 37.554722)))
-                                .build();
-
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()
                                 .date(1)
@@ -237,23 +223,6 @@ public class TravelPlanIntegrationTest {
                                 .description("Test Description")
                                 .coordinates(geometryFactory
                                                 .createPoint(new Coordinate(126.915298, 37.554722)))
-                                .activityOrder(1)
-                                .itinerary(itinerary)
-                                .build();
-
-                ItineraryLunch lunch = ItineraryLunch.builder()
-                                .name("Test Lunch")
-                                .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
-                                .itinerary(itinerary)
-                                .build();
-
-                ItineraryDinner dinner = ItineraryDinner.builder()
-                                .name("Test Dinner")
-                                .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
                                 .itinerary(itinerary)
                                 .build();
 
@@ -261,8 +230,6 @@ public class TravelPlanIntegrationTest {
                 List<ItineraryActivity> activities = new ArrayList<>();
                 activities.add(activity);
                 itinerary.setActivities(activities);
-                itinerary.setLunch(lunch);
-                itinerary.setDinner(dinner);
 
                 itineraryRepository.save(itinerary);
 

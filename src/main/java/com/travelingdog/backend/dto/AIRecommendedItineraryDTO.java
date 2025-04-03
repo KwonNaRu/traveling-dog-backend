@@ -17,8 +17,6 @@ public class AIRecommendedItineraryDTO {
     private int date;
     private String location;
     private List<Location> activities;
-    private Location lunch;
-    private Location dinner;
 
     @Getter
     @Setter

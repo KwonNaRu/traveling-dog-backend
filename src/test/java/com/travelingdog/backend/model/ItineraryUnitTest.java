@@ -65,8 +65,6 @@ public class ItineraryUnitTest {
                 assertThat(itinerary.getLocation()).isEqualTo("제주시");
                 assertThat(itinerary.getTravelPlan()).isEqualTo(travelPlan);
                 assertThat(itinerary.getActivities()).isEmpty();
-                assertThat(itinerary.getLunch()).isNull();
-                assertThat(itinerary.getDinner()).isNull();
         }
 
         /**
@@ -83,33 +81,6 @@ public class ItineraryUnitTest {
         }
 
         /**
-         * ✅ Itinerary 엔티티에 점심/저녁 장소가 정상적으로 추가되는지 검증합니다.
-         */
-        @Test
-        public void testItineraryMealLocations() {
-                // 점심 장소 추가
-                ItineraryLunch lunch = ItineraryLunch.builder()
-                                .name("제주 흑돼지 맛집")
-                                .description("제주 전통 흑돼지 구이 맛집")
-                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.531, 33.499)))
-                                .itinerary(itinerary)
-                                .build();
-                itinerary.setLunch(lunch);
-
-                // 저녁 장소 추가
-                ItineraryDinner dinner = ItineraryDinner.builder()
-                                .name("해녀의 집")
-                                .description("신선한 해산물 요리")
-                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.559, 33.248)))
-                                .itinerary(itinerary)
-                                .build();
-                itinerary.setDinner(dinner);
-
-                assertThat(itinerary.getLunch()).isEqualTo(lunch);
-                assertThat(itinerary.getDinner()).isEqualTo(dinner);
-        }
-
-        /**
          * ✅ Itinerary 엔티티에 활동이 정상적으로 추가되는지 검증합니다.
          */
         @Test
@@ -117,8 +88,6 @@ public class ItineraryUnitTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("성산일출봉")
                                 .description("제주도의 상징적인 화산")
-                                // .coordinates(geometryFactory.createPoint(new Coordinate(126.939, 33.458)))
-                                .activityOrder(0)
                                 .itinerary(itinerary)
                                 .build();
                 itinerary.getActivities().add(activity);

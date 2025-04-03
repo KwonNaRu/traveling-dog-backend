@@ -186,11 +186,7 @@ public class GPTResponseIntegrationTest {
                                 "{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
                 jsonBuilder.append(
                                 "{\"name\":\"우도 자전거 투어\",\"latitude\":33.506,\"longitude\":126.953,\"description\":\"우도 섬 자전거 투어\"}");
-                jsonBuilder.append("],");
-                jsonBuilder.append(
-                                "\"lunch\":{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"},");
-                jsonBuilder.append(
-                                "\"dinner\":{\"name\":\"해녀의 집\",\"latitude\":33.248,\"longitude\":126.559,\"description\":\"신선한 해산물 요리\"}");
+                jsonBuilder.append("]");
                 jsonBuilder.append("},");
 
                 // 둘째 날 일정
@@ -198,11 +194,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
                                 "{\"name\":\"만장굴 탐험\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
-                jsonBuilder.append("],");
-                jsonBuilder.append(
-                                "\"lunch\":{\"name\":\"제주 전복 요리\",\"latitude\":33.450,\"longitude\":126.790,\"description\":\"신선한 전복 요리 맛집\"},");
-                jsonBuilder.append(
-                                "\"dinner\":{\"name\":\"제주 한라산 고기\",\"latitude\":33.460,\"longitude\":126.780,\"description\":\"한라산 고기 맛집\"}");
+                jsonBuilder.append("]");
                 jsonBuilder.append("}");
                 jsonBuilder.append("],");
 
@@ -255,8 +247,6 @@ public class GPTResponseIntegrationTest {
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
                 assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
-                assertEquals("제주 흑돼지 맛집", firstDay.getLunch().getName());
-                assertEquals("해녀의 집", firstDay.getDinner().getName());
 
                 // 둘째 날 일정 검증
                 AIRecommendedItineraryDTO secondDay = result.getItinerary().get(1);
@@ -264,8 +254,6 @@ public class GPTResponseIntegrationTest {
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
-                assertEquals("제주 전복 요리", secondDay.getLunch().getName());
-                assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
 
                 // 테스트 종료 후 SecurityContext 정리
                 SecurityContextHolder.clearContext();
@@ -302,8 +290,6 @@ public class GPTResponseIntegrationTest {
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
                 assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
-                assertEquals("제주 흑돼지 맛집", firstDay.getLunch().getName());
-                assertEquals("해녀의 집", firstDay.getDinner().getName());
 
                 // 둘째 날 일정 검증
                 Itinerary secondDay = itineraries.get(1);
@@ -311,8 +297,6 @@ public class GPTResponseIntegrationTest {
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
-                assertEquals("제주 전복 요리", secondDay.getLunch().getName());
-                assertEquals("제주 한라산 고기", secondDay.getDinner().getName());
 
                 // 테스트 종료 후 SecurityContext 정리
                 SecurityContextHolder.clearContext();

@@ -36,8 +36,6 @@ import com.travelingdog.backend.config.SecurityConfig;
 import com.travelingdog.backend.config.WithMockCustomUser;
 import com.travelingdog.backend.dto.travelPlan.ItineraryActivityDTO;
 import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
-import com.travelingdog.backend.dto.travelPlan.ItineraryDinnerDTO;
-import com.travelingdog.backend.dto.travelPlan.ItineraryLunchDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -137,22 +135,6 @@ public class TravelPlanControllerUnitTest {
                                 .build();
                 activities.add(activityDTO);
 
-                ItineraryLunchDTO lunchDTO = ItineraryLunchDTO.builder()
-                                .id(1L)
-                                .name("남산 타워")
-                                .description("남산 타워 방문")
-                                .latitude(126.9110759)
-                                .longitude(37.5514162)
-                                .build();
-
-                ItineraryDinnerDTO dinnerDTO = ItineraryDinnerDTO.builder()
-                                .id(1L)
-                                .name("남산 타워")
-                                .description("남산 타워 방문")
-                                .latitude(126.9110759)
-                                .longitude(37.5514162)
-                                .build();
-
                 // 일정 데이터 설정
                 List<ItineraryDTO> itineraries = new ArrayList<>();
                 itineraries.add(ItineraryDTO.builder()
@@ -160,8 +142,6 @@ public class TravelPlanControllerUnitTest {
                                 .location("남산 타워")
                                 .date(1)
                                 .activities(activities)
-                                .lunch(lunchDTO)
-                                .dinner(dinnerDTO)
                                 .build());
                 travelPlanDTO.setItineraries(itineraries);
         }
@@ -188,9 +168,7 @@ public class TravelPlanControllerUnitTest {
                                 .andExpect(jsonPath("$.itineraries.length()").value(1))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$.itineraries[0].activities.length()").value(1))
-                                .andExpect(jsonPath("$.itineraries[0].activities[0].name").value("남산 타워"))
-                                .andExpect(jsonPath("$.itineraries[0].lunch.name").value("남산 타워"))
-                                .andExpect(jsonPath("$.itineraries[0].dinner.name").value("남산 타워"));
+                                .andExpect(jsonPath("$.itineraries[0].activities[0].name").value("남산 타워"));
         }
 
         @Test
@@ -209,9 +187,7 @@ public class TravelPlanControllerUnitTest {
                                 .andExpect(jsonPath("$[0].itineraries.length()").value(1))
                                 .andExpect(jsonPath("$[0].itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$[0].itineraries[0].activities.length()").value(1))
-                                .andExpect(jsonPath("$[0].itineraries[0].activities[0].name").value("남산 타워"))
-                                .andExpect(jsonPath("$[0].itineraries[0].lunch.name").value("남산 타워"))
-                                .andExpect(jsonPath("$[0].itineraries[0].dinner.name").value("남산 타워"));
+                                .andExpect(jsonPath("$[0].itineraries[0].activities[0].name").value("남산 타워"));
         }
 
         @Test
@@ -255,22 +231,6 @@ public class TravelPlanControllerUnitTest {
                                 .build();
                 activities.add(activityDTO);
 
-                ItineraryLunchDTO lunchDTO = ItineraryLunchDTO.builder()
-                                .id(1L)
-                                .name("남산 타워")
-                                .description("남산 타워 방문")
-                                .latitude(126.9110759)
-                                .longitude(37.5514162)
-                                .build();
-
-                ItineraryDinnerDTO dinnerDTO = ItineraryDinnerDTO.builder()
-                                .id(1L)
-                                .name("강남")
-                                .description("강남 방문")
-                                .latitude(127.031233)
-                                .longitude(37.494589)
-                                .build();
-
                 // 일정 데이터 설정
                 List<ItineraryDTO> itineraries = new ArrayList<>();
                 itineraries.add(ItineraryDTO.builder()
@@ -278,8 +238,6 @@ public class TravelPlanControllerUnitTest {
                                 .location("강남")
                                 .date(1)
                                 .activities(activities)
-                                .lunch(lunchDTO)
-                                .dinner(dinnerDTO)
                                 .build());
                 updatedTravelPlanDTO.setItineraries(itineraries);
 

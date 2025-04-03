@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,24 +36,7 @@ public class ItineraryActivity {
     @Column(columnDefinition = "GEOMETRY(Point, 4326)")
     private Point coordinates;
 
-    @Column(nullable = false)
-    @PositiveOrZero(message = "Order must be positive number")
-    private int activityOrder; // 활동 순서
-
     @ManyToOne
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;
-
-    // public void setCoordinates(double longitude, double latitude) {
-    // this.coordinates = new GeometryFactory(new PrecisionModel(), 4326)
-    // .createPoint(new Coordinate(longitude, latitude));
-    // }
-
-    // // coordinates 필드 문자열 반환
-    // public String getCoordinatesString() {
-    // if (coordinates == null) {
-    // return "null";
-    // }
-    // return "Point(" + coordinates.getX() + ", " + coordinates.getY() + ")";
-    // }
 }

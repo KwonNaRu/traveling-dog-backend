@@ -47,8 +47,6 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
-import com.travelingdog.backend.model.ItineraryDinner;
-import com.travelingdog.backend.model.ItineraryLunch;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
@@ -147,29 +145,7 @@ public class TravelPlanServiceIntegrationTest {
                                         .description("Activity")
                                         .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
                                                         .createPoint(new Coordinate(123.456, 78.901)))
-                                        .activityOrder(1)
                                         .build();
-                        // itineraryActivityRepository.save(activity1);
-
-                        // Location과 Activity 생성
-                        ItineraryLunch lunch = ItineraryLunch.builder()
-                                        .name("Lunch")
-                                        .description("Lunch")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(123.456, 78.901)))
-                                        .build();
-                        // lunch = itineraryLocationRepository.save(lunch);
-
-                        ItineraryDinner dinner = ItineraryDinner.builder()
-                                        .name("Dinner")
-                                        .description("Dinner")
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(123.456, 78.901)))
-                                        .build();
-                        // dinner = itineraryLocationRepository.save(dinner);
-
-                        itinerary.setLunch(lunch);
-                        itinerary.setDinner(dinner);
                         itinerary.addActivity(activity1);
 
                         travelPlan.addItinerary(itinerary);
@@ -198,14 +174,10 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation\":[\"지하철\",\"버스\"],"
                                 + "\"itinerary\":["
                                 + "  {\"date\":1,\"location\":\"종로구\","
-                                + "   \"activities\":[{\"name\":\"경복궁\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}],"
-                                + "   \"lunch\":{\"name\":\"인사동 한식당\",\"latitude\":37.5746,\"longitude\":126.9850,\"description\":\"전통 한식\"},"
-                                + "   \"dinner\":{\"name\":\"광화문 레스토랑\",\"latitude\":37.5720,\"longitude\":126.9760,\"description\":\"현대식 한식\"}"
+                                + "   \"activities\":[{\"name\":\"경복궁\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}]"
                                 + "  },"
                                 + "  {\"date\":2,\"location\":\"용산구\","
-                                + "   \"activities\":[{\"name\":\"남산타워\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}],"
-                                + "   \"lunch\":{\"name\":\"이태원 레스토랑\",\"latitude\":37.5340,\"longitude\":126.9940,\"description\":\"다양한 세계 요리\"},"
-                                + "   \"dinner\":{\"name\":\"한남동 식당\",\"latitude\":37.5350,\"longitude\":127.0100,\"description\":\"고급 다이닝\"}"
+                                + "   \"activities\":[{\"name\":\"남산타워\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
                                 + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"latitude\":37.5635,\"longitude\":126.9850,\"description\":\"인기 관광지의 맛집\"}],"
