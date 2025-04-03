@@ -27,8 +27,8 @@ public class ItineraryLunchDTO {
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
-                .latitude(entity.getCoordinates().getX())
-                .longitude(entity.getCoordinates().getY())
+                .latitude(entity.getCoordinates().getY())
+                .longitude(entity.getCoordinates().getX())
                 .build();
     }
 
