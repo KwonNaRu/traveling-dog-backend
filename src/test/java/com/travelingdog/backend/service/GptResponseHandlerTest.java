@@ -215,7 +215,6 @@ public class GptResponseHandlerTest {
     @DisplayName("강화된 프롬프트를 생성할 수 있어야 한다")
     void testCreateEnhancedPrompt() {
         // Given
-        String country = "한국";
         String city = "제주시";
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);
@@ -231,7 +230,6 @@ public class GptResponseHandlerTest {
 
         // Then
         assertNotNull(enhancedPrompt);
-        assertTrue(enhancedPrompt.contains(country));
         assertTrue(enhancedPrompt.contains(city));
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
         assertTrue(enhancedPrompt.contains(endDate.format(formatter)));
@@ -256,7 +254,6 @@ public class GptResponseHandlerTest {
     @DisplayName("대체 응답을 제공할 수 있어야 한다")
     void testProvideFallbackResponse() {
         // Given
-        String country = "한국";
         String city = "제주시";
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);

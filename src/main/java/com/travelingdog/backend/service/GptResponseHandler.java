@@ -143,7 +143,7 @@ public class GptResponseHandler {
                 + "\"transportation\": [\"교통 수단1(문자열, 예: 지하철)\", \"교통 수단2(문자열, 예: 버스)\", ...],"
                 + "\"itinerary\": ["
                 + "{"
-                + "\"day\": 일자(숫자),"
+                + "\"date\": 일자(숫자),"
                 + "\"location\": \"위치(문자열, 예: ${city} 시내)\","
                 + "\"activities\": ["
                 + "{"
