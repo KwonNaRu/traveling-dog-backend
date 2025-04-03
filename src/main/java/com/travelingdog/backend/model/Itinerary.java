@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.travelPlan.ActivityType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -76,6 +77,7 @@ public class Itinerary {
                 ItineraryActivity activityEntity = new ItineraryActivity();
                 activityEntity.setName(activity.getName());
                 activityEntity.setDescription(activity.getDescription());
+                activityEntity.setType(activity.getType());
                 activityEntity.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
                         .createPoint(new Coordinate(activity.getLongitude(), activity.getLatitude())));
                 itinerary.addActivity(activityEntity); // 연관관계 메서드 사용

@@ -48,9 +48,6 @@ public class TravelPlan extends BaseTimeEntity {
     private String title; // 여행 계획 제목
 
     @Column(nullable = false, length = 100)
-    private String country; // 여행 국가
-
-    @Column(nullable = false, length = 100)
     private String city; // 여행 도시
 
     @NotNull
@@ -62,9 +59,6 @@ public class TravelPlan extends BaseTimeEntity {
     @Column(name = "end_date", nullable = false)
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
-
-    @Column(name = "season", length = 50)
-    private String season; // 여행 계절
 
     @Column(name = "budget", length = 100)
     private String budget; // 예산
@@ -182,11 +176,9 @@ public class TravelPlan extends BaseTimeEntity {
     public static TravelPlan fromDTO(AIRecommendedTravelPlanDTO aiRecommendedPlan) {
         return TravelPlan.builder()
                 .title(aiRecommendedPlan.getTripName())
-                .country(aiRecommendedPlan.getDestination())
                 .city(aiRecommendedPlan.getDestination())
                 .startDate(LocalDate.parse(aiRecommendedPlan.getStartDate()))
                 .endDate(LocalDate.parse(aiRecommendedPlan.getEndDate()))
-                .season(aiRecommendedPlan.getSeason())
                 .budget(aiRecommendedPlan.getBudget())
                 .transportationTips(aiRecommendedPlan.getTransportationTips())
                 .travelStyles(aiRecommendedPlan.getTravelStyle().stream()

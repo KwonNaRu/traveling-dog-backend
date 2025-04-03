@@ -22,6 +22,8 @@ public class ItineraryActivityDTO {
 
     private String description; // 활동 설명
 
+    private ActivityType type;
+
     private Double latitude;
     private Double longitude;
 
@@ -32,6 +34,7 @@ public class ItineraryActivityDTO {
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
+                .type(ActivityType.fromValue(entity.getType().getValue()))
                 .latitude(entity.getCoordinates().getY())
                 .longitude(entity.getCoordinates().getX())
                 .build();
@@ -42,6 +45,7 @@ public class ItineraryActivityDTO {
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
+                .type(ActivityType.fromValue(dto.getType().getValue()))
                 .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
                         .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
                 .build();

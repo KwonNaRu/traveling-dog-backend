@@ -73,7 +73,6 @@ public class TravelPlanIntegrationTest {
         public void whenSaveTravelPlan_thenFindById() {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -95,7 +94,6 @@ public class TravelPlanIntegrationTest {
         public void whenUpdateTravelPlan_thenUpdatedAtChanges() throws InterruptedException {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -127,7 +125,6 @@ public class TravelPlanIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -151,7 +148,6 @@ public class TravelPlanIntegrationTest {
                 // 여행 계획 생성
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -202,7 +198,6 @@ public class TravelPlanIntegrationTest {
                 // 여행 계획 생성
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))

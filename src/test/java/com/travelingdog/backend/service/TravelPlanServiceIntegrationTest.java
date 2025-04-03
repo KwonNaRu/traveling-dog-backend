@@ -110,13 +110,11 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 먼저 TravelPlan 생성 및 저장
                 travelPlan = TravelPlan.builder()
-                                .country("South Korea")
                                 .city("Seoul")
                                 .user(user)
                                 .title("Test Travel Plan")
                                 .itineraries(new ArrayList<>())
                                 .startDate(today)
-                                .season("Spring")
                                 .budget("Budget")
                                 .transportationTips("Transportation Tips")
                                 .travelStyles(new ArrayList<>())
@@ -174,10 +172,10 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation\":[\"지하철\",\"버스\"],"
                                 + "\"itinerary\":["
                                 + "  {\"date\":1,\"location\":\"종로구\","
-                                + "   \"activities\":[{\"name\":\"경복궁\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}]"
+                                + "   \"activities\":[{\"name\":\"경복궁\",\"type\":\"MOVE\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}]"
                                 + "  },"
                                 + "  {\"date\":2,\"location\":\"용산구\","
-                                + "   \"activities\":[{\"name\":\"남산타워\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}]"
+                                + "   \"activities\":[{\"name\":\"남산타워\",\"type\":\"LOCATION\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
                                 + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"latitude\":37.5635,\"longitude\":126.9850,\"description\":\"인기 관광지의 맛집\"}],"
@@ -367,7 +365,6 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
-                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")
@@ -409,7 +406,6 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
-                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")
@@ -510,7 +506,6 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
-                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")

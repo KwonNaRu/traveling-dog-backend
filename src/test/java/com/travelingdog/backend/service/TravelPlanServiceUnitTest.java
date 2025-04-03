@@ -126,7 +126,7 @@ public class TravelPlanServiceUnitTest {
                 GeminiCandidate candidate = new GeminiCandidate();
                 GeminiContent content = new GeminiContent();
                 List<GeminiPart> parts = new ArrayList<>();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
+                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"latitude\":37.5796,\"longitude\":126.9770}]";
                 parts.add(GeminiPart.builder()
                                 .text(jsonContent)
                                 .build());
@@ -144,7 +144,6 @@ public class TravelPlanServiceUnitTest {
                                 .title("Test Travel Plan")
                                 .startDate(today)
                                 .endDate(endDate)
-                                .country("South Korea")
                                 .city("Seoul")
                                 .build();
 
@@ -251,7 +250,6 @@ public class TravelPlanServiceUnitTest {
                                 .startDate(today)
                                 .endDate(today.plusDays(3))
                                 .status(PlanStatus.PUBLISHED)
-                                .country("South Korea")
                                 .city("Seoul")
                                 .build();
 
@@ -267,7 +265,6 @@ public class TravelPlanServiceUnitTest {
                                 .startDate(updateRequest.getStartDate())
                                 .endDate(updateRequest.getEndDate())
                                 .status(PlanStatus.PUBLISHED)
-                                .country(existingPlan.getCountry())
                                 .city(existingPlan.getCity())
                                 .build();
 
@@ -283,7 +280,6 @@ public class TravelPlanServiceUnitTest {
                 assertEquals(updateRequest.getTitle(), result.getTitle());
                 assertEquals(updateRequest.getStartDate(), result.getStartDate());
                 assertEquals(updateRequest.getEndDate(), result.getEndDate());
-                assertEquals(existingPlan.getCountry(), result.getCountry()); // 국가는 변경되지 않아야 함
                 assertEquals(existingPlan.getCity(), result.getCity()); // 도시는 변경되지 않아야 함
 
                 // 저장소 호출 검증
@@ -307,7 +303,6 @@ public class TravelPlanServiceUnitTest {
                 TravelPlan existingPlan = TravelPlan.builder()
                                 .id(travelPlanId)
                                 .title("Travel Plan to Delete")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .user(user)
                                 .status(PlanStatus.PUBLISHED)

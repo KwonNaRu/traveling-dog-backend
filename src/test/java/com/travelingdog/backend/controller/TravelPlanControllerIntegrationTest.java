@@ -83,13 +83,11 @@ public class TravelPlanControllerIntegrationTest {
                 // 테스트 여행 계획 생성 및 저장
                 testTravelPlan = new TravelPlan();
                 testTravelPlan.setTitle("Test Travel Plan");
-                testTravelPlan.setCountry("South Korea");
                 testTravelPlan.setCity("Seoul");
                 testTravelPlan.setStartDate(LocalDate.now().plusDays(1));
                 testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
                 testTravelPlan.setUser(testUser);
                 testTravelPlan.setStatus(PlanStatus.PUBLISHED);
-                testTravelPlan.setSeason("Spring");
                 testTravelPlan.setBudget("1000000");
                 testTravelPlan.setTravelStyles(new ArrayList<>());
                 testTravelPlan.setInterests(new ArrayList<>());
@@ -147,12 +145,10 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
                 mockResponse.setId(999L);
                 mockResponse.setTitle("New Travel Plan");
-                mockResponse.setCountry("Japan");
                 mockResponse.setCity("Tokyo");
                 mockResponse.setStartDate(LocalDate.now().plusDays(10));
                 mockResponse.setEndDate(LocalDate.now().plusDays(15));
                 mockResponse.setItineraries(itineraries);
-                mockResponse.setSeason("Spring");
                 mockResponse.setTravelStyles(new ArrayList<>());
                 mockResponse.setBudget("1000000");
                 mockResponse.setInterests(new ArrayList<>());
@@ -195,12 +191,10 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO dto = new TravelPlanDTO();
                 dto.setId(testTravelPlan.getId());
                 dto.setTitle(testTravelPlan.getTitle());
-                dto.setCountry(testTravelPlan.getCountry());
                 dto.setCity(testTravelPlan.getCity());
                 dto.setStartDate(testTravelPlan.getStartDate());
                 dto.setEndDate(testTravelPlan.getEndDate());
                 dto.setItineraries(itineraries);
-                dto.setSeason(testTravelPlan.getSeason());
                 dto.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -254,12 +248,10 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
                 mockResponse.setId(testTravelPlan.getId());
                 mockResponse.setTitle(testTravelPlan.getTitle());
-                mockResponse.setCountry(testTravelPlan.getCountry());
                 mockResponse.setCity(testTravelPlan.getCity());
                 mockResponse.setStartDate(testTravelPlan.getStartDate());
                 mockResponse.setEndDate(testTravelPlan.getEndDate());
                 mockResponse.setItineraries(itineraries);
-                mockResponse.setSeason(testTravelPlan.getSeason());
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -298,11 +290,9 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
                 mockResponse.setId(testTravelPlan.getId());
                 mockResponse.setTitle("Updated Travel Plan");
-                mockResponse.setCountry(testTravelPlan.getCountry());
                 mockResponse.setCity(testTravelPlan.getCity());
                 mockResponse.setStartDate(LocalDate.now().plusDays(2));
                 mockResponse.setEndDate(LocalDate.now().plusDays(6));
-                mockResponse.setSeason(testTravelPlan.getSeason());
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));

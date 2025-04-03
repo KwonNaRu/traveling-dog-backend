@@ -81,7 +81,6 @@ public class TravelPlanService {
                     .map(dto -> Itinerary.fromDto(dto, travelPlan))
                     .collect(Collectors.toList());
             travelPlan.setUser(user);
-
             travelPlan.setItineraries(itineraries);
 
             // 4. 한 번에 저장

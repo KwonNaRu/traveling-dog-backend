@@ -179,9 +179,9 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":1,\"location\":\"성산일출봉\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"성산일출봉 등반\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
+                                "{\"name\":\"성산일출봉 등반\",\"type\":\"MOVE\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"우도 자전거 투어\",\"latitude\":33.506,\"longitude\":126.953,\"description\":\"우도 섬 자전거 투어\"}");
+                                "{\"name\":\"우도 자전거 투어\",\"type\":\"LOCATION\",\"latitude\":33.506,\"longitude\":126.953,\"description\":\"우도 섬 자전거 투어\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("},");
 
@@ -189,7 +189,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":2,\"location\":\"만장굴\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"만장굴 탐험\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
+                                "{\"name\":\"만장굴 탐험\",\"type\":\"LOCATION\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("}");
                 jsonBuilder.append("],");

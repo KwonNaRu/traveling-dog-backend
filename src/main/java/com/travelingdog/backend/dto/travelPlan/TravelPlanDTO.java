@@ -23,11 +23,9 @@ import lombok.NoArgsConstructor;
 public class TravelPlanDTO {
         private Long id;
         private String title;
-        private String country;
         private String city;
         private LocalDate startDate;
         private LocalDate endDate;
-        private String season;
         private List<TravelStyleDTO> travelStyles;
         private String budget;
         private List<InterestDTO> interests;
@@ -48,11 +46,9 @@ public class TravelPlanDTO {
                 return TravelPlanDTO.builder()
                                 .id(entity.getId())
                                 .title(entity.getTitle())
-                                .country(entity.getCountry())
                                 .city(entity.getCity())
                                 .startDate(entity.getStartDate())
                                 .endDate(entity.getEndDate())
-                                .season(entity.getSeason())
                                 .travelStyles(entity.getTravelStyles().stream()
                                                 .map(TravelStyleDTO::fromEntity)
                                                 .collect(Collectors.toList()))

@@ -66,7 +66,6 @@ public class ItineraryIntegrationTest {
 
                 travelPlan = TravelPlan.builder()
                                 .title("강아지와 함께하는 제주도 여행")
-                                .country("한국")
                                 .city("제주시")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(5))

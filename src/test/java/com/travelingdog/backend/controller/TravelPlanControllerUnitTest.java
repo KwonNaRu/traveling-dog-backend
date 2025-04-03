@@ -105,12 +105,10 @@ public class TravelPlanControllerUnitTest {
                 travelPlanDTO = new TravelPlanDTO();
                 travelPlanDTO.setId(1L);
                 travelPlanDTO.setTitle("Test Travel Plan");
-                travelPlanDTO.setCountry("South Korea");
                 travelPlanDTO.setCity("Seoul");
                 travelPlanDTO.setStatus(PlanStatus.PUBLISHED);
                 travelPlanDTO.setStartDate(LocalDate.now().plusDays(1));
                 travelPlanDTO.setEndDate(LocalDate.now().plusDays(5));
-                travelPlanDTO.setSeason("Spring");
                 travelPlanDTO.setTravelStyles(new ArrayList<>());
                 travelPlanDTO.setBudget("1000000");
                 travelPlanDTO.setInterests(new ArrayList<>());
