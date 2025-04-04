@@ -2,6 +2,8 @@ package com.travelingdog.backend.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +27,10 @@ public class AIRecommendedItineraryDTO {
     @NoArgsConstructor
     public static class Location {
         private String name;
+
+        @JsonProperty("location_name")
         private String locationName;
+
         private String description;
     }
 }
