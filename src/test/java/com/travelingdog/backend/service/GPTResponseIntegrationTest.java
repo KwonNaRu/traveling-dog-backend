@@ -179,9 +179,9 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":1,\"location\":\"성산일출봉\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"성산일출봉 등반\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 상징적인 화산 등반\"},");
+                                "{\"title\":\"성산일출봉 등반\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 상징적인 화산 등반\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"우도 자전거 투어\",\"location_name\":\"Test Location Name\",\"description\":\"우도 섬 자전거 투어\"}");
+                                "{\"title\":\"우도 자전거 투어\",\"location_name\":\"Test Location Name\",\"description\":\"우도 섬 자전거 투어\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("},");
 
@@ -189,18 +189,18 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":2,\"location\":\"만장굴\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"만장굴 탐험\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
+                                "{\"title\":\"만장굴 탐험\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("}");
                 jsonBuilder.append("],");
 
                 jsonBuilder.append("\"restaurant_recommendations\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"제주 흑돼지 맛집\",\"location_name\":\"Test Location Name\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
+                                "{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
                 jsonBuilder.append("],");
                 jsonBuilder.append("\"accommodation_recommendations\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"제주 호텔\",\"location_name\":\"Test Location Name\",\"description\":\"제주 호텔\"}");
+                                "{\"location_name\":\"제주 호텔\",\"description\":\"제주 호텔\"}");
                 jsonBuilder.append("],");
                 jsonBuilder.append("\"transportation_tips\":\"제주도 내 렌터카 대여 추천\"");
                 jsonBuilder.append("}");
@@ -241,15 +241,15 @@ public class GPTResponseIntegrationTest {
                 assertEquals(1, firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
-                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
-                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
+                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getTitle());
+                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getTitle());
 
                 // 둘째 날 일정 검증
                 AIRecommendedItineraryDTO secondDay = result.getItinerary().get(1);
                 assertEquals(2, secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
-                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
+                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getTitle());
 
                 // 테스트 종료 후 SecurityContext 정리
                 SecurityContextHolder.clearContext();
@@ -284,15 +284,15 @@ public class GPTResponseIntegrationTest {
                 assertEquals(1, firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
-                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getName());
-                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getName());
+                assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getTitle());
+                assertEquals("우도 자전거 투어", firstDay.getActivities().get(1).getTitle());
 
                 // 둘째 날 일정 검증
                 Itinerary secondDay = itineraries.get(1);
                 assertEquals(2, secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
-                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getName());
+                assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getTitle());
 
                 // 테스트 종료 후 SecurityContext 정리
                 SecurityContextHolder.clearContext();

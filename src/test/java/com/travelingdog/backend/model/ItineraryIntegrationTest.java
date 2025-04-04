@@ -189,14 +189,16 @@ public class ItineraryIntegrationTest {
                 itineraryRepository.save(itinerary);
 
                 ItineraryActivity activity1 = ItineraryActivity.builder()
-                                .name("성산일출봉 등반")
+                                .title("성산일출봉 등반")
                                 .description("제주도의 상징적인 화산 등반")
+                                .locationName("성산일출봉")
                                 .itinerary(itinerary)
                                 .build();
 
                 ItineraryActivity activity2 = ItineraryActivity.builder()
-                                .name("우도 자전거 투어")
+                                .title("우도 자전거 투어")
                                 .description("우도 섬 자전거 투어")
+                                .locationName("우도")
                                 .itinerary(itinerary)
                                 .build();
 
@@ -208,7 +210,7 @@ public class ItineraryIntegrationTest {
                 // then
                 assertNotNull(savedItinerary);
                 assertEquals(2, savedItinerary.getActivities().size());
-                assertEquals("성산일출봉 등반", savedItinerary.getActivities().get(0).getName());
-                assertEquals("우도 자전거 투어", savedItinerary.getActivities().get(1).getName());
+                assertEquals("성산일출봉 등반", savedItinerary.getActivities().get(0).getTitle());
+                assertEquals("우도 자전거 투어", savedItinerary.getActivities().get(1).getTitle());
         }
 }

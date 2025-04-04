@@ -126,7 +126,7 @@ public class TravelPlanServiceUnitTest {
                 GeminiCandidate candidate = new GeminiCandidate();
                 GeminiContent content = new GeminiContent();
                 List<GeminiPart> parts = new ArrayList<>();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
+                String jsonContent = "[{\"title\":\"Gyeongbokgung Palace\",\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
                 parts.add(GeminiPart.builder()
                                 .text(jsonContent)
                                 .build());
@@ -148,13 +148,13 @@ public class TravelPlanServiceUnitTest {
                                 .build();
 
                 activity1 = ItineraryActivity.builder()
-                                .name("Activity")
+                                .title("Activity")
                                 .description("Activity")
                                 .locationName("Test Location Name")
                                 .build();
 
                 activity2 = ItineraryActivity.builder()
-                                .name("test2")
+                                .title("test2")
                                 .description("test2")
                                 .locationName("Test Location Name")
                                 .build();
@@ -338,7 +338,7 @@ public class TravelPlanServiceUnitTest {
                         String name) {
 
                 Location location = new Location();
-                location.setName(name);
+                location.setTitle(name);
                 location.setDescription("Description");
                 location.setLocationName("Test Location Name");
 

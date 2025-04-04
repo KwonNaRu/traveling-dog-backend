@@ -26,7 +26,7 @@ public class AIRecommendedItineraryDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Location {
-        private String name;
+        private String title;
 
         @JsonProperty("location_name")
         private String locationName;

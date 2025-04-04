@@ -136,7 +136,7 @@ public class TravelPlanServiceIntegrationTest {
                         // itinerary = itineraryRepository.save(itinerary);
 
                         ItineraryActivity activity1 = ItineraryActivity.builder()
-                                        .name("Activity")
+                                        .title("Activity")
                                         .description("Activity")
                                         .locationName("Test Location Name")
                                         .build();
@@ -168,14 +168,14 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation\":[\"지하철\",\"버스\"],"
                                 + "\"itinerary\":["
                                 + "  {\"date\":1,\"location\":\"종로구\","
-                                + "   \"activities\":[{\"name\":\"경복궁\",\"location_name\":\"Test Location Name\",\"description\":\"조선 왕조의 정궁\"}]"
+                                + "   \"activities\":[{\"title\":\"경복궁\",\"location_name\":\"Test Location Name\",\"description\":\"조선 왕조의 정궁\"}]"
                                 + "  },"
                                 + "  {\"date\":2,\"location\":\"용산구\","
-                                + "   \"activities\":[{\"name\":\"남산타워\",\"location_name\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
+                                + "   \"activities\":[{\"title\":\"남산타워\",\"location_name\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
-                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\", \"location_name\":\"Test Location Name\"}],"
-                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\", \"location_name\":\"Test Location Name\"}],"
+                                + "\"restaurant_recommendations\":[{\"location_name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\"}],"
+                                + "\"accommodation_recommendations\":[{\"location_name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 
@@ -543,16 +543,16 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 첫째 날 장소들
                 jsonBuilder.append(
-                                "{\"name\":\"Gyeongbokgung Palace\", \"type\":\"LOCATION\", \"description\":\"조선 왕조의 정궁\"},");
+                                "{\"title\":\"Gyeongbokgung Palace\", \"type\":\"LOCATION\", \"description\":\"조선 왕조의 정궁\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"Insadong\", \"type\":\"LOCATION\", \"description\":\"인사동 거리\"},");
+                                "{\"title\":\"Insadong\", \"type\":\"LOCATION\", \"description\":\"인사동 거리\"},");
 
                 // 둘째 날 장소들
                 LocalDate secondDay = startDate.plusDays(1);
                 jsonBuilder
-                                .append("{\"name\":\"Namsan Tower\", \"type\":\"LOCATION\", \"description\":\"남산 타워\"},");
+                                .append("{\"title\":\"Namsan Tower\", \"type\":\"LOCATION\", \"description\":\"남산 타워\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"Myeongdong\", \"type\":\"LOCATION\", \"description\":\"명동 거리\"}");
+                                "{\"title\":\"Myeongdong\", \"type\":\"LOCATION\", \"description\":\"명동 거리\"}");
 
                 jsonBuilder.append("]");
                 return jsonBuilder.toString();

@@ -122,7 +122,7 @@ public class TravelPlanControllerUnitTest {
                 ArrayList<ItineraryActivityDTO> activities = new ArrayList<>();
                 ItineraryActivityDTO activityDTO = ItineraryActivityDTO.builder()
                                 .id(1L)
-                                .name("남산 타워")
+                                .title("남산 타워")
                                 .description("남산 타워 방문")
                                 .build();
                 activities.add(activityDTO);
@@ -159,7 +159,7 @@ public class TravelPlanControllerUnitTest {
                                 .andExpect(jsonPath("$.itineraries.length()").value(1))
                                 .andExpect(jsonPath("$.itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$.itineraries[0].activities.length()").value(1))
-                                .andExpect(jsonPath("$.itineraries[0].activities[0].name").value("남산 타워"));
+                                .andExpect(jsonPath("$.itineraries[0].activities[0].title").value("남산 타워"));
         }
 
         @Test
@@ -178,7 +178,7 @@ public class TravelPlanControllerUnitTest {
                                 .andExpect(jsonPath("$[0].itineraries.length()").value(1))
                                 .andExpect(jsonPath("$[0].itineraries[0].location").value("남산 타워"))
                                 .andExpect(jsonPath("$[0].itineraries[0].activities.length()").value(1))
-                                .andExpect(jsonPath("$[0].itineraries[0].activities[0].name").value("남산 타워"));
+                                .andExpect(jsonPath("$[0].itineraries[0].activities[0].title").value("남산 타워"));
         }
 
         @Test
@@ -213,7 +213,7 @@ public class TravelPlanControllerUnitTest {
                 ArrayList<ItineraryActivityDTO> activities = new ArrayList<>();
                 ItineraryActivityDTO activityDTO = ItineraryActivityDTO.builder()
                                 .id(1L)
-                                .name("남산 타워")
+                                .title("남산 타워")
                                 .description("남산 타워 방문")
                                 .build();
                 activities.add(activityDTO);

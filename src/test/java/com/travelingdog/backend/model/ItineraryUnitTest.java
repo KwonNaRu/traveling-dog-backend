@@ -86,7 +86,7 @@ public class ItineraryUnitTest {
         @Test
         public void testItineraryActivities() {
                 ItineraryActivity activity = ItineraryActivity.builder()
-                                .name("성산일출봉")
+                                .title("성산일출봉")
                                 .description("제주도의 상징적인 화산")
                                 .itinerary(itinerary)
                                 .build();

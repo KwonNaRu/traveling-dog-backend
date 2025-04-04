@@ -24,13 +24,10 @@ public class AccommodationRecommendation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
-
     @Column(length = 500)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "location_name", nullable = false)
     private String locationName;
 
     @ManyToOne

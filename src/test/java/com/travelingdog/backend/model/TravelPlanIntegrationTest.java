@@ -157,7 +157,7 @@ public class TravelPlanIntegrationTest {
 
                 ArrayList<ItineraryActivity> activities = new ArrayList<>();
                 ItineraryActivity activity = ItineraryActivity.builder()
-                                .name("Test Activity")
+                                .title("Test Activity")
                                 .description("Test Description")
                                 .locationName("Test Location Name")
                                 .build();
@@ -212,7 +212,7 @@ public class TravelPlanIntegrationTest {
                                 .build();
 
                 ItineraryActivity activity = ItineraryActivity.builder()
-                                .name("Test Activity")
+                                .title("Test Activity")
                                 .description("Test Description")
                                 .locationName("Test Location Name")
                                 .itinerary(itinerary)

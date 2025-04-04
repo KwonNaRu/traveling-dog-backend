@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ItineraryActivityDTO {
     private Long id;
 
-    private String name; // 활동 이름
+    private String title; // 활동 이름
 
     private String description; // 활동 설명
 
@@ -23,7 +23,7 @@ public class ItineraryActivityDTO {
     public static ItineraryActivityDTO fromEntity(ItineraryActivity entity) {
         return ItineraryActivityDTO.builder()
                 .id(entity.getId())
-                .name(entity.getName())
+                .title(entity.getTitle())
                 .description(entity.getDescription())
                 .locationName(entity.getLocationName())
                 .build();
@@ -32,7 +32,7 @@ public class ItineraryActivityDTO {
     public static ItineraryActivity toEntity(ItineraryActivityDTO dto) {
         return ItineraryActivity.builder()
                 .id(dto.getId())
-                .name(dto.getName())
+                .title(dto.getTitle())
                 .description(dto.getDescription())
                 .locationName(dto.getLocationName())
                 .build();

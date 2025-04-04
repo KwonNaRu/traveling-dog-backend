@@ -69,7 +69,7 @@ public class Itinerary {
         if (dto.getActivities() != null) {
             for (AIRecommendedItineraryDTO.Location activity : dto.getActivities()) {
                 ItineraryActivity activityEntity = new ItineraryActivity();
-                activityEntity.setName(activity.getName());
+                activityEntity.setTitle(activity.getTitle());
                 activityEntity.setDescription(activity.getDescription());
                 activityEntity.setLocationName(activity.getLocationName());
                 itinerary.addActivity(activityEntity); // 연관관계 메서드 사용

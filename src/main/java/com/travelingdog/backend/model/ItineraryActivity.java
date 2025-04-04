@@ -1,9 +1,5 @@
 package com.travelingdog.backend.model;
 
-import org.locationtech.jts.geom.Point;
-
-import com.travelingdog.backend.dto.travelPlan.ActivityType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,8 +12,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 
 @Entity
 @Getter
@@ -32,12 +26,12 @@ public class ItineraryActivity {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // 활동 이름
+    private String title; // 활동 이름
 
     @Column
     private String description; // 활동 설명
 
-    @Column
+    @Column(name = "location_name", nullable = false)
     private String locationName; // 활동 위치 이름
 
     @ManyToOne
