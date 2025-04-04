@@ -159,7 +159,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"trip_name\":\"서울 여행 계획\","
                                 + "\"start_date\":\"" + today + "\","
                                 + "\"end_date\":\"" + today.plusDays(7) + "\","
-                                + "\"season\":\"봄\","
                                 + "\"travel_style\":[\"도시\",\"문화\"],"
                                 + "\"budget\":\"중간\","
                                 + "\"destination\":\"서울\","
