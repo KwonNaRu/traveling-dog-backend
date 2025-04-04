@@ -19,6 +19,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -38,6 +41,7 @@ import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
 import com.travelingdog.backend.dto.gemini.GeminiRequest;
 import com.travelingdog.backend.dto.gemini.GeminiResponse;
+import com.travelingdog.backend.dto.travelPlan.ActivityType;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -126,7 +130,7 @@ public class TravelPlanServiceUnitTest {
                 GeminiCandidate candidate = new GeminiCandidate();
                 GeminiContent content = new GeminiContent();
                 List<GeminiPart> parts = new ArrayList<>();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"latitude\":37.5796,\"longitude\":126.9770}]";
+                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
                 parts.add(GeminiPart.builder()
                                 .text(jsonContent)
                                 .build());
@@ -150,13 +154,17 @@ public class TravelPlanServiceUnitTest {
                 activity1 = ItineraryActivity.builder()
                                 .name("Activity")
                                 .description("Activity")
-                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                // .createPoint(new Coordinate(37.5, 127.0)))
+                                .type(ActivityType.MOVE)
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
-                activity2 = ItineraryActivity.builder().name("test2").description("test2")
-                                // .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                // .createPoint(new Coordinate(37.5, 127.0)))
+                activity2 = ItineraryActivity.builder()
+                                .name("test2")
+                                .description("test2")
+                                .type(ActivityType.LOCATION)
+                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
+                                                .createPoint(new Coordinate(37.5, 127.0)))
                                 .build();
 
                 Itinerary itinerary = new Itinerary();

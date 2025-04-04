@@ -41,6 +41,7 @@ import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
 import com.travelingdog.backend.dto.gemini.GeminiRequest;
 import com.travelingdog.backend.dto.gemini.GeminiResponse;
+import com.travelingdog.backend.dto.travelPlan.ActivityType;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -141,6 +142,7 @@ public class TravelPlanServiceIntegrationTest {
                         ItineraryActivity activity1 = ItineraryActivity.builder()
                                         .name("Activity")
                                         .description("Activity")
+                                        .type(ActivityType.MOVE)
                                         .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
                                                         .createPoint(new Coordinate(123.456, 78.901)))
                                         .build();

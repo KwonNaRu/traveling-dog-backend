@@ -38,7 +38,7 @@ public class ItineraryActivity {
     private String description; // 활동 설명
 
     @Column
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private ActivityType type;
 
     @Column(columnDefinition = "GEOMETRY(Point, 4326)")

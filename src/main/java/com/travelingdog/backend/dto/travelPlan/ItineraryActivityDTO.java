@@ -34,7 +34,7 @@ public class ItineraryActivityDTO {
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
-                .type(ActivityType.fromValue(entity.getType().getValue()))
+                .type(entity.getType())
                 .latitude(entity.getCoordinates().getY())
                 .longitude(entity.getCoordinates().getX())
                 .build();
@@ -45,7 +45,7 @@ public class ItineraryActivityDTO {
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .type(ActivityType.fromValue(dto.getType().getValue()))
+                .type(dto.getType())
                 .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
                         .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
                 .build();
