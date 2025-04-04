@@ -21,9 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -41,7 +38,6 @@ import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
 import com.travelingdog.backend.dto.gemini.GeminiRequest;
 import com.travelingdog.backend.dto.gemini.GeminiResponse;
-import com.travelingdog.backend.dto.travelPlan.ActivityType;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -142,9 +138,7 @@ public class TravelPlanServiceIntegrationTest {
                         ItineraryActivity activity1 = ItineraryActivity.builder()
                                         .name("Activity")
                                         .description("Activity")
-                                        .type(ActivityType.MOVE)
-                                        .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                        .createPoint(new Coordinate(123.456, 78.901)))
+                                        .locationName("Test Location Name")
                                         .build();
                         itinerary.addActivity(activity1);
 
@@ -174,14 +168,14 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation\":[\"지하철\",\"버스\"],"
                                 + "\"itinerary\":["
                                 + "  {\"date\":1,\"location\":\"종로구\","
-                                + "   \"activities\":[{\"name\":\"경복궁\",\"type\":\"MOVE\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"조선 왕조의 정궁\"}]"
+                                + "   \"activities\":[{\"name\":\"경복궁\",\"locationName\":\"Test Location Name\",\"description\":\"조선 왕조의 정궁\"}]"
                                 + "  },"
                                 + "  {\"date\":2,\"location\":\"용산구\","
-                                + "   \"activities\":[{\"name\":\"남산타워\",\"type\":\"LOCATION\",\"latitude\":37.5512,\"longitude\":126.9882,\"description\":\"서울의 랜드마크\"}]"
+                                + "   \"activities\":[{\"name\":\"남산타워\",\"locationName\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
-                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"latitude\":37.5635,\"longitude\":126.9850,\"description\":\"인기 관광지의 맛집\"}],"
-                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"latitude\":37.5635,\"longitude\":126.9840,\"description\":\"편리한 위치의 호텔\"}],"
+                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\", \"locationName\":\"Test Location Name\"}],"
+                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\", \"locationName\":\"Test Location Name\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 
@@ -549,16 +543,16 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 첫째 날 장소들
                 jsonBuilder.append(
-                                "{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770},");
+                                "{\"name\":\"Gyeongbokgung Palace\", \"type\":\"LOCATION\", \"description\":\"조선 왕조의 정궁\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"Insadong\",\"latitude\":37.5746,\"longitude\":126.9850},");
+                                "{\"name\":\"Insadong\", \"type\":\"LOCATION\", \"description\":\"인사동 거리\"},");
 
                 // 둘째 날 장소들
                 LocalDate secondDay = startDate.plusDays(1);
                 jsonBuilder
-                                .append("{\"name\":\"Namsan Tower\",\"latitude\":37.5512,\"longitude\":126.9882},");
+                                .append("{\"name\":\"Namsan Tower\", \"type\":\"LOCATION\", \"description\":\"남산 타워\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"Myeongdong\",\"latitude\":37.5635,\"longitude\":126.9850}");
+                                "{\"name\":\"Myeongdong\", \"type\":\"LOCATION\", \"description\":\"명동 거리\"}");
 
                 jsonBuilder.append("]");
                 return jsonBuilder.toString();

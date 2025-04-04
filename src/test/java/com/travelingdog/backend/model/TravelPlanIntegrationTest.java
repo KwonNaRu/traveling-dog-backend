@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,8 +159,7 @@ public class TravelPlanIntegrationTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("Test Activity")
                                 .description("Test Description")
-                                // .coordinates(geometryFactory
-                                // .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .locationName("Test Location Name")
                                 .build();
                 activities.add(activity);
 
@@ -216,8 +214,7 @@ public class TravelPlanIntegrationTest {
                 ItineraryActivity activity = ItineraryActivity.builder()
                                 .name("Test Activity")
                                 .description("Test Description")
-                                .coordinates(geometryFactory
-                                                .createPoint(new Coordinate(126.915298, 37.554722)))
+                                .locationName("Test Location Name")
                                 .itinerary(itinerary)
                                 .build();
 

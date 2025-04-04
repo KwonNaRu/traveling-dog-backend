@@ -1,9 +1,5 @@
 package com.travelingdog.backend.dto.travelPlan;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
-
 import com.travelingdog.backend.model.ItineraryActivity;
 
 import lombok.AllArgsConstructor;
@@ -22,21 +18,14 @@ public class ItineraryActivityDTO {
 
     private String description; // 활동 설명
 
-    private ActivityType type;
-
-    private Double latitude;
-    private Double longitude;
-
-    private int activityOrder; // 활동 순서
+    private String locationName; // 활동 위치 이름
 
     public static ItineraryActivityDTO fromEntity(ItineraryActivity entity) {
         return ItineraryActivityDTO.builder()
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
-                .type(entity.getType())
-                .latitude(entity.getCoordinates().getY())
-                .longitude(entity.getCoordinates().getX())
+                .locationName(entity.getLocationName())
                 .build();
     }
 
@@ -45,9 +34,7 @@ public class ItineraryActivityDTO {
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .type(dto.getType())
-                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                        .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())))
+                .locationName(dto.getLocationName())
                 .build();
     }
 }

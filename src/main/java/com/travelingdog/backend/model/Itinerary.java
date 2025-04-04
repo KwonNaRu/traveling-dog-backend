@@ -3,12 +3,7 @@ package com.travelingdog.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
-
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
-import com.travelingdog.backend.dto.travelPlan.ActivityType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -77,9 +71,7 @@ public class Itinerary {
                 ItineraryActivity activityEntity = new ItineraryActivity();
                 activityEntity.setName(activity.getName());
                 activityEntity.setDescription(activity.getDescription());
-                activityEntity.setType(activity.getType());
-                activityEntity.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                        .createPoint(new Coordinate(activity.getLongitude(), activity.getLatitude())));
+                activityEntity.setLocationName(activity.getLocationName());
                 itinerary.addActivity(activityEntity); // 연관관계 메서드 사용
             }
         }

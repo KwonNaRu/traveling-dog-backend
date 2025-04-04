@@ -179,9 +179,9 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":1,\"location\":\"성산일출봉\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"성산일출봉 등반\",\"type\":\"MOVE\",\"latitude\":33.458,\"longitude\":126.939,\"description\":\"제주도의 상징적인 화산 등반\"},");
+                                "{\"name\":\"성산일출봉 등반\",\"locationName\":\"Test Location Name\",\"description\":\"제주도의 상징적인 화산 등반\"},");
                 jsonBuilder.append(
-                                "{\"name\":\"우도 자전거 투어\",\"type\":\"LOCATION\",\"latitude\":33.506,\"longitude\":126.953,\"description\":\"우도 섬 자전거 투어\"}");
+                                "{\"name\":\"우도 자전거 투어\",\"locationName\":\"Test Location Name\",\"description\":\"우도 섬 자전거 투어\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("},");
 
@@ -189,18 +189,18 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("{\"date\":2,\"location\":\"만장굴\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"만장굴 탐험\",\"type\":\"LOCATION\",\"latitude\":33.470,\"longitude\":126.786,\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
+                                "{\"name\":\"만장굴 탐험\",\"locationName\":\"Test Location Name\",\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("}");
                 jsonBuilder.append("],");
 
                 jsonBuilder.append("\"restaurant_recommendations\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"제주 흑돼지 맛집\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
+                                "{\"name\":\"제주 흑돼지 맛집\",\"locationName\":\"Test Location Name\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
                 jsonBuilder.append("],");
                 jsonBuilder.append("\"accommodation_recommendations\":[");
                 jsonBuilder.append(
-                                "{\"name\":\"제주 호텔\",\"latitude\":33.499,\"longitude\":126.531,\"description\":\"제주 호텔\"}");
+                                "{\"name\":\"제주 호텔\",\"locationName\":\"Test Location Name\",\"description\":\"제주 호텔\"}");
                 jsonBuilder.append("],");
                 jsonBuilder.append("\"transportation_tips\":\"제주도 내 렌터카 대여 추천\"");
                 jsonBuilder.append("}");

@@ -1,10 +1,17 @@
 package com.travelingdog.backend.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -23,14 +30,11 @@ public class RestaurantRecommendation {
     @Column(length = 500)
     private String description;
 
-    @Column(columnDefinition = "GEOMETRY(Point, 4326)")
-    private Point coordinates;
+    @Column(nullable = false)
+    private String locationName;
 
     @ManyToOne
     @JoinColumn(name = "travel_plan_id")
     private TravelPlan travelPlan;
 
-    public void setCoordinates(double longitude, double latitude) {
-        this.coordinates = new GeometryFactory().createPoint(new Coordinate(longitude, latitude));
-    }
 }

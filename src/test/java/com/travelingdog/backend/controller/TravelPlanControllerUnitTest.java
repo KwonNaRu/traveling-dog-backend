@@ -124,9 +124,6 @@ public class TravelPlanControllerUnitTest {
                                 .id(1L)
                                 .name("남산 타워")
                                 .description("남산 타워 방문")
-                                .latitude(126.9110759)
-                                .longitude(37.5514162)
-                                .activityOrder(1)
                                 .build();
                 activities.add(activityDTO);
 
@@ -218,8 +215,6 @@ public class TravelPlanControllerUnitTest {
                                 .id(1L)
                                 .name("남산 타워")
                                 .description("남산 타워 방문")
-                                .latitude(126.9110759)
-                                .longitude(37.5514162)
                                 .build();
                 activities.add(activityDTO);
 

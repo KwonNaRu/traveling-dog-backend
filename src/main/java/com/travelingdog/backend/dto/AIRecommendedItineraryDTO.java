@@ -2,8 +2,6 @@ package com.travelingdog.backend.dto;
 
 import java.util.List;
 
-import com.travelingdog.backend.dto.travelPlan.ActivityType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,9 +25,7 @@ public class AIRecommendedItineraryDTO {
     @NoArgsConstructor
     public static class Location {
         private String name;
-        private ActivityType type;
-        private double latitude;
-        private double longitude;
+        private String locationName;
         private String description;
     }
 }

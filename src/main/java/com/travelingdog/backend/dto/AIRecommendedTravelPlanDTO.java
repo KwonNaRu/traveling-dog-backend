@@ -55,8 +55,7 @@ public class AIRecommendedTravelPlanDTO {
     @AllArgsConstructor
     public static class LocationDTO {
         private String name;
-        private double latitude;
-        private double longitude;
+        private String locationName;
         private String description;
     }
 

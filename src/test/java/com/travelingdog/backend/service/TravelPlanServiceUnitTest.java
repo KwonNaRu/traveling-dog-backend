@@ -19,9 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -41,7 +38,6 @@ import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
 import com.travelingdog.backend.dto.gemini.GeminiRequest;
 import com.travelingdog.backend.dto.gemini.GeminiResponse;
-import com.travelingdog.backend.dto.travelPlan.ActivityType;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -130,7 +126,7 @@ public class TravelPlanServiceUnitTest {
                 GeminiCandidate candidate = new GeminiCandidate();
                 GeminiContent content = new GeminiContent();
                 List<GeminiPart> parts = new ArrayList<>();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"latitude\":37.5796,\"longitude\":126.9770,\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
+                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"type\":\"LOCATION\",\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
                 parts.add(GeminiPart.builder()
                                 .text(jsonContent)
                                 .build());
@@ -154,17 +150,13 @@ public class TravelPlanServiceUnitTest {
                 activity1 = ItineraryActivity.builder()
                                 .name("Activity")
                                 .description("Activity")
-                                .type(ActivityType.MOVE)
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .locationName("Test Location Name")
                                 .build();
 
                 activity2 = ItineraryActivity.builder()
                                 .name("test2")
                                 .description("test2")
-                                .type(ActivityType.LOCATION)
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(37.5, 127.0)))
+                                .locationName("Test Location Name")
                                 .build();
 
                 Itinerary itinerary = new Itinerary();
@@ -211,7 +203,7 @@ public class TravelPlanServiceUnitTest {
                 // .build();
 
                 AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO(
-                                "Seoul", 37.5796, 126.9770);
+                                "Seoul");
 
                 TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
 
@@ -339,18 +331,16 @@ public class TravelPlanServiceUnitTest {
          * 이 메소드는 테스트에 사용할 AIRecommendedLocationDTO 객체를 생성합니다. GPT 응답에서 파싱된 위치 정보를
          * 시뮬레이션하는 데 사용됩니다.
          *
-         * @param name      장소 이름
-         * @param latitude  위도
-         * @param longitude 경도
+         * @param name 장소 이름
          * @return 모의 AIRecommendedLocationDTO 객체
          */
         private AIRecommendedTravelPlanDTO createMockTravelPlanDTO(
-                        String name, double latitude, double longitude) {
+                        String name) {
 
                 Location location = new Location();
                 location.setName(name);
-                location.setLatitude(latitude);
-                location.setLongitude(longitude);
+                location.setDescription("Description");
+                location.setLocationName("Test Location Name");
 
                 AIRecommendedItineraryDTO itinerary = new AIRecommendedItineraryDTO();
                 itinerary.setLocation(name);
@@ -359,8 +349,7 @@ public class TravelPlanServiceUnitTest {
 
                 LocationDTO locationDTO = new LocationDTO();
                 locationDTO.setName(name);
-                locationDTO.setLatitude(latitude);
-                locationDTO.setLongitude(longitude);
+                locationDTO.setDescription("Description");
 
                 AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
                 dto.setDestination(name);

@@ -38,11 +38,7 @@ public class ItineraryActivity {
     private String description; // 활동 설명
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private ActivityType type;
-
-    @Column(columnDefinition = "GEOMETRY(Point, 4326)")
-    private Point coordinates;
+    private String locationName; // 활동 위치 이름
 
     @ManyToOne
     @JoinColumn(name = "itinerary_id")
