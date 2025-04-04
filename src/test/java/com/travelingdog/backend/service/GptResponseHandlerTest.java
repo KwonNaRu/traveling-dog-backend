@@ -83,7 +83,6 @@ public class GptResponseHandlerTest {
         assertEquals("제주도 3박 4일 여행", result.getTripName());
         assertEquals("2024-07-01", result.getStartDate());
         assertEquals("2024-07-04", result.getEndDate());
-        assertEquals("여름", result.getSeason());
         assertEquals(2, result.getTravelStyle().size());
         assertEquals("100만원", result.getBudget());
         assertEquals("제주시", result.getDestination());
@@ -127,7 +126,6 @@ public class GptResponseHandlerTest {
         assertEquals("제주도 3박 4일 여행", result.getTripName());
         assertEquals("2024-07-01", result.getStartDate());
         assertEquals("2024-07-04", result.getEndDate());
-        assertEquals("여름", result.getSeason());
         assertEquals(2, result.getTravelStyle().size());
         assertEquals("100만원", result.getBudget());
         assertEquals("제주시", result.getDestination());
@@ -164,7 +162,6 @@ public class GptResponseHandlerTest {
         assertEquals("삿포로 3박 4일 맛집 여행", result.getTripName());
         assertEquals("2025-04-02", result.getStartDate());
         assertEquals("2025-04-05", result.getEndDate());
-        assertEquals("봄", result.getSeason());
         assertEquals(2, result.getTravelStyle().size());
         assertEquals("100만원", result.getBudget());
         assertEquals("삿포로", result.getDestination());

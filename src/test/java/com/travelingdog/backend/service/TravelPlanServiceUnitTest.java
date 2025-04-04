@@ -360,7 +360,6 @@ public class TravelPlanServiceUnitTest {
                 dto.setTripName("Test Travel Plan");
                 dto.setStartDate(today.toString());
                 dto.setEndDate(today.plusDays(3).toString());
-                dto.setSeason("Spring");
                 dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
                 dto.setBudget("Budget");
                 dto.setInterests(Arrays.asList("Interests"));

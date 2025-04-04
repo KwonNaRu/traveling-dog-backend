@@ -24,8 +24,6 @@ public class AIRecommendedTravelPlanDTO {
     @JsonProperty("end_date")
     private String endDate;
 
-    private String season;
-
     @JsonProperty("travel_style")
     private List<String> travelStyle;
 
