@@ -168,14 +168,14 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"transportation\":[\"지하철\",\"버스\"],"
                                 + "\"itinerary\":["
                                 + "  {\"date\":1,\"location\":\"종로구\","
-                                + "   \"activities\":[{\"name\":\"경복궁\",\"locationName\":\"Test Location Name\",\"description\":\"조선 왕조의 정궁\"}]"
+                                + "   \"activities\":[{\"name\":\"경복궁\",\"location_name\":\"Test Location Name\",\"description\":\"조선 왕조의 정궁\"}]"
                                 + "  },"
                                 + "  {\"date\":2,\"location\":\"용산구\","
-                                + "   \"activities\":[{\"name\":\"남산타워\",\"locationName\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
+                                + "   \"activities\":[{\"name\":\"남산타워\",\"location_name\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
-                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\", \"locationName\":\"Test Location Name\"}],"
-                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\", \"locationName\":\"Test Location Name\"}],"
+                                + "\"restaurant_recommendations\":[{\"name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\", \"location_name\":\"Test Location Name\"}],"
+                                + "\"accommodation_recommendations\":[{\"name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\", \"location_name\":\"Test Location Name\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 

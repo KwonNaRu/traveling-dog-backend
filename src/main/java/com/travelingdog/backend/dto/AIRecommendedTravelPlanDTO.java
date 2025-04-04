@@ -55,7 +55,10 @@ public class AIRecommendedTravelPlanDTO {
     @AllArgsConstructor
     public static class LocationDTO {
         private String name;
+
+        @JsonProperty("location_name")
         private String locationName;
+
         private String description;
     }
 
