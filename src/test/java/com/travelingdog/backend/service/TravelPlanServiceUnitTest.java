@@ -348,7 +348,7 @@ public class TravelPlanServiceUnitTest {
                 itinerary.setActivities(Arrays.asList(location, location));
 
                 LocationDTO locationDTO = new LocationDTO();
-                locationDTO.setName(name);
+                locationDTO.setLocationName(name);
                 locationDTO.setDescription("Description");
 
                 AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
