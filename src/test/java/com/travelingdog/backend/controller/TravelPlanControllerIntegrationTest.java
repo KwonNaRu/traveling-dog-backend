@@ -83,6 +83,7 @@ public class TravelPlanControllerIntegrationTest {
                 // 테스트 여행 계획 생성 및 저장
                 testTravelPlan = new TravelPlan();
                 testTravelPlan.setTitle("Test Travel Plan");
+                testTravelPlan.setCountry("Korea");
                 testTravelPlan.setCity("Seoul");
                 testTravelPlan.setStartDate(LocalDate.now().plusDays(1));
                 testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
@@ -191,6 +192,7 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO dto = new TravelPlanDTO();
                 dto.setId(testTravelPlan.getId());
                 dto.setTitle(testTravelPlan.getTitle());
+                dto.setCountry(testTravelPlan.getCountry());
                 dto.setCity(testTravelPlan.getCity());
                 dto.setStartDate(testTravelPlan.getStartDate());
                 dto.setEndDate(testTravelPlan.getEndDate());
@@ -248,6 +250,7 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
                 mockResponse.setId(testTravelPlan.getId());
                 mockResponse.setTitle(testTravelPlan.getTitle());
+                mockResponse.setCountry(testTravelPlan.getCountry());
                 mockResponse.setCity(testTravelPlan.getCity());
                 mockResponse.setStartDate(testTravelPlan.getStartDate());
                 mockResponse.setEndDate(testTravelPlan.getEndDate());
@@ -290,6 +293,7 @@ public class TravelPlanControllerIntegrationTest {
                 TravelPlanDTO mockResponse = new TravelPlanDTO();
                 mockResponse.setId(testTravelPlan.getId());
                 mockResponse.setTitle("Updated Travel Plan");
+                mockResponse.setCountry(testTravelPlan.getCountry());
                 mockResponse.setCity(testTravelPlan.getCity());
                 mockResponse.setStartDate(LocalDate.now().plusDays(2));
                 mockResponse.setEndDate(LocalDate.now().plusDays(6));

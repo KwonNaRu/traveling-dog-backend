@@ -169,6 +169,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"end_date\":\"").append(startDate.plusDays(3).format(formatter)).append("\",");
                 jsonBuilder.append("\"travel_style\":[\"해변\",\"자연 풍경 감상\"],");
                 jsonBuilder.append("\"budget\":\"100만원\",");
+                jsonBuilder.append("\"country\":\"한국\",");
                 jsonBuilder.append("\"destination\":\"제주시\",");
                 jsonBuilder.append("\"interests\":[\"맛집\",\"자연\"],");
                 jsonBuilder.append("\"accommodation\":[\"호텔\"],");

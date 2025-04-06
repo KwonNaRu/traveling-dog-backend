@@ -137,6 +137,7 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -169,6 +170,7 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))

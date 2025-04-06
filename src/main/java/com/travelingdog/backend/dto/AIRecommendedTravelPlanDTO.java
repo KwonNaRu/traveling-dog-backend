@@ -29,6 +29,8 @@ public class AIRecommendedTravelPlanDTO {
 
     private String budget;
 
+    private String country;
+
     private String destination;
 
     private List<String> interests;

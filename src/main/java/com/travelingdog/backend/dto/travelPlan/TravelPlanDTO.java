@@ -4,11 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.travelingdog.backend.model.AccommodationType;
-import com.travelingdog.backend.model.Interest;
-import com.travelingdog.backend.model.Transportation;
 import com.travelingdog.backend.model.TravelPlan;
-import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.status.PlanStatus;
 
 import lombok.AllArgsConstructor;
@@ -23,6 +19,7 @@ import lombok.NoArgsConstructor;
 public class TravelPlanDTO {
         private Long id;
         private String title;
+        private String country;
         private String city;
         private LocalDate startDate;
         private LocalDate endDate;
@@ -37,6 +34,8 @@ public class TravelPlanDTO {
         private int viewCount;
         private int likeCount;
         private PlanStatus status;
+        private List<RestaurantRecommendationDTO> restaurantRecommendations;
+        private List<AccommodationRecommendationDTO> accommodationRecommendations;
 
         public static TravelPlanDTO fromEntity(TravelPlan entity) {
                 if (entity == null) {
@@ -46,6 +45,7 @@ public class TravelPlanDTO {
                 return TravelPlanDTO.builder()
                                 .id(entity.getId())
                                 .title(entity.getTitle())
+                                .country(entity.getCountry())
                                 .city(entity.getCity())
                                 .startDate(entity.getStartDate())
                                 .endDate(entity.getEndDate())
@@ -70,6 +70,12 @@ public class TravelPlanDTO {
                                 .viewCount(entity.getViewCount())
                                 .likeCount(entity.getLikes().size())
                                 .status(entity.getStatus())
+                                .restaurantRecommendations(entity.getRestaurantRecommendations().stream()
+                                                .map(RestaurantRecommendationDTO::fromEntity)
+                                                .collect(Collectors.toList()))
+                                .accommodationRecommendations(entity.getAccommodationRecommendations().stream()
+                                                .map(AccommodationRecommendationDTO::fromEntity)
+                                                .collect(Collectors.toList()))
                                 .build();
         }
 

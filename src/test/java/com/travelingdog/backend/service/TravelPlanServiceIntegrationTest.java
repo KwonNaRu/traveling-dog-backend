@@ -107,6 +107,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 먼저 TravelPlan 생성 및 저장
                 travelPlan = TravelPlan.builder()
+                                .country("Korea")
                                 .city("Seoul")
                                 .user(user)
                                 .title("Test Travel Plan")
@@ -161,6 +162,7 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"end_date\":\"" + today.plusDays(7) + "\","
                                 + "\"travel_style\":[\"도시\",\"문화\"],"
                                 + "\"budget\":\"중간\","
+                                + "\"country\":\"한국\","
                                 + "\"destination\":\"서울\","
                                 + "\"interests\":[\"역사\",\"쇼핑\"],"
                                 + "\"accommodation\":[\"호텔\"],"
@@ -360,6 +362,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
+                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")
@@ -401,6 +404,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
+                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")
@@ -501,6 +505,7 @@ public class TravelPlanServiceIntegrationTest {
 
                 // 다른 사용자의 여행 계획 생성
                 TravelPlan otherUserPlan = TravelPlan.builder()
+                                .country("Japan")
                                 .city("Tokyo")
                                 .user(otherUser)
                                 .title("Other User's Travel Plan")

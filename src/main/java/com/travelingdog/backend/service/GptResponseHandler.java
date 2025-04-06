@@ -140,6 +140,7 @@ public class GptResponseHandler {
                 + "\"end_date\": \"여행 종료일(YYYY-MM-DD 형식, 예: 2024-07-06)\","
                 + "\"travel_style\": [\"여행 스타일1(문자열, 예: 해변)\", \"여행 스타일2(문자열, 예: 자연 풍경 감상)\", ...],"
                 + "\"budget\": \"예산(문자열, 예: 100만원)\","
+                + "\"country\": \"국가(문자열, 예: 일본)\","
                 + "\"destination\": \"도시(문자열, 예: 오키나와)\","
                 + "\"interests\": [\"관심사1(문자열, 예: 유명 맛집 방문)\", \"관심사2(문자열, 예: 전통 축제 참여)\", ...],"
                 + "\"accommodation\": [\"숙소 유형1(문자열, 예: 캡슐호텔)\", \"숙소 유형2(문자열, 예: 료칸)\", ...],"
@@ -194,7 +195,7 @@ public class GptResponseHandler {
                 + "각 장소의 정확한 위치를 구글맵 기준으로 제공하고, 실제 존재하는 장소만 추천해줘. "
                 + "여행 시작일과 종료일을 바탕으로 " + city + "의 날씨와 여행 시기를 고려하여 활동과 추천 장소를 포함해주세요."
                 + "'activities' 배열의 각 항목은 활동 제목, 정확한 위치 이름, 설명을 포함해야 합니다. 점심과 저녁 식사는 'activities' 배열에 포함해주세요."
-                + "'additional_restaurant_recommendations'와 'additional_accommodation_recommendations'에는 'activities'에 포함되지 않은 추가적인 추천 정보를 제공해주세요."
+                + "'restaurant_recommendations'와 'accommodation_recommendations'에는 'activities'에 포함되지 않은 추가적인 추천 정보를 제공해주세요."
                 + "특히 'location_name' 필드에는 구글맵에서 정확하게 검색될 수 있는 위치의 명칭을 기재해야 합니다."
                 + "입력 정보 - 여행 시작일: " + startDate
                 + ", 여행 종료일: " + endDate

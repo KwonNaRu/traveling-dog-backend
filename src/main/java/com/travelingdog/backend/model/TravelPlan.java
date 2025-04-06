@@ -47,6 +47,10 @@ public class TravelPlan extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String title; // 여행 계획 제목
 
+    @NotNull
+    @Column(nullable = false, length = 100)
+    private String country; // 여행 국가
+
     @Column(nullable = false, length = 100)
     private String city; // 여행 도시
 
@@ -176,6 +180,7 @@ public class TravelPlan extends BaseTimeEntity {
     public static TravelPlan fromDTO(AIRecommendedTravelPlanDTO aiRecommendedPlan) {
         return TravelPlan.builder()
                 .title(aiRecommendedPlan.getTripName())
+                .country(aiRecommendedPlan.getCountry())
                 .city(aiRecommendedPlan.getDestination())
                 .startDate(LocalDate.parse(aiRecommendedPlan.getStartDate()))
                 .endDate(LocalDate.parse(aiRecommendedPlan.getEndDate()))
