@@ -1,6 +1,7 @@
 package com.travelingdog.backend.dto.travelPlan;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,5 +35,7 @@ public class TravelPlanRequest {
 
     @NotBlank(message = "Transportation is required")
     private String transportation;
+
+    private List<UserSpecifiedAccommodation> userSpecifiedAccommodation;
 
 }

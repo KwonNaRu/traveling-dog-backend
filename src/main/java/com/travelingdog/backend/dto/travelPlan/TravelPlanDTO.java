@@ -35,7 +35,6 @@ public class TravelPlanDTO {
         private int likeCount;
         private PlanStatus status;
         private List<RestaurantRecommendationDTO> restaurantRecommendations;
-        private List<AccommodationRecommendationDTO> accommodationRecommendations;
 
         public static TravelPlanDTO fromEntity(TravelPlan entity) {
                 if (entity == null) {
@@ -72,9 +71,6 @@ public class TravelPlanDTO {
                                 .status(entity.getStatus())
                                 .restaurantRecommendations(entity.getRestaurantRecommendations().stream()
                                                 .map(RestaurantRecommendationDTO::fromEntity)
-                                                .collect(Collectors.toList()))
-                                .accommodationRecommendations(entity.getAccommodationRecommendations().stream()
-                                                .map(AccommodationRecommendationDTO::fromEntity)
                                                 .collect(Collectors.toList()))
                                 .build();
         }

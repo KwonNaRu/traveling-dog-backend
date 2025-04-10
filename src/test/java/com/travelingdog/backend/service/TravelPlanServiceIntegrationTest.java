@@ -120,7 +120,6 @@ public class TravelPlanServiceIntegrationTest {
                                 .accommodationTypes(new ArrayList<>())
                                 .transportationTypes(new ArrayList<>())
                                 .restaurantRecommendations(new ArrayList<>())
-                                .accommodationRecommendations(new ArrayList<>())
                                 .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
@@ -176,7 +175,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "  }"
                                 + "],"
                                 + "\"restaurant_recommendations\":[{\"location_name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\"}],"
-                                + "\"accommodation_recommendations\":[{\"location_name\":\"명동 호텔\",\"description\":\"편리한 위치의 호텔\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 

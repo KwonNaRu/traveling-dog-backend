@@ -199,10 +199,6 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append(
                                 "{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
                 jsonBuilder.append("],");
-                jsonBuilder.append("\"accommodation_recommendations\":[");
-                jsonBuilder.append(
-                                "{\"location_name\":\"제주 호텔\",\"description\":\"제주 호텔\"}");
-                jsonBuilder.append("],");
                 jsonBuilder.append("\"transportation_tips\":\"제주도 내 렌터카 대여 추천\"");
                 jsonBuilder.append("}");
                 return jsonBuilder.toString();

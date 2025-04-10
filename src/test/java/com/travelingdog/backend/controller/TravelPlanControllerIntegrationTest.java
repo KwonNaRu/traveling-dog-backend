@@ -96,7 +96,6 @@ public class TravelPlanControllerIntegrationTest {
                 testTravelPlan.setTransportationTypes(new ArrayList<>());
                 testTravelPlan.setItineraries(new ArrayList<>());
                 testTravelPlan.setRestaurantRecommendations(new ArrayList<>());
-                testTravelPlan.setAccommodationRecommendations(new ArrayList<>());
                 testTravelPlan.setLikes(new ArrayList<>());
                 testTravelPlan.setViewCount(0);
                 travelPlanRepository.save(testTravelPlan);

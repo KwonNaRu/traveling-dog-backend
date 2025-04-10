@@ -44,9 +44,6 @@ public class AIRecommendedTravelPlanDTO {
     @JsonProperty("restaurant_recommendations")
     private List<LocationDTO> restaurantRecommendations;
 
-    @JsonProperty("accommodation_recommendations")
-    private List<LocationDTO> accommodationRecommendations;
-
     @JsonProperty("transportation_tips")
     private String transportationTips;
 

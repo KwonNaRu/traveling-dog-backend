@@ -3,6 +3,7 @@ package com.travelingdog.backend.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
+import com.travelingdog.backend.dto.travelPlan.UserSpecifiedAccommodation;
 import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.model.FailedGptResponse;
 import com.travelingdog.backend.repository.FailedGptResponseRepository;
@@ -129,10 +131,24 @@ public class GptResponseHandler {
      * 강화된 프롬프트를 생성합니다.
      */
     public String createEnhancedPrompt(String city, LocalDate startDate, LocalDate endDate, String travelStyle,
-            String budget, String interests, String accommodation, String transportation) {
-        return "다음 정보를 기반으로, 사용자의 여행 계획을 JSON 형식으로 생성해줘. 각 날짜별 일정에는 활동 정보가 'activities' 배열에 포함되어야 하며, 각 항목은 활동 제목, 설명, 위치 이름을 포함해야 해. 점심과 저녁 식사도 각각 하나의 활동으로 포함되어야 해."
+            String budget, String interests, String accommodation, String transportation,
+            List<UserSpecifiedAccommodation> userSpecifiedAccommodation) {
+        String userAccommodationJson;
+        try {
+            userAccommodationJson = objectMapper.writeValueAsString(userSpecifiedAccommodation);
+        } catch (JsonProcessingException e) {
+            // 예외 발생 시 기본값 제공
+            userAccommodationJson = "숙소 정보가 없습니다.";
+            // 또는 로그 기록
+            log.error("숙소 정보 변환 중 오류 발생: {}", e.getMessage());
+        }
+
+        return "다음 정보를 기반으로, 사용자의 여행 계획을 JSON 형식으로 생성해줘. 각 날짜별 일정에는 활동 정보가 'activities' 배열에 포함되어야 하며, 각 항목은 활동 제목, 설명, 위치 이름을 포함해야 해."
+                + "사용자가 특정 날짜에 숙소를 지정했다면, 해당 숙소 정보가 그 날짜의 'activities' 배열에 포함되어야 해."
+                + "만약 특정 날짜에 숙소 정보가 없다면, 'accommodation'를 기반으로 **여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택**하여 해당 숙소 정보가 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함되어야 해."
+                + "점심과 저녁 식사도 각각 하나의 활동으로 포함되어야 해."
                 + "'activities'에 포함되지 않은 추가적인 맛집과 숙소 추천 정보도 제공해줘."
-                + "여행 시작일과 종료일을 바탕으로 여행 시기를 고려하여 계획을 생성해줘."
+                + "여행 시작일과 종료일, 그리고 사용자가 지정한 숙소 정보 및 선호 숙소 정보를 바탕으로 여행 계획을 생성해줘."
                 + "반드시 다음 형식을 따라야 하며, 추가 텍스트나 설명 없이 순수 JSON 객체만 출력해줘."
                 + "{"
                 + "\"trip_name\": \"여행 이름(문자열, 예: 오키나와 5박 6일 자유여행)\","
@@ -148,7 +164,7 @@ public class GptResponseHandler {
                 + "\"itinerary\": ["
                 + "{"
                 + "\"date\": 일자(숫자),"
-                + "\"location\": \"위치(문자열, 예: ${city} 시내)\","
+                + "\"location\": \"위치(문자열, 예: " + city + " 시내)\","
                 + "\"activities\": ["
                 + "{"
                 + "\"title\": \"활동명(문자열, 예: 호텔 조식)\","
@@ -184,19 +200,17 @@ public class GptResponseHandler {
                 + "\"description\": \"맛집 설명(문자열, 예: 후쿠오카 명물 모츠나베 맛집)\""
                 + "},"
                 + "...],"
-                + "\"accommodation_recommendations\": ["
-                + "{"
-                + "\"location_name\": \"정확한 위치명(문자열, 예: 하카타 엑셀 호텔 도큐 (Hakata Excel Hotel Tokyu))\","
-                + "\"description\": \"숙소 설명(문자열, 예: 하카타역 근처 깔끔한 호텔)\""
-                + "},"
-                + "...],"
                 + "\"transportation_tips\": \"교통 팁(문자열, 예: 오키나와는 지하철이 없고 버스와 모노레일을 주로 이용합니다. 오키나와 버스는 한국의 티머니와 같은 개념의 오키카 카드를 구매하여 사용하는 것이 편합니다.)\""
                 + "}"
                 + "각 장소의 정확한 위치를 구글맵 기준으로 제공하고, 실제 존재하는 장소만 추천해줘. "
                 + "여행 시작일과 종료일을 바탕으로 " + city + "의 날씨와 여행 시기를 고려하여 활동과 추천 장소를 포함해주세요."
                 + "'activities' 배열의 각 항목은 활동 제목, 정확한 위치 이름, 설명을 포함해야 합니다. 점심과 저녁 식사는 'activities' 배열에 포함해주세요."
-                + "'restaurant_recommendations'와 'accommodation_recommendations'에는 'activities'에 포함되지 않은 추가적인 추천 정보를 제공해주세요."
+                + "'restaurant_recommendations'에는 'activities'에 포함되지 않은 추가적인 추천 정보를 제공해주세요."
                 + "특히 'location_name' 필드에는 구글맵에서 정확하게 검색될 수 있는 위치의 명칭을 기재해야 합니다."
+                + "사용자가 다음과 같이 숙소를 지정했습니다:" + userAccommodationJson + "."
+                + "각 날짜별 일정의 'activities' 배열에 해당하는 숙소 정보를 포함시켜줘."
+                + "만약 특정 날짜에 숙소 정보가 없다면, " + accommodation
+                + "를 기반으로 여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택하여 해당 숙소 정보를 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함해줘."
                 + "입력 정보 - 여행 시작일: " + startDate
                 + ", 여행 종료일: " + endDate
                 + ", 여행 스타일: " + travelStyle

@@ -98,10 +98,6 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<RestaurantRecommendation> restaurantRecommendations = new ArrayList<>(); // 맛집 추천 리스트
 
-    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<AccommodationRecommendation> accommodationRecommendations = new ArrayList<>(); // 숙소 추천 리스트
-
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default
     private List<PlanLike> likes = new ArrayList<>();
@@ -150,11 +146,6 @@ public class TravelPlan extends BaseTimeEntity {
 
     public void addRestaurantRecommendation(RestaurantRecommendation recommendation) {
         restaurantRecommendations.add(recommendation);
-        recommendation.setTravelPlan(this);
-    }
-
-    public void addAccommodationRecommendation(AccommodationRecommendation recommendation) {
-        accommodationRecommendations.add(recommendation);
         recommendation.setTravelPlan(this);
     }
 
@@ -208,12 +199,6 @@ public class TravelPlan extends BaseTimeEntity {
                         .collect(Collectors.toList()))
                 .restaurantRecommendations(aiRecommendedPlan.getRestaurantRecommendations().stream()
                         .map(recommendation -> RestaurantRecommendation.builder()
-                                .locationName(recommendation.getLocationName())
-                                .description(recommendation.getDescription())
-                                .build())
-                        .collect(Collectors.toList()))
-                .accommodationRecommendations(aiRecommendedPlan.getAccommodationRecommendations().stream()
-                        .map(recommendation -> AccommodationRecommendation.builder()
                                 .locationName(recommendation.getLocationName())
                                 .description(recommendation.getDescription())
                                 .build())
