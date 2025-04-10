@@ -106,7 +106,7 @@ public class TravelPlanService {
                     request.getInterests(),
                     request.getAccommodation(),
                     request.getTransportation(),
-                    request.getUserSpecifiedAccommodation());
+                    request.getUserSpecifiedAccommodations());
 
             // GPT API 요청 메시지 구성
             List<AIChatMessage> messages = new ArrayList<>();
@@ -169,7 +169,7 @@ public class TravelPlanService {
                     request.getInterests(),
                     request.getAccommodation(),
                     request.getTransportation(),
-                    request.getUserSpecifiedAccommodation());
+                    request.getUserSpecifiedAccommodations());
 
             List<GeminiPart> parts = new ArrayList<>();
             parts.add(GeminiPart.builder()

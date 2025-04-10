@@ -36,6 +36,6 @@ public class TravelPlanRequest {
     @NotBlank(message = "Transportation is required")
     private String transportation;
 
-    private List<UserSpecifiedAccommodation> userSpecifiedAccommodation;
+    private List<UserSpecifiedAccommodation> userSpecifiedAccommodations;
 
 }
