@@ -208,9 +208,9 @@ public class GptResponseHandler {
                 + "'restaurant_recommendations'에는 'activities'에 포함되지 않은 추가적인 추천 정보를 제공해주세요."
                 + "특히 'location_name' 필드에는 구글맵에서 정확하게 검색될 수 있는 위치의 명칭을 기재해야 합니다."
                 + "사용자가 다음과 같이 숙소를 지정했습니다:" + userAccommodationJson + "."
-                + "각 날짜별 일정의 'activities' 배열에 해당하는 숙소 정보를 포함시켜줘."
-                + "만약 특정 날짜에 숙소 정보가 없다면, " + accommodation
-                + "를 기반으로 여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택하여 해당 숙소 정보를 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함해줘."
+                + "각 날짜별로 지정된 숙소가 있다면, 해당 숙소 이름을 해당 날짜의 'activities' 배열에 포함시켜줘."
+                + "만약 특정 날짜에 숙소 정보가 없다면, '" + accommodation
+                + "'를 기반으로 여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택하여 해당 숙소 정보를 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함시켜줘. "
                 + "입력 정보 - 여행 시작일: " + startDate
                 + ", 여행 종료일: " + endDate
                 + ", 여행 스타일: " + travelStyle
