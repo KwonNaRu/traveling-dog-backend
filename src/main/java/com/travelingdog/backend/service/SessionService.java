@@ -10,7 +10,7 @@ import com.travelingdog.backend.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+// @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SessionService {

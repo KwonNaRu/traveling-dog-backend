@@ -1,13 +1,15 @@
 package com.travelingdog.backend.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -16,12 +18,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.travelingdog.backend.jwt.JwtAuthenticationFilter;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
-import com.travelingdog.backend.service.SessionService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -30,7 +29,6 @@ public class SecurityConfig {
 
         private final UserDetailsService userDetailsService;
         private final JwtTokenProvider jwtTokenProvider;
-        private final SessionService sessionService;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -56,7 +54,7 @@ public class SecurityConfig {
                                                 }));
                 ;
 
-                http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, sessionService),
+                http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                                 UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

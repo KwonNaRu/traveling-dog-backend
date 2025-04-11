@@ -20,8 +20,6 @@ import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.AuthService;
-import com.travelingdog.backend.service.SessionService;
-import com.travelingdog.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,8 +40,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
         private final AuthService authService;
-        private final SessionService sessionService;
-        private final UserService userService;
 
         private LoginRequest decodeBasicAuth(String authHeader) {
                 if (authHeader == null || !authHeader.startsWith("Basic ")) {
@@ -75,7 +71,6 @@ public class AuthController {
 
                 // 회원가입 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(signUpRequest.email());
-                sessionService.saveToken(user, jwtResponse.accessToken(), jwtResponse.expiresIn());
 
                 ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.accessToken())
                                 .httpOnly(true)
@@ -107,7 +102,6 @@ public class AuthController {
 
                 // 로그인 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(loginRequest.email());
-                sessionService.saveToken(user, token.accessToken(), token.expiresIn());
 
                 ResponseCookie cookie = ResponseCookie.from("jwt", token.accessToken())
                                 .httpOnly(true)
@@ -130,22 +124,6 @@ public class AuthController {
         })
         @PostMapping("/logout")
         public ResponseEntity<Void> logout(HttpServletRequest request) {
-                // 쿠키에서 JWT 토큰 추출
-                String token = null;
-                jakarta.servlet.http.Cookie[] cookies = request.getCookies();
-                if (cookies != null) {
-                        for (jakarta.servlet.http.Cookie cookie : cookies) {
-                                if ("jwt".equals(cookie.getName())) {
-                                        token = cookie.getValue();
-                                        break;
-                                }
-                        }
-                }
-
-                // 토큰이 있으면 Redis에서 무효화
-                if (token != null) {
-                        sessionService.invalidateToken(token);
-                }
 
                 // JWT 쿠키 삭제
                 ResponseCookie cookie = ResponseCookie.from("jwt", "")

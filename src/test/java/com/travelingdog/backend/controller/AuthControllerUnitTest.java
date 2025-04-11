@@ -39,7 +39,6 @@ import com.travelingdog.backend.handler.GlobalExceptionHandler;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.AuthService;
-import com.travelingdog.backend.service.SessionService;
 import com.travelingdog.backend.service.UserService;
 
 /**
@@ -71,9 +70,6 @@ public class AuthControllerUnitTest {
     @InjectMocks
     private AuthController authController;
 
-    @Autowired
-    private SessionService sessionService;
-
     private ObjectMapper objectMapper;
 
     @TestConfiguration
@@ -91,11 +87,6 @@ public class AuthControllerUnitTest {
         @Bean
         public UserDetailsService userDetailsService() {
             return mock(UserDetailsService.class);
-        }
-
-        @Bean
-        public SessionService sessionService() {
-            return mock(SessionService.class);
         }
 
         @Bean
@@ -119,7 +110,7 @@ public class AuthControllerUnitTest {
      */
     @BeforeEach
     void setUp() {
-        authController = new AuthController(authService, sessionService, userService);
+        authController = new AuthController(authService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();

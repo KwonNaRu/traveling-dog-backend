@@ -9,6 +9,10 @@ spring:
       name: travelingdog
       profile: local
 
+  data:
+    redis:
+      enabled: false
+
   jpa:
     hibernate:
       ddl-auto: update

@@ -16,7 +16,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 
-@Configuration
+// @Configuration
 public class RedisConfig {
 
     @Value("${spring.data.redis.host:localhost}")

@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -18,16 +21,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.mockito.Mockito;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import com.travelingdog.backend.controller.ProtectedController;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.AuthService;
-import com.travelingdog.backend.service.SessionService;
 
 @WebMvcTest(controllers = ProtectedController.class)
 @Import({ SecurityConfig.class, SecurityConfigTest.MockConfig.class })
@@ -106,11 +105,6 @@ public class SecurityConfigTest {
         @Bean
         public UserRepository userRepository() {
             return Mockito.mock(UserRepository.class);
-        }
-
-        @Bean
-        public SessionService sessionService() {
-            return Mockito.mock(SessionService.class);
         }
     }
 }
