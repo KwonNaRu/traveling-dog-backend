@@ -72,7 +72,8 @@ public class AuthController {
                 // 회원가입 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(signUpRequest.email());
 
-                ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.accessToken())
+                // 액세스 토큰 쿠키 설정
+                ResponseCookie accessTokenCookie = ResponseCookie.from("jwt", jwtResponse.accessToken())
                                 .httpOnly(true)
                                 .secure(true)
                                 .path("/")
@@ -80,10 +81,20 @@ public class AuthController {
                                 .sameSite("None")
                                 .build();
 
+                // 리프레시 토큰 쿠키 설정
+                ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", jwtResponse.refreshToken())
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/api/auth/refresh")
+                                .maxAge(authService.getRefreshTokenValidity())
+                                .sameSite("None")
+                                .build();
+
                 UserProfileDTO profile = UserProfileDTO.fromEntity(user);
 
                 return ResponseEntity.status(HttpStatus.OK)
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                                 .body(profile);
         }
 
@@ -100,10 +111,10 @@ public class AuthController {
                 LoginRequest loginRequest = decodeBasicAuth(authHeader);
                 JwtResponse token = authService.login(loginRequest);
 
-                // 로그인 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(loginRequest.email());
 
-                ResponseCookie cookie = ResponseCookie.from("jwt", token.accessToken())
+                // 액세스 토큰 쿠키 설정
+                ResponseCookie accessTokenCookie = ResponseCookie.from("jwt", token.accessToken())
                                 .httpOnly(true)
                                 .secure(true)
                                 .path("/")
@@ -111,11 +122,62 @@ public class AuthController {
                                 .sameSite("None")
                                 .build();
 
+                // 리프레시 토큰 쿠키 설정
+                ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", token.refreshToken())
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/api/auth/refresh")
+                                .maxAge(authService.getRefreshTokenValidity())
+                                .sameSite("None")
+                                .build();
+
                 UserProfileDTO profile = UserProfileDTO.fromEntity(user);
 
                 return ResponseEntity.status(HttpStatus.OK)
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                                 .body(profile);
+        }
+
+        @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 액세스 토큰을 갱신합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = @Content(schema = @Schema(implementation = Void.class))),
+                        @ApiResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰")
+        })
+        @PostMapping("/refresh")
+        public ResponseEntity<Void> refreshToken(HttpServletRequest request) {
+                // 리프레시 토큰 쿠키에서 가져오기
+                String refreshToken = null;
+                jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+
+                if (cookies != null) {
+                        for (jakarta.servlet.http.Cookie cookie : cookies) {
+                                if ("refresh_token".equals(cookie.getName())) {
+                                        refreshToken = cookie.getValue();
+                                        break;
+                                }
+                        }
+                }
+
+                if (refreshToken == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                // 리프레시 토큰 검증 및 새 액세스 토큰 발급
+                JwtResponse newTokenResponse = authService.refreshToken(refreshToken);
+
+                // 새 액세스 토큰 쿠키 설정
+                ResponseCookie accessTokenCookie = ResponseCookie.from("jwt", newTokenResponse.accessToken())
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .maxAge(newTokenResponse.expiresIn())
+                                .sameSite("None")
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.OK)
+                                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                                .build();
         }
 
         @Operation(summary = "로그아웃", description = "사용자 로그아웃을 수행합니다. 토큰을 무효화하고 JWT 쿠키를 삭제합니다.")
@@ -124,9 +186,8 @@ public class AuthController {
         })
         @PostMapping("/logout")
         public ResponseEntity<Void> logout(HttpServletRequest request) {
-
                 // JWT 쿠키 삭제
-                ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                ResponseCookie accessTokenCookie = ResponseCookie.from("jwt", "")
                                 .httpOnly(true)
                                 .secure(true)
                                 .path("/")
@@ -134,8 +195,18 @@ public class AuthController {
                                 .sameSite("None")
                                 .build();
 
-                return ResponseEntity.status(HttpStatus.CREATED)
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                // 리프레시 토큰 쿠키 삭제
+                ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", "")
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/api/auth/refresh")
+                                .maxAge(0)
+                                .sameSite("None")
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.OK)
+                                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                                 .build();
         }
 }

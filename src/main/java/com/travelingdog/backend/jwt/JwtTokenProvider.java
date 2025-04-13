@@ -33,7 +33,7 @@ public class JwtTokenProvider {
                     .subject(email)
                     .issueTime(now)
                     .expirationTime(validity)
-                    .claim("token_type", "access")
+                    .claim("token_type", "JWT")
                     .build();
 
             // 서명 알고리즘 및 서명 키 설정
@@ -171,9 +171,14 @@ public class JwtTokenProvider {
         }
     }
 
-    // JWT에서 사용자 이메일을 추출하는 메소드
+    // 토큰에서 이메일 추출
     public String extractEmail(String token) {
-        return getClaims(token).getSubject();
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException e) {
+            throw new RuntimeException("토큰에서 이메일 추출 중 오류 발생", e);
+        }
     }
 
     public String extractUsername(String token) {
@@ -189,6 +194,23 @@ public class JwtTokenProvider {
             return getClaims(token).getStringClaim("role");
         } catch (ParseException e) {
             throw new RuntimeException("토큰 파싱 중 오류 발생", e);
+        }
+    }
+
+    // 토큰의 남은 유효 시간을 초 단위로 반환
+    public long getTokenRemainingTimeInSeconds(String token) {
+        try {
+            Date expirationTime = getClaims(token).getExpirationTime();
+            Date now = new Date();
+
+            long diffInMillis = expirationTime.getTime() - now.getTime();
+            if (diffInMillis <= 0) {
+                return 0;
+            }
+
+            return diffInMillis / 1000;
+        } catch (Exception e) {
+            throw new RuntimeException("토큰 만료 시간 계산 중 오류 발생", e);
         }
     }
 }
