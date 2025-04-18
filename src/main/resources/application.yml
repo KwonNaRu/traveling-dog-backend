@@ -1,34 +1,29 @@
 spring:
-  application:
-    name: backend
+    application:
+        name: backend
 
-  config:
-    import: optional:configserver:http://localhost:8888
-  cloud:
     config:
-      name: travelingdog
-      profile: local
+        import: optional:configserver:http://localhost:8888
+    cloud:
+        config:
+            name: travelingdog
+            profile: local
 
-  data:
-    redis:
-      enabled: false
+    data:
+        redis:
+            enabled: false
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        "[format_sql]": true
-
-jwt:
-  secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
-  accessTokenValidityInSeconds: 86400 # 24시간
-  refreshTokenValidityInSeconds: 604800 # 7일
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                "[format_sql]": true
 
 springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
-  packages-to-scan: com.travelingdog.backend.controller
+    swagger-ui:
+        path: /swagger-ui.html
+    api-docs:
+        path: /v3/api-docs
+    packages-to-scan: com.travelingdog.backend.controller

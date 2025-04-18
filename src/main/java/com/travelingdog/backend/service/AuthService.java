@@ -9,6 +9,7 @@ import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
+import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
@@ -22,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProperties jwtProperties;
 
     public JwtResponse signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -39,7 +41,10 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(user.getEmail());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
-        return JwtResponse.of(token, 3600, refreshToken);
+        // 액세스 토큰의 실제 남은 유효 시간 계산
+        long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(token);
+
+        return JwtResponse.of(token, "JWT", tokenRemainingTime, refreshToken);
     }
 
     public JwtResponse login(LoginRequest request) throws BadCredentialsException {
@@ -53,7 +58,45 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(user.getEmail());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
-        return JwtResponse.of(token, 3600, refreshToken);
+        // 액세스 토큰의 실제 남은 유효 시간 계산
+        long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(token);
+
+        return JwtResponse.of(token, "JWT", tokenRemainingTime, refreshToken);
+    }
+
+    /**
+     * 리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다.
+     * 
+     * @param refreshToken 리프레시 토큰
+     * @return 새로운 액세스 토큰 정보
+     * @throws RuntimeException 유효하지 않은 리프레시 토큰인 경우
+     */
+    public JwtResponse refreshToken(String refreshToken) {
+        // 리프레시 토큰 검증
+        if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+        }
+
+        // 이메일 추출
+        String email = jwtTokenProvider.extractEmail(refreshToken);
+
+        // 새 액세스 토큰 생성
+        String newAccessToken = jwtTokenProvider.generateToken(email);
+
+        // 액세스 토큰의 실제 남은 유효 시간 계산
+        long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(newAccessToken);
+
+        // 리프레시 토큰은 그대로 유지 (만료되지 않았을 경우)
+        return JwtResponse.of(newAccessToken, "JWT", tokenRemainingTime, refreshToken);
+    }
+
+    /**
+     * 리프레시 토큰의 유효 기간을 초 단위로 반환합니다.
+     * 
+     * @return 리프레시 토큰 유효 기간(초)
+     */
+    public long getRefreshTokenValidity() {
+        return jwtProperties.getRefreshTokenValidityInSeconds();
     }
 
     /**

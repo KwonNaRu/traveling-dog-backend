@@ -15,7 +15,16 @@ public record JwtResponse(
     public static JwtResponse of(String accessToken, long expiresIn, String refreshToken) {
         return new JwtResponse(
                 accessToken,
-                "Bearer", // 고정 값
+                "JWT", // JWT 토큰 타입으로 변경
+                expiresIn,
+                refreshToken);
+    }
+
+    // 토큰 타입을 지정할 수 있는 확장 메서드
+    public static JwtResponse of(String accessToken, String tokenType, long expiresIn, String refreshToken) {
+        return new JwtResponse(
+                accessToken,
+                tokenType,
                 expiresIn,
                 refreshToken);
     }
