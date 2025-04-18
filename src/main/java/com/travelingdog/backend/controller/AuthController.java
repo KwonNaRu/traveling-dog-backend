@@ -69,7 +69,6 @@ public class AuthController {
 
                 JwtResponse jwtResponse = authService.signUp(signUpRequest);
 
-                // 회원가입 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(signUpRequest.email());
 
                 ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.accessToken())
@@ -100,7 +99,6 @@ public class AuthController {
                 LoginRequest loginRequest = decodeBasicAuth(authHeader);
                 JwtResponse token = authService.login(loginRequest);
 
-                // 로그인 성공 시 Redis에 토큰 저장
                 User user = authService.getUserByEmail(loginRequest.email());
 
                 ResponseCookie cookie = ResponseCookie.from("jwt", token.accessToken())
