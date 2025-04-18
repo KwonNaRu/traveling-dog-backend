@@ -162,7 +162,7 @@ public class TravelPlanServiceUnitTest {
                 Itinerary itinerary = new Itinerary();
                 itinerary.setLocation("Gyeongbokgung Palace");
                 itinerary.setActivities(Arrays.asList(activity1, activity2));
-                itinerary.setDate(0);
+                itinerary.setDate("2024-05-10");
                 itinerary.setTravelPlan(travelPlan);
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
                 mockLocations.add(itinerary);
@@ -344,7 +344,7 @@ public class TravelPlanServiceUnitTest {
 
                 AIRecommendedItineraryDTO itinerary = new AIRecommendedItineraryDTO();
                 itinerary.setLocation(name);
-                itinerary.setDate(0);
+                itinerary.setDate("2024-05-10");
                 itinerary.setActivities(Arrays.asList(location, location));
 
                 LocationDTO locationDTO = new LocationDTO();

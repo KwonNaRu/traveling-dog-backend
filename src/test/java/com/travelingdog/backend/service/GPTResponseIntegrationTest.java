@@ -177,7 +177,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"itinerary\":[");
 
                 // 첫째 날 일정
-                jsonBuilder.append("{\"date\":1,\"location\":\"성산일출봉\",");
+                jsonBuilder.append("{\"date\":\"2024-05-10\",\"location\":\"성산일출봉\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
                                 "{\"title\":\"성산일출봉 등반\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 상징적인 화산 등반\"},");
@@ -187,7 +187,7 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("},");
 
                 // 둘째 날 일정
-                jsonBuilder.append("{\"date\":2,\"location\":\"만장굴\",");
+                jsonBuilder.append("{\"date\":\"2024-05-11\",\"location\":\"만장굴\",");
                 jsonBuilder.append("\"activities\":[");
                 jsonBuilder.append(
                                 "{\"title\":\"만장굴 탐험\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
@@ -235,7 +235,7 @@ public class GPTResponseIntegrationTest {
 
                 // 첫째 날 일정 검증
                 AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
-                assertEquals(1, firstDay.getDate());
+                assertEquals("2024-05-10", firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getTitle());
@@ -243,7 +243,7 @@ public class GPTResponseIntegrationTest {
 
                 // 둘째 날 일정 검증
                 AIRecommendedItineraryDTO secondDay = result.getItinerary().get(1);
-                assertEquals(2, secondDay.getDate());
+                assertEquals("2024-05-11", secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getTitle());
@@ -278,7 +278,7 @@ public class GPTResponseIntegrationTest {
 
                 // 첫째 날 일정 검증
                 Itinerary firstDay = itineraries.get(0);
-                assertEquals(1, firstDay.getDate());
+                assertEquals("2024-05-10", firstDay.getDate());
                 assertEquals("성산일출봉", firstDay.getLocation());
                 assertEquals(2, firstDay.getActivities().size());
                 assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getTitle());
@@ -286,7 +286,7 @@ public class GPTResponseIntegrationTest {
 
                 // 둘째 날 일정 검증
                 Itinerary secondDay = itineraries.get(1);
-                assertEquals(2, secondDay.getDate());
+                assertEquals("2024-05-11", secondDay.getDate());
                 assertEquals("만장굴", secondDay.getLocation());
                 assertEquals(1, secondDay.getActivities().size());
                 assertEquals("만장굴 탐험", secondDay.getActivities().get(0).getTitle());

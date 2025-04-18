@@ -131,7 +131,7 @@ public class TravelPlanControllerUnitTest {
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("남산 타워")
-                                .date(1)
+                                .date("2024-05-10")
                                 .activities(activities)
                                 .build());
                 travelPlanDTO.setItineraries(itineraries);
@@ -222,7 +222,7 @@ public class TravelPlanControllerUnitTest {
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("강남")
-                                .date(1)
+                                .date("2024-05-10")
                                 .activities(activities)
                                 .build());
                 updatedTravelPlanDTO.setItineraries(itineraries);

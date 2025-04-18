@@ -76,7 +76,7 @@ public class GptResponseHandlerTest {
     @DisplayName("정상적인 JSON 응답을 파싱할 수 있어야 한다")
     void testParseValidJson() {
         // Given
-        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
+        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":\"2024-07-01\",\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(validJson);
@@ -97,7 +97,7 @@ public class GptResponseHandlerTest {
         assertNotNull(result.getTransportationTips());
 
         AIRecommendedItineraryDTO firstDay = result.getItinerary().get(0);
-        assertEquals(1, firstDay.getDate());
+        assertEquals("2024-07-01", firstDay.getDate());
         assertEquals("성산일출봉", firstDay.getLocation());
         assertEquals(1, firstDay.getActivities().size());
         assertEquals("성산일출봉 등반", firstDay.getActivities().get(0).getTitle());

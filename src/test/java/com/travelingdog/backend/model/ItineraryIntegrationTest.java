@@ -83,7 +83,7 @@ public class ItineraryIntegrationTest {
         public void testAddItineraryToTravelPlan() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -110,7 +110,7 @@ public class ItineraryIntegrationTest {
         public void testDeleteTravelPlan() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -152,13 +152,13 @@ public class ItineraryIntegrationTest {
         public void testItineraryBelongsToTravelPlan() {
                 // given
                 Itinerary itinerary1 = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();
 
                 Itinerary itinerary2 = Itinerary.builder()
-                                .date(2)
+                                .date("2024-05-11")
                                 .location("만장굴")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -172,8 +172,8 @@ public class ItineraryIntegrationTest {
                 assertEquals(2, itineraries.size());
                 assertTrue(itineraries.stream()
                                 .allMatch(itinerary -> itinerary.getTravelPlan().getId().equals(travelPlan.getId())));
-                assertEquals(1, itineraries.get(0).getDate());
-                assertEquals(2, itineraries.get(1).getDate());
+                assertEquals("2024-05-10", itineraries.get(0).getDate());
+                assertEquals("2024-05-11", itineraries.get(1).getDate());
         }
 
         /**
@@ -183,7 +183,7 @@ public class ItineraryIntegrationTest {
         public void testAddActivitiesToItinerary() {
                 // given
                 Itinerary itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("성산일출봉")
                                 .travelPlan(travelPlan)
                                 .build();

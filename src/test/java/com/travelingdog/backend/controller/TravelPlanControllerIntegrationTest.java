@@ -126,19 +126,19 @@ public class TravelPlanControllerIntegrationTest {
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("도쿄 타워")
-                                .date(1)
+                                .date("2024-05-10")
                                 .activities(new ArrayList<>())
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("시부야")
-                                .date(2)
+                                .date("2024-05-11")
                                 .activities(new ArrayList<>())
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("하라주쿠")
-                                .date(3)
+                                .date("2024-05-12")
                                 .activities(new ArrayList<>())
                                 .build());
 
@@ -177,13 +177,13 @@ public class TravelPlanControllerIntegrationTest {
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("남산 타워")
-                                .date(1)
+                                .date("2024-05-10")
                                 .activities(new ArrayList<>())
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("홍대입구")
-                                .date(2)
+                                .date("2024-05-11")
                                 .activities(new ArrayList<>())
                                 .build());
 
@@ -230,19 +230,19 @@ public class TravelPlanControllerIntegrationTest {
                 itineraries.add(ItineraryDTO.builder()
                                 .id(1L)
                                 .location("강남")
-                                .date(1)
+                                .date("2024-05-10")
                                 .activities(new ArrayList<>())
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(2L)
                                 .location("잠실")
-                                .date(2)
+                                .date("2024-05-11")
                                 .activities(new ArrayList<>())
                                 .build());
                 itineraries.add(ItineraryDTO.builder()
                                 .id(3L)
                                 .location("송파")
-                                .date(3)
+                                .date("2024-05-12")
                                 .activities(new ArrayList<>())
                                 .build());
 

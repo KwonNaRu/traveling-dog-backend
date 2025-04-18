@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class ItineraryDTO {
     private Long id;
     private String location;
-    private int date;
+    private String date;
     private List<ItineraryActivityDTO> activities;
 
     public static ItineraryDTO fromEntity(Itinerary entity) {

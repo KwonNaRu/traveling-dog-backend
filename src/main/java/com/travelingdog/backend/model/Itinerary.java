@@ -35,7 +35,7 @@ public class Itinerary {
 
     @NotNull
     @Column(nullable = false)
-    private Integer date; // 여행 일자
+    private String date; // 여행 일자
 
     @NotNull
     @Column(nullable = false)

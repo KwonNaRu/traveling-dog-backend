@@ -169,7 +169,7 @@ public class TravelPlanIntegrationTest {
 
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("Test Location")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -211,7 +211,7 @@ public class TravelPlanIntegrationTest {
 
                 // 일정 생성
                 Itinerary itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("Test Location")
                                 .travelPlan(travelPlan)
                                 .build();

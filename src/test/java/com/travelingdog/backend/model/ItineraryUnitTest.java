@@ -49,7 +49,7 @@ public class ItineraryUnitTest {
 
                 // Itinerary 초기화
                 itinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();
@@ -61,7 +61,7 @@ public class ItineraryUnitTest {
         @Test
         public void testItineraryCreation() {
                 assertThat(itinerary).isNotNull();
-                assertThat(itinerary.getDate()).isEqualTo(1);
+                assertThat(itinerary.getDate()).isEqualTo("2024-05-10");
                 assertThat(itinerary.getLocation()).isEqualTo("제주시");
                 assertThat(itinerary.getTravelPlan()).isEqualTo(travelPlan);
                 assertThat(itinerary.getActivities()).isEmpty();
@@ -72,11 +72,11 @@ public class ItineraryUnitTest {
          */
         @Test
         public void testItineraryUpdate() {
-                itinerary.setDate(2);
+                itinerary.setDate("2024-05-11");
                 itinerary.setLocation("서귀포시");
                 itinerary.setTravelPlan(travelPlan);
 
-                assertThat(itinerary.getDate()).isEqualTo(2);
+                assertThat(itinerary.getDate()).isEqualTo("2024-05-11");
                 assertThat(itinerary.getLocation()).isEqualTo("서귀포시");
         }
 
@@ -118,7 +118,7 @@ public class ItineraryUnitTest {
         @Test
         public void testLocationIsNull() {
                 Itinerary invalidItinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .travelPlan(travelPlan)
                                 .build();
 
@@ -132,7 +132,7 @@ public class ItineraryUnitTest {
         @Tag("unit")
         public void testItineraryCreation_success() {
                 Itinerary validItinerary = Itinerary.builder()
-                                .date(1)
+                                .date("2024-05-10")
                                 .location("제주시")
                                 .travelPlan(travelPlan)
                                 .build();

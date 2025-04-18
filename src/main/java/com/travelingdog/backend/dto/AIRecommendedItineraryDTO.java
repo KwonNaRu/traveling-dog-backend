@@ -16,7 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AIRecommendedItineraryDTO {
-    private int date;
+    private String date;
     private String location;
     private List<Location> activities;
 

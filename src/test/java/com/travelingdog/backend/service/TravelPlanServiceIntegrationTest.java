@@ -131,7 +131,7 @@ public class TravelPlanServiceIntegrationTest {
                         Itinerary itinerary = Itinerary.builder()
                                         .location("Location " + (i + 1))
                                         .activities(new ArrayList<>())
-                                        .date(i + 1)
+                                        .date("2024-05-10")
                                         .build();
                         // itinerary = itineraryRepository.save(itinerary);
 
