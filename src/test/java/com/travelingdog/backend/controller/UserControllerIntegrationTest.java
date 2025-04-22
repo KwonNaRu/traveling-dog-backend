@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,12 @@ public class UserControllerIntegrationTest {
                 Void.class);
 
         jwtCookie = loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        // 테스트 데이터 정리
+        userRepository.deleteAll();
     }
 
     @Test

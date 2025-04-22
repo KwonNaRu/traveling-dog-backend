@@ -44,7 +44,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                                 .requestMatchers("/swagger-resources/**").permitAll()
                                                 .requestMatchers("/webjars/**").permitAll()
-                                                .anyRequest().permitAll())
+                                                .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .exceptionHandling(exception -> exception

@@ -82,13 +82,13 @@ public class ItineraryActivityRepositoryTest {
                 .description("제주도의 상징적인 화산 등반")
                 .locationName("성산일출봉")
                 .build(); // itinerary는 아직 설정하지 않음
-        
+
         // 양방향 연관관계 설정
         itinerary.addActivity(activity);
-        
+
         // 활동 저장
         itineraryActivityRepository.save(activity);
-        
+
         // 일정 업데이트하여 활동 목록 포함
         itineraryRepository.save(itinerary);
     }
@@ -179,7 +179,7 @@ public class ItineraryActivityRepositoryTest {
         // Given
         Long itineraryId = itinerary.getId();
         Long activityId = activity.getId();
-        
+
         // 일정과 활동의 연관관계가 제대로 설정되었는지 확인
         Itinerary foundItinerary = itineraryRepository.findById(itineraryId).orElseThrow();
         assertThat(foundItinerary.getActivities()).hasSize(1);
@@ -187,7 +187,7 @@ public class ItineraryActivityRepositoryTest {
 
         // When
         itineraryRepository.deleteById(itineraryId);
-        
+
         // 변경사항 반영 명시적 요청
         itineraryRepository.flush();
 

@@ -8,6 +8,7 @@ import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
+import com.travelingdog.backend.exception.RefreshTokenException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
@@ -69,12 +70,12 @@ public class AuthService {
      * 
      * @param refreshToken 리프레시 토큰
      * @return 새로운 액세스 토큰 정보
-     * @throws RuntimeException 유효하지 않은 리프레시 토큰인 경우
+     * @throws RefreshTokenException 유효하지 않은 리프레시 토큰인 경우
      */
     public JwtResponse refreshToken(String refreshToken) {
         // 리프레시 토큰 검증
         if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+            throw new RefreshTokenException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         // 이메일 추출

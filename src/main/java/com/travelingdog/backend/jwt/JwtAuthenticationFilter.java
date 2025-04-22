@@ -10,6 +10,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.travelingdog.backend.exception.ExpiredJwtException;
+import com.travelingdog.backend.exception.InvalidJwtException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -40,7 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 토큰 유효성 검사 및 인증 처리
-            if (token != null && jwtTokenProvider.validateToken(token)) {
+            if (token != null) {
+                if (!jwtTokenProvider.validateToken(token)) {
+                    throw new InvalidJwtException("유효하지 않은 JWT입니다.");
+                }
                 String email = jwtTokenProvider.extractEmail(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -50,18 +56,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+        } catch (InvalidJwtException | ExpiredJwtException e) {
+            SecurityContextHolder.clearContext();
+            throw e; // GlobalExceptionHandler로 전달
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
+            throw new RuntimeException("인증 처리 중 오류 발생", e);
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }

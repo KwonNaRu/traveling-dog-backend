@@ -12,6 +12,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.travelingdog.backend.exception.ExpiredJwtException;
+import com.travelingdog.backend.exception.InvalidJwtException;
+import com.travelingdog.backend.exception.RefreshTokenException;
 import com.travelingdog.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -82,7 +85,7 @@ public class JwtTokenProvider {
     // 액세스 토큰 갱신
     public String refreshAccessToken(String refreshToken) {
         if (!validateRefreshToken(refreshToken)) {
-            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+            throw new RefreshTokenException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         String email = extractEmail(refreshToken);
@@ -122,24 +125,32 @@ public class JwtTokenProvider {
     // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
-            // 1. JWT 토큰 파싱
             SignedJWT signedJWT = SignedJWT.parse(token);
             MACVerifier verifier = new MACVerifier(jwtProperties.getSecretKey().getBytes());
 
-            // 2. 토큰 서명 및 만료 확인
-            if (!signedJWT.verify(verifier) || isTokenExpired(token)) {
-                return false;
+            // 서명 검증
+            if (!signedJWT.verify(verifier)) {
+                throw new InvalidJwtException("서명이 유효하지 않은 JWT입니다.");
             }
 
-            // 3. 토큰에서 이메일 추출
+            // 만료 여부 확인
+            if (isTokenExpired(token)) {
+                throw new ExpiredJwtException("JWT 토큰이 만료되었습니다.");
+            }
+
+            // 이메일 추출 후 DB 사용자 존재 확인
             String email = extractEmail(token);
+            boolean userExists = userRepository.findByEmail(email).isPresent();
+            if (!userExists) {
+                throw new InvalidJwtException("해당 이메일을 가진 사용자가 존재하지 않습니다.");
+            }
 
-            // 4. DB에서 사용자 확인
-            return userRepository.findByEmail(email)
-                    .isPresent(); // 사용자가 없으면 false 반환
+            return true;
 
-        } catch (Exception e) {
-            return false;
+        } catch (ParseException e) {
+            throw new InvalidJwtException("JWT 파싱 중 오류가 발생했습니다.");
+        } catch (JOSEException e) {
+            throw new InvalidJwtException("JWT 서명 확인 중 오류가 발생했습니다.");
         }
     }
 

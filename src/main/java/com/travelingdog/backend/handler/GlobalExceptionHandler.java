@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.travelingdog.backend.dto.ErrorResponse;
 import com.travelingdog.backend.exception.DuplicateEmailException;
+import com.travelingdog.backend.exception.ExpiredJwtException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.exception.InvalidRequestException;
+import com.travelingdog.backend.exception.RefreshTokenException;
 import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
+import com.travelingdog.backend.exception.InvalidJwtException;
 import com.travelingdog.backend.exception.UnauthorizedException;
 
 @RestControllerAdvice
@@ -91,6 +94,27 @@ public class GlobalExceptionHandler {
                 Map<String, String> errors = Map.of("error", e.getMessage());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                 .body(ErrorResponse.of("UNAUTHORIZED", "인증이 필요한 요청입니다.", errors));
+        }
+
+        @ExceptionHandler(InvalidJwtException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidJwtException(InvalidJwtException e) {
+                Map<String, String> errors = Map.of("token", e.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of("INVALID_JWT", "유효하지 않은 토큰입니다.", errors));
+        }
+
+        @ExceptionHandler(ExpiredJwtException.class)
+        public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException e) {
+                Map<String, String> errors = Map.of("token", e.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of("EXPIRED_JWT", "토큰이 만료되었습니다.", errors));
+        }
+
+        @ExceptionHandler(RefreshTokenException.class)
+        public ResponseEntity<ErrorResponse> handleRefreshTokenException(RefreshTokenException e) {
+                Map<String, String> errors = Map.of("refreshToken", e.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of("INVALID_REFRESH_TOKEN", "Refresh Token 인증 실패", errors));
         }
 
         @ExceptionHandler(ForbiddenResourceAccessException.class)

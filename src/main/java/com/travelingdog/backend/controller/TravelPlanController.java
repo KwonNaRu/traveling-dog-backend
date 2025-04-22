@@ -66,11 +66,6 @@ public class TravelPlanController {
         })
         @GetMapping("/plans")
         public ResponseEntity<List<TravelPlanDTO>> getTravelPlanList(@AuthenticationPrincipal User user) {
-                // 인증 확인
-                if (user == null) {
-                        throw new UnauthorizedException("인증이 필요한 요청입니다.");
-                }
-
                 List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getTravelPlanList(user);
                 return ResponseEntity.ok(travelPlanDTOs);
         }
@@ -86,10 +81,6 @@ public class TravelPlanController {
         @GetMapping("/plan/{id}")
         public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
-                // 인증 확인
-                if (user == null) {
-                        throw new UnauthorizedException("인증이 필요한 요청입니다.");
-                }
 
                 TravelPlanDTO travelPlanDTO = travelPlanService.getTravelPlanDetail(id, user);
                 return ResponseEntity.ok(travelPlanDTO);
@@ -108,10 +99,6 @@ public class TravelPlanController {
         public ResponseEntity<TravelPlanDTO> updateTravelPlan(@PathVariable("id") Long id,
                         @RequestBody TravelPlanUpdateRequest request,
                         @AuthenticationPrincipal User user) {
-                // 인증 확인
-                if (user == null) {
-                        throw new UnauthorizedException("인증이 필요한 요청입니다.");
-                }
 
                 TravelPlanDTO travelPlanDTO = travelPlanService.updateTravelPlan(id, request, user);
                 return ResponseEntity.ok(travelPlanDTO);
@@ -129,10 +116,6 @@ public class TravelPlanController {
         @DeleteMapping("/plan/{id}")
         public ResponseEntity<Void> deleteTravelPlan(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
-                // 인증 확인
-                if (user == null) {
-                        throw new UnauthorizedException("인증이 필요한 요청입니다.");
-                }
 
                 travelPlanService.deleteTravelPlan(id, user);
                 return ResponseEntity.noContent().build(); // 204 No Content

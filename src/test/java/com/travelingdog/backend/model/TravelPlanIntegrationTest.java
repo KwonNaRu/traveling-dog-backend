@@ -48,7 +48,6 @@ public class TravelPlanIntegrationTest {
         private EntityManager entityManager;
 
         private User user;
-        private GeometryFactory geometryFactory;
 
         @BeforeEach
         public void setUp() {
@@ -61,8 +60,6 @@ public class TravelPlanIntegrationTest {
                                 .build();
 
                 userRepository.save(user);
-
-                geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         }
 
         /*
