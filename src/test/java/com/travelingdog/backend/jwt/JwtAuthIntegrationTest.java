@@ -3,6 +3,7 @@ package com.travelingdog.backend.jwt;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -303,6 +304,88 @@ public class JwtAuthIntegrationTest {
                 .header("X-Client-Type", "WEB"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @DisplayName("앱 API에 Bearer 토큰 사용 시 성공")
+    void testBearerTokenForAppAPI() throws Exception {
+        // 여행 계획 데이터 생성
+        createSampleTravelPlan();
+
+        // 앱 API에 Bearer 토큰 사용 - 성공 예상
+        mockMvc.perform(get("/api/travel/plans")
+                .header("Authorization", "Bearer " + accessToken)
+                .header("X-Client-Type", "APP"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("X-Client-Type 헤더 없이 웹 요청 시 쿠키 인증 성공")
+    void testNoClientTypeHeader() throws Exception {
+        // 여행 계획 데이터 생성
+        createSampleTravelPlan();
+
+        // X-Client-Type 헤더 없이 쿠키 기반 인증 사용 - 기본적으로 WEB으로 간주하여 성공 예상
+        mockMvc.perform(get("/api/travel/plans")
+                .cookie(new Cookie("jwt", accessToken)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("잘못된 X-Client-Type 값으로 요청 시 기본값(WEB)으로 처리")
+    void testInvalidClientType() throws Exception {
+        // 여행 계획 데이터 생성
+        createSampleTravelPlan();
+
+        // 잘못된 X-Client-Type 값 사용 - 기본적으로 WEB으로 간주하여 쿠키 인증 성공 예상
+        mockMvc.perform(get("/api/travel/plans")
+                .cookie(new Cookie("jwt", accessToken))
+                .header("X-Client-Type", "INVALID_TYPE"))
+                .andExpect(status().isOk());
+
+        // 잘못된 X-Client-Type 값이지만 Bearer 토큰 사용 시 실패 예상
+        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+            mockMvc.perform(get("/api/travel/plans")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("X-Client-Type", "INVALID_TYPE"));
+        });
+
+        // 예외 메시지 검증
+        assertTrue(exception.getMessage().contains("웹 API는 쿠키 기반 인증만 허용됩니다"));
+    }
+
+    @Test
+    @DisplayName("/api/auth/ 경로는 JWT 필터를 거치지 않음")
+    void testAuthPathBypassesJwtFilter() throws Exception {
+        // 인증 토큰 없이 /api/auth/ 경로에 접근해도 필터가 적용되지 않아야 함
+        // 401 대신 404 또는 다른 상태 코드가 반환되어야 함(JWT 인증 필터가 적용되지 않았다는 의미)
+        mockMvc.perform(get("/api/auth/status"))
+                .andExpect(status().is(not(401))); // 401이 아닌 다른 상태 코드가 반환되어야 함
+    }
+
+    @Test
+    @DisplayName("기본 인증(Basic Auth)은 /api/auth/app 경로에서 작동")
+    void testBasicAuthWorksForAppAuthEndpoint() throws Exception {
+        // Basic 인증 헤더 생성
+        String plainCredentials = "test@example.com:password123";
+        String base64Credentials = Base64.getEncoder().encodeToString(
+                plainCredentials.getBytes(StandardCharsets.UTF_8));
+        String authHeader = "Basic " + base64Credentials;
+
+        // /api/auth/app/login 엔드포인트는 JWT 필터를 거치지 않고 Basic 인증 처리
+        mockMvc.perform(post("/api/auth/app/login")
+                .header("Authorization", authHeader))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Bearer 토큰은 /api/auth/app/refresh 경로에서 작동")
+    void testBearerTokenWorksForAppRefreshEndpoint() throws Exception {
+        // /api/auth/app/refresh 엔드포인트는 JWT 필터를 거치지 않고 Bearer 토큰 처리
+        mockMvc.perform(post("/api/auth/app/refresh")
+                .header("Authorization", "Bearer " + refreshToken)
+                .header("X-Client-Type", "APP"))
+                .andExpect(status().isOk());
     }
 
     /**
