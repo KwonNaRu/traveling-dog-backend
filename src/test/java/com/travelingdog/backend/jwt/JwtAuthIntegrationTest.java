@@ -2,6 +2,7 @@ package com.travelingdog.backend.jwt;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,9 +29,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.NestedServletException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.exception.UnauthorizedException;
+import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
@@ -117,20 +121,6 @@ public class JwtAuthIntegrationTest {
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
     }
 
-    /**
-     * 인증이 필요한 API 호출을 위한 헬퍼 메소드
-     */
-    private MockHttpServletRequestBuilder authenticatedRequest(MockHttpServletRequestBuilder request) {
-        return request.header("Authorization", "Bearer " + accessToken);
-    }
-
-    /**
-     * 쿠키 기반 인증 요청 헬퍼 메소드
-     */
-    private MockHttpServletRequestBuilder cookieBasedRequest(MockHttpServletRequestBuilder request) {
-        return request.cookie(new Cookie("jwt", accessToken));
-    }
-
     @Test
     @DisplayName("인증 없이 보호된 리소스 접근 시 401 반환")
     void testUnauthorizedAccess() throws Exception {
@@ -140,33 +130,46 @@ public class JwtAuthIntegrationTest {
     }
 
     @Test
-    @DisplayName("유효한 JWT 토큰을 Authorization 헤더에 포함하여 보호된 리소스 접근 시 401 반환")
-    void testAuthorizedAccess() throws Exception {
-        // 여행 계획 데이터 생성 (예시)
+    @DisplayName("웹 API에 Bearer 토큰 사용 시 401 반환 (인증 방식 불일치)")
+    void testWrongAuthTypeForWebAPI() throws Exception {
+        // 여행 계획 데이터 생성
         createSampleTravelPlan();
 
-        mockMvc.perform(authenticatedRequest(get("/api/travel/plans")))
-                .andExpect(status().isUnauthorized());
+        // 웹 API에 Bearer 토큰 사용 시도 - 웹 API에서는 쿠키 기반 인증만 허용하므로 예외 발생 예상
+        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+            mockMvc.perform(get("/api/travel/plans")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("X-Client-Type", "WEB"));
+        });
+
+        // 예외 메시지 검증
+        assertTrue(exception.getMessage().contains("웹 API는 쿠키 기반 인증만 허용됩니다"));
     }
 
     @Test
-    @DisplayName("유효하지 않은 JWT 토큰으로 보호된 리소스 접근 시 401 반환")
-    void testInvalidToken() throws Exception {
-        // 인증 컨텍스트 설정 안함 (이미 초기화되어 있음)
+    @DisplayName("앱 API에 쿠키 기반 인증 사용 시 401 반환 (인증 방식 불일치)")
+    void testWrongAuthTypeForAppAPI() throws Exception {
+        // 앱 API에 쿠키 기반 인증 사용 시도 - 앱 API에서는 Bearer 토큰만 허용하므로 예외 발생 예상
+        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+            mockMvc.perform(get("/api/travel/plans")
+                    .cookie(new Cookie("jwt", accessToken))
+                    .header("X-Client-Type", "APP"));
+        });
+
+        // 예외 메시지 검증
+        assertTrue(exception.getMessage().contains("앱 API는 Bearer 토큰이 필요합니다"));
+    }
+
+    @Test
+    @DisplayName("웹 API에 쿠키 기반 인증 사용 시 성공")
+    void testCookieBasedAuthForWebAPI() throws Exception {
+        // 여행 계획 데이터 생성
+        createSampleTravelPlan();
+
+        // 웹 API에 쿠키 기반 인증 사용 - 성공 예상
         mockMvc.perform(get("/api/travel/plans")
-                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-                        "eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjo0ODQ1MzM5MDk4fQ." +
-                        "invalid_signature_but_valid_format"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @DisplayName("쿠키 기반 인증으로 보호된 리소스 접근")
-    void testCookieBasedAuth() throws Exception {
-        // 여행 계획 데이터 생성 (예시)
-        createSampleTravelPlan();
-
-        mockMvc.perform(cookieBasedRequest(get("/api/travel/plans")))
+                .cookie(new Cookie("jwt", accessToken))
+                .header("X-Client-Type", "WEB"))
                 .andExpect(status().isOk());
     }
 
@@ -236,7 +239,6 @@ public class JwtAuthIntegrationTest {
     @DisplayName("리프레시 토큰을 사용하여 새 액세스 토큰 발급")
     void testRefreshToken() throws Exception {
         try {
-
             // 리프레시 토큰으로 새 액세스 토큰 요청 (쿠키 사용)
             MvcResult result = mockMvc.perform(post("/api/auth/refresh")
                     .cookie(new Cookie("refresh_token", refreshToken)))
@@ -287,30 +289,20 @@ public class JwtAuthIntegrationTest {
     }
 
     @Test
-    @DisplayName("인증 후 여행 계획 목록 조회 테스트")
+    @DisplayName("인증 후 여행 계획 목록 조회 테스트 (쿠키 기반 인증)")
     void testAuthenticatedTravelPlanAccess() throws Exception {
         // 이 테스트에서는 인증 컨텍스트를 명시적으로 설정
         setAuthenticationContext();
 
-        // 여행 계획 데이터 생성 (예시)
+        // 여행 계획 데이터 생성
         createSampleTravelPlan();
 
-        mockMvc.perform(cookieBasedRequest(get("/api/travel/plans")))
+        // 웹 API에 쿠키 기반 인증 사용 - 성공 예상
+        mockMvc.perform(get("/api/travel/plans")
+                .cookie(new Cookie("jwt", accessToken))
+                .header("X-Client-Type", "WEB"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    @DisplayName("Authorization 헤더에 포함된 JWT 토큰으로 보호된 리소스 접근 시 401 반환")
-    void testUnauthenticatedTravelPlanAccess() throws Exception {
-        // 이 테스트에서는 인증 컨텍스트를 명시적으로 설정
-        setAuthenticationContext();
-
-        // 여행 계획 데이터 생성 (예시)
-        createSampleTravelPlan();
-
-        mockMvc.perform(authenticatedRequest(get("/api/travel/plans")))
-                .andExpect(status().isUnauthorized());
     }
 
     /**
@@ -318,7 +310,7 @@ public class JwtAuthIntegrationTest {
      */
     private void createSampleTravelPlan() {
         // TravelPlan 생성 예시
-        com.travelingdog.backend.model.TravelPlan travelPlan = com.travelingdog.backend.model.TravelPlan.builder()
+        TravelPlan travelPlan = TravelPlan.builder()
                 .title("제주도 여행")
                 .country("Korea")
                 .city("제주시")

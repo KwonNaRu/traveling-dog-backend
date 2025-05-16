@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelingdog.backend.dto.itinerary.ItineraryActivityCreateRequest;
 import com.travelingdog.backend.dto.itinerary.ItineraryActivityUpdateRequest;
+import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
 import com.travelingdog.backend.model.TravelPlan;
@@ -41,6 +42,8 @@ import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -67,11 +70,15 @@ public class ItineraryActivityIntegrationTest {
         @Autowired
         private ItineraryActivityRepository activityRepository;
 
+        @Autowired
+        private JwtTokenProvider jwtTokenProvider;
+
         private User testUser;
         private User otherUser;
         private TravelPlan travelPlan;
         private Itinerary itinerary;
         private ItineraryActivity activity;
+        private Cookie jwtCookie;
 
         @BeforeEach
         void setUp() {
@@ -100,6 +107,12 @@ public class ItineraryActivityIntegrationTest {
                 Authentication auth = new UsernamePasswordAuthenticationToken(testUser, null,
                                 List.of());
                 SecurityContextHolder.getContext().setAuthentication(auth);
+
+                // 실제 JWT 토큰 생성
+                String accessToken = jwtTokenProvider.generateToken(testUser.getEmail());
+
+                // JWT 쿠키 설정
+                jwtCookie = new Cookie("jwt", accessToken);
 
                 // 여행 계획 생성
                 travelPlan = TravelPlan.builder()
@@ -146,7 +159,7 @@ public class ItineraryActivityIntegrationTest {
         void testGetActivity() throws Exception {
                 // When & Then
                 mockMvc.perform(get("/api/itinerary/activities/{id}", activity.getId())
-                                .header("Authorization", "Bearer dummy-token"))
+                                .cookie(jwtCookie))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id", is(activity.getId().intValue())))
                                 .andExpect(jsonPath("$.title", is("성산일출봉 등반")))
@@ -183,7 +196,7 @@ public class ItineraryActivityIntegrationTest {
 
                 // When & Then
                 mockMvc.perform(get("/api/itinerary/activities/itinerary/{id}", itinerary.getId())
-                                .header("Authorization", "Bearer dummy-token"))
+                                .cookie(jwtCookie))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$", hasSize(2)))
                                 .andExpect(jsonPath("$[0].title", is("성산일출봉 등반")))
@@ -202,7 +215,7 @@ public class ItineraryActivityIntegrationTest {
 
                 // When & Then
                 mockMvc.perform(post("/api/itinerary/activities")
-                                .header("Authorization", "Bearer dummy-token")
+                                .cookie(jwtCookie)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(createRequest)))
                                 .andExpect(status().isCreated())
@@ -235,7 +248,7 @@ public class ItineraryActivityIntegrationTest {
 
                 // When & Then
                 mockMvc.perform(put("/api/itinerary/activities/{id}", activity.getId())
-                                .header("Authorization", "Bearer dummy-token")
+                                .cookie(jwtCookie)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updateRequest)))
                                 .andExpect(status().isOk())
@@ -264,7 +277,7 @@ public class ItineraryActivityIntegrationTest {
         void testDeleteActivity() throws Exception {
                 // When & Then
                 mockMvc.perform(delete("/api/itinerary/activities/{id}", activity.getId())
-                                .header("Authorization", "Bearer dummy-token"))
+                                .cookie(jwtCookie))
                                 .andExpect(status().isNoContent());
 
                 // 실제로 DB에서 삭제되었는지 확인
@@ -307,7 +320,7 @@ public class ItineraryActivityIntegrationTest {
 
                 // When & Then - 다른 사용자의 활동 조회 시도
                 mockMvc.perform(get("/api/itinerary/activities/{id}", otherActivity.getId())
-                                .header("Authorization", "Bearer dummy-token"))
+                                .cookie(jwtCookie))
                                 .andExpect(status().isForbidden());
 
                 // When & Then - 다른 사용자의 활동 수정 시도
@@ -317,14 +330,14 @@ public class ItineraryActivityIntegrationTest {
                 updateRequest.setLocationName("허가되지 않은 장소");
 
                 mockMvc.perform(put("/api/itinerary/activities/{id}", otherActivity.getId())
-                                .header("Authorization", "Bearer dummy-token")
+                                .cookie(jwtCookie)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updateRequest)))
                                 .andExpect(status().isForbidden());
 
                 // When & Then - 다른 사용자의 활동 삭제 시도
                 mockMvc.perform(delete("/api/itinerary/activities/{id}", otherActivity.getId())
-                                .header("Authorization", "Bearer dummy-token"))
+                                .cookie(jwtCookie))
                                 .andExpect(status().isForbidden());
         }
 }

@@ -118,7 +118,6 @@ public class AuthServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(token, result.accessToken());
-        assertEquals("JWT", result.tokenType());
         assertEquals(refreshToken, result.refreshToken());
         assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
     }
@@ -175,7 +174,6 @@ public class AuthServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(token, result.accessToken());
-        assertEquals("JWT", result.tokenType());
         assertEquals(refreshToken, result.refreshToken());
         assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
     }
@@ -204,7 +202,6 @@ public class AuthServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(newAccessToken, result.accessToken());
-        assertEquals("JWT", result.tokenType());
         assertEquals(validRefreshToken, result.refreshToken());
         assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
     }

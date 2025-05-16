@@ -45,7 +45,7 @@ public class AuthService {
         // 액세스 토큰의 실제 남은 유효 시간 계산
         long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(token);
 
-        return JwtResponse.of(token, "JWT", tokenRemainingTime, refreshToken);
+        return JwtResponse.of(token, tokenRemainingTime, refreshToken);
     }
 
     public JwtResponse login(LoginRequest request) throws BadCredentialsException {
@@ -62,7 +62,7 @@ public class AuthService {
         // 액세스 토큰의 실제 남은 유효 시간 계산
         long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(token);
 
-        return JwtResponse.of(token, "JWT", tokenRemainingTime, refreshToken);
+        return JwtResponse.of(token, tokenRemainingTime, refreshToken);
     }
 
     /**
@@ -88,7 +88,7 @@ public class AuthService {
         long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(newAccessToken);
 
         // 리프레시 토큰은 그대로 유지 (만료되지 않았을 경우)
-        return JwtResponse.of(newAccessToken, "JWT", tokenRemainingTime, refreshToken);
+        return JwtResponse.of(newAccessToken, tokenRemainingTime, refreshToken);
     }
 
     /**
