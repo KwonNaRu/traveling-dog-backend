@@ -1,76 +1,80 @@
 spring:
-    datasource:
-        url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-        driverClassName: org.h2.Driver
-        username: sa
-        password:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
 
-    jpa:
-        database-platform: org.hibernate.dialect.H2Dialect
-        hibernate:
-            ddl-auto: create-drop
-        properties:
-            hibernate:
-                dialect: org.hibernate.dialect.H2Dialect
-                "[format_sql]": true
-                "[show_sql]": true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        "[format_sql]": true
+        "[show_sql]": true
 
-    cloud:
-        config:
-            enabled: false
-        azure:
-            redis:
-                # Azure Redis 설정 추가
-                enabled: true
+  web:
+    resources:
+      add-mappings: false
 
-    # Redis 설정 추가
-    # data:
-    #   redis:
-    #     host: ${REDIS_HOST:localhost}
-    #     port: ${REDIS_PORT:6379}
-    #     password: ${REDIS_PASSWORD:}
-    #     ssl:
-    #       enabled: ${REDIS_SSL:false}
+  cloud:
+    config:
+      enabled: false
+    azure:
+      redis:
+        # Azure Redis 설정 추가
+        enabled: true
+
+  # Redis 설정 추가
+  # data:
+  #   redis:
+  #     host: ${REDIS_HOST:localhost}
+  #     port: ${REDIS_PORT:6379}
+  #     password: ${REDIS_PASSWORD:}
+  #     ssl:
+  #       enabled: ${REDIS_SSL:false}
 
 google:
-    maps:
-        api:
-            key: test_api_key
+  maps:
+    api:
+      key: test_api_key
 
 gemini:
-    api:
-        key: sk-test-dummy-key-for-testing-purposes-only
-        url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-        model: gemini-2.0-flash
+  api:
+    key: sk-test-dummy-key-for-testing-purposes-only
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+    model: gemini-2.0-flash
 
 jwt:
-    secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
-    accessTokenValidityInSeconds: 86400 # 24시간
-    refreshTokenValidityInSeconds: 7776000 # 90일
+  secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
+  accessTokenValidityInSeconds: 86400 # 24시간
+  refreshTokenValidityInSeconds: 7776000 # 90일
 
 # 테스트용 더미 API 키
 openai:
-    api:
-        key: sk-test-dummy-key-for-testing-purposes-only
-        url: https://api.openai.com/v1/chat/completions
-        model: gpt-3.5-turbo
+  api:
+    key: sk-test-dummy-key-for-testing-purposes-only
+    url: https://api.openai.com/v1/chat/completions
+    model: gpt-3.5-turbo
 
 # 속도 제한 설정 비활성화
 rate:
-    limiting:
-        enabled: false
-        capacity: 1000
-        refill-rate: 1000
-        wait-for-refill: false
+  limiting:
+    enabled: false
+    capacity: 1000
+    refill-rate: 1000
+    wait-for-refill: false
 
 logging:
-    level:
-        root: DEBUG
-        "[org.springframework]": DEBUG
-        "[org.hibernate]": DEBUG
-        "[org.springframework.web]": DEBUG
-        "[org.springframework.security]": DEBUG
-        "[org.springframework.test]": DEBUG
-        "[org.springframework.session]": DEBUG
-        "[org.springframework.data.redis]": DEBUG
-        "[io.lettuce.core]": DEBUG
+  level:
+    root: DEBUG
+    "[org.springframework]": DEBUG
+    "[org.hibernate]": DEBUG
+    "[org.springframework.web]": DEBUG
+    "[org.springframework.security]": DEBUG
+    "[org.springframework.test]": DEBUG
+    "[org.springframework.session]": DEBUG
+    "[org.springframework.data.redis]": DEBUG
+    "[io.lettuce.core]": DEBUG

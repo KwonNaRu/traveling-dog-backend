@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.travelingdog.backend.dto.ErrorResponse;
 import com.travelingdog.backend.exception.DuplicateEmailException;
@@ -123,6 +124,18 @@ public class GlobalExceptionHandler {
                 Map<String, String> errors = Map.of("error", e.getMessage());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                 .body(ErrorResponse.of("FORBIDDEN", e.getMessage(), errors));
+        }
+
+        // 존재하지 않는 경로로 요청이 들어왔을 때 처리하는 핸들러
+        @ExceptionHandler(NoHandlerFoundException.class)
+        public ResponseEntity<ErrorResponse> handleNoHandlerFoundException(NoHandlerFoundException e) {
+                String path = e.getRequestURL();
+                String method = e.getHttpMethod();
+                Map<String, String> errors = Map.of(
+                                "path", path,
+                                "method", method);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ErrorResponse.of("NOT_FOUND", "요청한 리소스를 찾을 수 없습니다.", errors));
         }
 
         // 기타 모든 예외를 처리하는 핸들러

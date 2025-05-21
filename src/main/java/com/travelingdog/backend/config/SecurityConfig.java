@@ -39,12 +39,13 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/user/**").authenticated()
                                                 .requestMatchers("/api/protected/**").authenticated()
+                                                .requestMatchers("/api/travel/**").authenticated()
                                                 .requestMatchers("/swagger-ui.html").permitAll()
                                                 .requestMatchers("/swagger-ui/**").permitAll()
                                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                                 .requestMatchers("/swagger-resources/**").permitAll()
                                                 .requestMatchers("/webjars/**").permitAll()
-                                                .anyRequest().authenticated())
+                                                .anyRequest().permitAll())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .exceptionHandling(exception -> exception
