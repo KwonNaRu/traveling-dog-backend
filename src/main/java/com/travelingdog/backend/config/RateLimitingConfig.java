@@ -30,8 +30,8 @@ public class RateLimitingConfig {
             .build(new CacheLoader<String, RateLimiter>() {
                 @Override
                 public RateLimiter load(String key) {
-                    // 초당 15개의 요청 허용 (조정 가능)
-                    return RateLimiter.create(15.0);
+                    // 초당 20개의 요청 허용 (조정 가능)
+                    return RateLimiter.create(20.0);
                 }
             });
 
