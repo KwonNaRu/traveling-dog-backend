@@ -46,9 +46,9 @@ dependencies {
 	implementation 'org.hibernate:hibernate-spatial:6.6.5.Final'
 	implementation 'org.locationtech.jts:jts-core:1.19.0'
 	implementation 'com.nimbusds:nimbus-jose-jwt:9.40'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.session:spring-session-data-redis'
-	implementation 'com.azure.spring:spring-cloud-azure-starter-data-redis-lettuce'
+	// implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// implementation 'org.springframework.session:spring-session-data-redis'
+	// implementation 'com.azure.spring:spring-cloud-azure-starter-data-redis-lettuce'
 	
 	// Google Guava 의존성 추가
 	implementation 'com.google.guava:guava:33.0.0-jre'
