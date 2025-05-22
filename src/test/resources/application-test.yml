@@ -22,10 +22,10 @@ spring:
   cloud:
     config:
       enabled: false
-    azure:
-      redis:
-        # Azure Redis 설정 추가
-        enabled: true
+    # azure:
+    # redis:
+    # Azure Redis 설정 추가
+    # enabled: true
 
   # Redis 설정 추가
   # data:
