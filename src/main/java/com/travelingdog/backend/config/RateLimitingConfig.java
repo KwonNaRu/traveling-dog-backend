@@ -3,6 +3,7 @@ package com.travelingdog.backend.config;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
+@ConditionalOnProperty(name = "rate-limiting.enabled", havingValue = "true")
 public class RateLimitingConfig {
 
     // IP 주소별 RateLimiter를 저장하는 캐시
@@ -30,8 +32,8 @@ public class RateLimitingConfig {
             .build(new CacheLoader<String, RateLimiter>() {
                 @Override
                 public RateLimiter load(String key) {
-                    // 초당 20개의 요청 허용 (조정 가능)
-                    return RateLimiter.create(20.0);
+                    // 초당 10개의 요청 허용 (조정 가능)
+                    return RateLimiter.create(10.0);
                 }
             });
 

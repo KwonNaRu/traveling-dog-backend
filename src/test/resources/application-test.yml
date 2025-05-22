@@ -78,3 +78,6 @@ logging:
     "[org.springframework.session]": DEBUG
     "[org.springframework.data.redis]": DEBUG
     "[io.lettuce.core]": DEBUG
+
+rate-limiting:
+  enabled: false

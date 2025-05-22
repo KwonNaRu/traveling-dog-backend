@@ -31,3 +31,6 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   packages-to-scan: com.travelingdog.backend.controller
+
+rate-limiting:
+  enabled: true
