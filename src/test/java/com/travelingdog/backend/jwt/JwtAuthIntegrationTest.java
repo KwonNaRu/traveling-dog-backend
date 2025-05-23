@@ -126,7 +126,7 @@ public class JwtAuthIntegrationTest {
     @DisplayName("인증 없이 보호된 리소스 접근 시 401 반환")
     void testUnauthorizedAccess() throws Exception {
         // 인증 컨텍스트 설정 안함
-        mockMvc.perform(get("/api/travel/plans"))
+        mockMvc.perform(get("/api/travel/plan/list"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -138,7 +138,7 @@ public class JwtAuthIntegrationTest {
 
         // 웹 API에 Bearer 토큰 사용 시도 - 웹 API에서는 쿠키 기반 인증만 허용하므로 예외 발생 예상
         Exception exception = assertThrows(UnauthorizedException.class, () -> {
-            mockMvc.perform(get("/api/travel/plans")
+            mockMvc.perform(get("/api/travel/plan/list")
                     .header("Authorization", "Bearer " + accessToken)
                     .header("X-Client-Type", "WEB"));
         });
@@ -152,7 +152,7 @@ public class JwtAuthIntegrationTest {
     void testWrongAuthTypeForAppAPI() throws Exception {
         // 앱 API에 쿠키 기반 인증 사용 시도 - 앱 API에서는 Bearer 토큰만 허용하므로 예외 발생 예상
         Exception exception = assertThrows(UnauthorizedException.class, () -> {
-            mockMvc.perform(get("/api/travel/plans")
+            mockMvc.perform(get("/api/travel/plan/list")
                     .cookie(new Cookie("jwt", accessToken))
                     .header("X-Client-Type", "APP"));
         });
@@ -168,7 +168,7 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // 웹 API에 쿠키 기반 인증 사용 - 성공 예상
-        mockMvc.perform(get("/api/travel/plans")
+        mockMvc.perform(get("/api/travel/plan/list")
                 .cookie(new Cookie("jwt", accessToken))
                 .header("X-Client-Type", "WEB"))
                 .andExpect(status().isOk());
@@ -299,7 +299,7 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // 웹 API에 쿠키 기반 인증 사용 - 성공 예상
-        mockMvc.perform(get("/api/travel/plans")
+        mockMvc.perform(get("/api/travel/plan/list")
                 .cookie(new Cookie("jwt", accessToken))
                 .header("X-Client-Type", "WEB"))
                 .andExpect(status().isOk())
@@ -313,7 +313,7 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // 앱 API에 Bearer 토큰 사용 - 성공 예상
-        mockMvc.perform(get("/api/travel/plans")
+        mockMvc.perform(get("/api/travel/plan/list")
                 .header("Authorization", "Bearer " + accessToken)
                 .header("X-Client-Type", "APP"))
                 .andExpect(status().isOk());
@@ -326,7 +326,7 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // X-Client-Type 헤더 없이 쿠키 기반 인증 사용 - 기본적으로 WEB으로 간주하여 성공 예상
-        mockMvc.perform(get("/api/travel/plans")
+        mockMvc.perform(get("/api/travel/plan/list")
                 .cookie(new Cookie("jwt", accessToken)))
                 .andExpect(status().isOk());
     }
@@ -338,14 +338,14 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // 잘못된 X-Client-Type 값 사용 - 기본적으로 WEB으로 간주하여 쿠키 인증 성공 예상
-        mockMvc.perform(get("/api/travel/plans")
+        mockMvc.perform(get("/api/travel/plan/list")
                 .cookie(new Cookie("jwt", accessToken))
                 .header("X-Client-Type", "INVALID_TYPE"))
                 .andExpect(status().isOk());
 
         // 잘못된 X-Client-Type 값이지만 Bearer 토큰 사용 시 실패 예상
         Exception exception = assertThrows(UnauthorizedException.class, () -> {
-            mockMvc.perform(get("/api/travel/plans")
+            mockMvc.perform(get("/api/travel/plan/list")
                     .header("Authorization", "Bearer " + accessToken)
                     .header("X-Client-Type", "INVALID_TYPE"));
         });

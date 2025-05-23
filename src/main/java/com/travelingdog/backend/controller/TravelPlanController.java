@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/travel")
+@RequestMapping("/api/travel/plan")
 @Tag(name = "여행 계획", description = "여행 계획 생성 API")
 public class TravelPlanController {
 
@@ -46,7 +46,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "503", description = "외부 API 오류")
         })
-        @PostMapping("/plan")
+        @PostMapping
         public ResponseEntity<TravelPlanDTO> generateTripPlan(
                         @Parameter(description = "여행 계획 요청 정보", required = true) @Valid @RequestBody TravelPlanRequest request,
                         @AuthenticationPrincipal User user) {
@@ -64,7 +64,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "401", description = "인증 실패"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @GetMapping("/plans")
+        @GetMapping("/list")
         public ResponseEntity<List<TravelPlanDTO>> getTravelPlanList(@AuthenticationPrincipal User user) {
                 List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getTravelPlanList(user);
                 return ResponseEntity.ok(travelPlanDTOs);
@@ -78,7 +78,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @GetMapping("/plan/{id}")
+        @GetMapping("/{id}")
         public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 
@@ -95,7 +95,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @PutMapping("/plan/{id}")
+        @PutMapping("/{id}")
         public ResponseEntity<TravelPlanDTO> updateTravelPlan(@PathVariable("id") Long id,
                         @RequestBody TravelPlanUpdateRequest request,
                         @AuthenticationPrincipal User user) {
@@ -113,7 +113,7 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @DeleteMapping("/plan/{id}")
+        @DeleteMapping("/{id}")
         public ResponseEntity<Void> deleteTravelPlan(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 

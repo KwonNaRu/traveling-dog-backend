@@ -171,7 +171,7 @@ public class TravelPlanControllerUnitTest {
                                 .thenReturn(travelPlans);
 
                 // When & Then
-                mockMvc.perform(get("/api/travel/plans"))
+                mockMvc.perform(get("/api/travel/plan/list"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$").isArray())
                                 .andExpect(jsonPath("$[0].itineraries.length()").value(1))
