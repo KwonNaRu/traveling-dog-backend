@@ -89,7 +89,7 @@ public class AuthController {
                                 .sameSite("None")
                                 .build();
 
-                UserProfileDTO profile = UserProfileDTO.fromEntity(user);
+                UserProfileDTO profile = UserProfileDTO.fromEntity(user, null);
 
                 return ResponseEntity.status(HttpStatus.OK)
                                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
@@ -130,7 +130,7 @@ public class AuthController {
                                 .sameSite("None")
                                 .build();
 
-                UserProfileDTO profile = UserProfileDTO.fromEntity(user);
+                UserProfileDTO profile = UserProfileDTO.fromEntity(user, null);
 
                 return ResponseEntity.status(HttpStatus.OK)
                                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
