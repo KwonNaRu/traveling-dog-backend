@@ -59,7 +59,7 @@ jobs:
                   sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
                   docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
                   docker-compose down
-                  export CONFIG_SERVER_USERNAME="${{ env.CONFIG_SERVER_USERNAME }}"
-                  export CONFIG_SERVER_PASSWORD="${{ env.CONFIG_SERVER_PASSWORD }}"
+                  export CONFIG_SERVER_USERNAME="${{ secrets.CONFIG_SERVER_USERNAME }}"
+                  export CONFIG_SERVER_PASSWORD="${{ secrets.CONFIG_SERVER_PASSWORD }}"
                   docker-compose up -d
                   EOF
