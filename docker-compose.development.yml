@@ -7,7 +7,9 @@ services:
         image: dmdmdm1322/travelingdog-backend:latest # 생성할 이미지 이름
         container_name: travelingdog-backend
         environment:
-            SPRING_PROFILES_ACTIVE: dev
+            - SPRING_PROFILES_ACTIVE=dev
+            - CONFIG_SERVER_USERNAME=${CONFIG_SERVER_USERNAME}
+            - CONFIG_SERVER_PASSWORD=${CONFIG_SERVER_PASSWORD}
         ports:
             - "8080:8080"
         depends_on:

@@ -45,8 +45,6 @@ jobs:
             - name: Build Docker image
               run: |
                   docker buildx build --no-cache -f Dockerfile.development \
-                    --build-arg CONFIG_SERVER_USERNAME="${{ env.CONFIG_SERVER_USERNAME }}" \
-                    --build-arg CONFIG_SERVER_PASSWORD="${{ env.CONFIG_SERVER_PASSWORD }}" \
                     -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
 
             - name: Push Docker image to Docker Hub
@@ -61,5 +59,7 @@ jobs:
                   sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
                   docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
                   docker-compose down
+                  export CONFIG_SERVER_USERNAME="${{ env.CONFIG_SERVER_USERNAME }}"
+                  export CONFIG_SERVER_PASSWORD="${{ env.CONFIG_SERVER_PASSWORD }}"
                   docker-compose up -d
                   EOF
