@@ -8,6 +8,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      CONFIG_SERVER_USERNAME: ${{ secrets.CONFIG_SERVER_USERNAME }}
+      CONFIG_SERVER_PASSWORD: ${{ secrets.CONFIG_SERVER_PASSWORD }}
 
     steps:
       - name: Checkout code

@@ -8,6 +8,8 @@ spring:
     config:
       name: travelingdog
       profile: local
+      username: ${CONFIG_SERVER_USERNAME}
+      password: ${CONFIG_SERVER_PASSWORD}
 
   data:
     redis:
