@@ -1,13 +1,13 @@
 spring:
-  application:
-    name: backend
+    application:
+        name: backend
 
-  config:
-    import: optional:configserver:http://20.249.216.130:8888
-
-  cloud:
     config:
-      name: travelingdog
-      profile: dev
-      username: ${CONFIG_SERVER_USERNAME}
-      password: ${CONFIG_SERVER_PASSWORD}
+        import: optional:configserver:http://20.249.216.130:8888
+
+    cloud:
+        config:
+            name: travelingdog
+            profile: dev
+            username: traveling_naru
+            password: traveling_narudog_config_server

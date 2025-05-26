@@ -1,38 +1,38 @@
 spring:
-  application:
-    name: backend
+    application:
+        name: backend
 
-  config:
-    import: optional:configserver:http://localhost:8888
-  cloud:
     config:
-      name: travelingdog
-      profile: local
-      username: ${CONFIG_SERVER_USERNAME}
-      password: ${CONFIG_SERVER_PASSWORD}
+        import: optional:configserver:http://localhost:8888
+    cloud:
+        config:
+            name: travelingdog
+            profile: local
+            username: traveling_naru
+            password: traveling_narudog_config_server
 
-  data:
-    redis:
-      enabled: false
+    data:
+        redis:
+            enabled: false
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        "[format_sql]": true
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                "[format_sql]": true
 
-  web:
-    resources:
-      add-mappings: false
+    web:
+        resources:
+            add-mappings: false
 
 springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
-  packages-to-scan: com.travelingdog.backend.controller
+    swagger-ui:
+        path: /swagger-ui.html
+    api-docs:
+        path: /v3/api-docs
+    packages-to-scan: com.travelingdog.backend.controller
 
 rate-limiting:
-  enabled: true
+    enabled: true
