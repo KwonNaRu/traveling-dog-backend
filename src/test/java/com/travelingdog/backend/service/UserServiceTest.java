@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,9 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private TravelPlanRepository travelPlanRepository;
 
     private User testUser;
 
