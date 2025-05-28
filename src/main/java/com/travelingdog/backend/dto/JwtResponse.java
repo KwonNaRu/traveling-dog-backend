@@ -7,12 +7,15 @@ public record JwtResponse(
 
         @JsonProperty("expires_in") long expiresIn,
 
-        @JsonProperty("refresh_token") String refreshToken) {
+        @JsonProperty("refresh_token") String refreshToken,
 
-    public static JwtResponse of(String accessToken, long expiresIn, String refreshToken) {
+        @JsonProperty("email") String email) {
+
+    public static JwtResponse of(String accessToken, long expiresIn, String refreshToken, String email) {
         return new JwtResponse(
                 accessToken,
                 expiresIn,
-                refreshToken);
+                refreshToken,
+                email);
     }
 }

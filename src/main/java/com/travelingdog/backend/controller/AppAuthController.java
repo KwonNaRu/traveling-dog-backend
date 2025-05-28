@@ -9,12 +9,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.exception.InvalidRequestException;
+import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -61,6 +64,22 @@ public class AppAuthController {
 
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(token);
+        }
+
+        @PostMapping("/social-login")
+        public ResponseEntity<UserProfileDTO> socialLogin(
+                        @RequestParam("provider") String provider,
+                        @RequestParam("token") String token) {
+                JwtResponse jwtResponse = authService.processSocialLogin(provider, token);
+
+                // 사용자 정보 조회
+                User user = authService.getUserByEmail(jwtResponse.email());
+
+                // 사용자 프로필 DTO 생성
+                UserProfileDTO profile = UserProfileDTO.fromEntity(user, null);
+
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(profile);
         }
 
         @PostMapping("/refresh")
