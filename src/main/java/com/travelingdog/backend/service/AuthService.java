@@ -22,7 +22,9 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -80,69 +82,69 @@ public class AuthService {
      * @return JWT 응답
      */
     public JwtResponse processSocialLogin(String provider, String token) {
-        try {
-            // 소셜 로그인 제공자별 사용자 정보 추출
-            Map<String, String> userInfo;
+        // 소셜 로그인 제공자별 사용자 정보 추출
+        Map<String, String> userInfo;
 
-            switch (provider.toLowerCase()) {
-                case "google":
-                    userInfo = getGoogleUserInfo(token);
-                    break;
-                // case "kakao":
-                // userInfo = getKakaoUserInfo(token);
-                // break;
-                case "naver":
-                    userInfo = getNaverUserInfo(token);
-                    break;
-                default:
-                    throw new InvalidRequestException("지원하지 않는 소셜 로그인 제공자입니다: " + provider);
-            }
-
-            String email = userInfo.get("email");
-            String nickname = userInfo.get("nickname");
-
-            if (email == null || email.isBlank()) {
-                throw new InvalidRequestException("소셜 로그인에서 이메일을 가져올 수 없습니다.");
-            }
-
-            // 기존 사용자인지 확인 후 처리
-            User user = userRepository.findByEmail(email).orElse(null);
-
-            if (user == null) {
-                // 신규 사용자 등록
-                user = User.builder()
-                        .email(email)
-                        .nickname(nickname != null ? nickname : email.split("@")[0])
-                        .password(passwordEncoder.encode("SOCIAL_LOGIN_" + System.currentTimeMillis()))
-                        .build();
-                userRepository.save(user);
-            }
-
-            String jwtToken = jwtTokenProvider.generateToken(user.getEmail());
-            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
-
-            // 액세스 토큰의 실제 남은 유효 시간 계산
-            long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(jwtToken);
-
-            return JwtResponse.of(jwtToken, tokenRemainingTime, refreshToken, user.getEmail());
-        } catch (Exception e) {
-            throw new InvalidRequestException("소셜 로그인 처리 중 오류가 발생했습니다: " + e.getMessage());
+        switch (provider.toLowerCase()) {
+            case "google":
+                userInfo = getGoogleUserInfo(token);
+                break;
+            // case "kakao":
+            // userInfo = getKakaoUserInfo(token);
+            // break;
+            case "naver":
+                userInfo = getNaverUserInfo(token);
+                break;
+            default:
+                throw new InvalidRequestException("지원하지 않는 소셜 로그인 제공자입니다: " + provider);
         }
+
+        String email = userInfo.get("email");
+        String nickname = userInfo.get("nickname");
+
+        if (email == null || email.isBlank()) {
+            throw new InvalidRequestException("소셜 로그인에서 이메일을 가져올 수 없습니다.");
+        }
+
+        // 기존 사용자인지 확인 후 처리
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            // 신규 사용자 등록
+            user = User.builder()
+                    .email(email)
+                    .nickname(nickname != null ? nickname : email.split("@")[0])
+                    .password(passwordEncoder.encode("SOCIAL_LOGIN_" + System.currentTimeMillis()))
+                    .build();
+            userRepository.save(user);
+        }
+
+        String jwtToken = jwtTokenProvider.generateToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+
+        // 액세스 토큰의 실제 남은 유효 시간 계산
+        long tokenRemainingTime = jwtTokenProvider.getTokenRemainingTimeInSeconds(jwtToken);
+
+        return JwtResponse.of(jwtToken, tokenRemainingTime, refreshToken, user.getEmail());
     }
 
     /**
      * Google OAuth2에서 사용자 정보를 가져옵니다.
      */
-    private Map<String, String> getGoogleUserInfo(String token) throws Exception {
+    private Map<String, String> getGoogleUserInfo(String token) {
+        try {
+            Map<String, Object> response = restClient.get().uri("https://www.googleapis.com/oauth2/v3/userinfo")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(Map.class);
 
-        Map<String, Object> response = restClient.get().uri("https://www.googleapis.com/oauth2/v3/userinfo")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .retrieve()
-                .body(Map.class);
-
-        return Map.of(
-                "email", (String) response.get("email"),
-                "nickname", (String) response.get("name"));
+            return Map.of(
+                    "email", (String) response.get("email"),
+                    "nickname", (String) response.get("name"));
+        } catch (Exception e) {
+            log.error("구글 로그인 처리 중 오류가 발생했습니다: {}", e.getMessage());
+            throw new InvalidRequestException("구글 로그인 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
     // /**
