@@ -4,12 +4,10 @@ import java.util.Map;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
@@ -33,7 +31,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     public JwtResponse signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -89,9 +87,9 @@ public class AuthService {
             case "google":
                 userInfo = getGoogleUserInfo(token);
                 break;
-            case "kakao":
-                userInfo = getKakaoUserInfo(token);
-                break;
+            // case "kakao":
+            // userInfo = getKakaoUserInfo(token);
+            // break;
             case "naver":
                 userInfo = getNaverUserInfo(token);
                 break;
@@ -136,40 +134,40 @@ public class AuthService {
         headers.setBearerAuth(token);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                "https://www.googleapis.com/oauth2/v3/userinfo",
-                HttpMethod.GET,
-                entity,
-                Map.class);
-
-        Map<String, Object> userAttributes = response.getBody();
-        return Map.of(
-                "email", (String) userAttributes.get("email"),
-                "nickname", (String) userAttributes.get("name"));
-    }
-
-    /**
-     * Kakao OAuth에서 사용자 정보를 가져옵니다.
-     */
-    private Map<String, String> getKakaoUserInfo(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<Map> response = restTemplate.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.GET,
-                entity,
-                Map.class);
-
-        Map<String, Object> userAttributes = response.getBody();
-        Map<String, Object> kakaoAccount = (Map<String, Object>) userAttributes.get("kakao_account");
-        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        Map<String, Object> response = restClient.get().uri("https://www.googleapis.com/oauth2/v3/userinfo")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .body(Map.class);
 
         return Map.of(
-                "email", (String) kakaoAccount.get("email"),
-                "nickname", (String) profile.get("nickname"));
+                "email", (String) response.get("email"),
+                "nickname", (String) response.get("name"));
     }
+
+    // /**
+    // * Kakao OAuth에서 사용자 정보를 가져옵니다.
+    // */
+    // private Map<String, String> getKakaoUserInfo(String token) {
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setBearerAuth(token);
+    // HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    // ResponseEntity<Map> response =
+    // restClient.get().uri("https://kapi.kakao.com/v2/user/me")
+    // .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+    // .retrieve()
+    // .body(Map.class);
+
+    // Map<String, Object> userAttributes = response.getBody();
+    // Map<String, Object> kakaoAccount = (Map<String, Object>)
+    // userAttributes.get("kakao_account");
+    // Map<String, Object> profile = (Map<String, Object>)
+    // kakaoAccount.get("profile");
+
+    // return Map.of(
+    // "email", (String) kakaoAccount.get("email"),
+    // "nickname", (String) profile.get("nickname"));
+    // }
 
     /**
      * Naver OAuth에서 사용자 정보를 가져옵니다.
@@ -179,18 +177,14 @@ public class AuthService {
         headers.setBearerAuth(token);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                "https://openapi.naver.com/v1/nid/me",
-                HttpMethod.GET,
-                entity,
-                Map.class);
-
-        Map<String, Object> userAttributes = response.getBody();
-        Map<String, Object> response_obj = (Map<String, Object>) userAttributes.get("response");
+        Map<String, Object> response = restClient.get().uri("https://openapi.naver.com/v1/nid/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .body(Map.class);
 
         return Map.of(
-                "email", (String) response_obj.get("email"),
-                "nickname", (String) response_obj.get("nickname"));
+                "email", (String) response.get("email"),
+                "nickname", (String) response.get("nickname"));
     }
 
     /**
