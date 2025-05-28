@@ -143,7 +143,8 @@ public class AuthControllerUnitTest {
                 .build();
 
         when(authService.getUserByEmail(any(String.class))).thenReturn(user);
-        when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(JwtResponse.of(token, 3600, refreshToken, user.getEmail()));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
@@ -178,7 +179,8 @@ public class AuthControllerUnitTest {
                 .build();
 
         when(authService.getUserByEmail(any(String.class))).thenReturn(user);
-        when(authService.login(any(LoginRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(JwtResponse.of(token, 3600, refreshToken, user.getEmail()));
 
         mockMvc.perform(post("/api/auth/login")
                 .header(HttpHeaders.AUTHORIZATION, encodeBasic(email, password)))
@@ -245,7 +247,8 @@ public class AuthControllerUnitTest {
                 .build();
 
         when(authService.getUserByEmail(any(String.class))).thenReturn(user);
-        when(authService.signUp(any(SignUpRequest.class))).thenReturn(JwtResponse.of(token, 3600, refreshToken));
+        when(authService.signUp(any(SignUpRequest.class)))
+                .thenReturn(JwtResponse.of(token, 3600, refreshToken, user.getEmail()));
 
         // When & Then
         mockMvc.perform(post("/api/auth/signup")
