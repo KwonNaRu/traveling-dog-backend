@@ -12,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.FirebaseConfigTest;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
@@ -27,6 +29,7 @@ import com.travelingdog.backend.repository.UserRepository;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(FirebaseConfigTest.class)
 public class TokenRefreshTest {
 
     @Autowired

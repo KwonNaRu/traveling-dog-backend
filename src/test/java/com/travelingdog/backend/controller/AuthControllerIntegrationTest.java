@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.FirebaseConfigTest;
 import com.travelingdog.backend.dto.ErrorResponse;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.dto.UserProfileDTO;
@@ -32,6 +34,7 @@ import com.travelingdog.backend.repository.UserRepository;
 @AutoConfigureTestDatabase
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
+@Import(FirebaseConfigTest.class)
 public class AuthControllerIntegrationTest {
 
     @Autowired

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travelingdog.backend.config.FirebaseConfigTest;
 import com.travelingdog.backend.dto.itinerary.ItineraryActivityCreateRequest;
 import com.travelingdog.backend.dto.itinerary.ItineraryActivityUpdateRequest;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
@@ -42,7 +44,7 @@ import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
@@ -50,6 +52,7 @@ import jakarta.servlet.http.Cookie;
 @ActiveProfiles("test")
 @Tag("integration")
 @Transactional
+@Import(FirebaseConfigTest.class)
 public class ItineraryActivityIntegrationTest {
 
         @Autowired

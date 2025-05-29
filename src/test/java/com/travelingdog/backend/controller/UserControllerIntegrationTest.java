@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.FirebaseConfigTest;
 import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
@@ -27,6 +29,7 @@ import com.travelingdog.backend.repository.UserRepository;
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(FirebaseConfigTest.class)
 public class UserControllerIntegrationTest {
 
     @Autowired

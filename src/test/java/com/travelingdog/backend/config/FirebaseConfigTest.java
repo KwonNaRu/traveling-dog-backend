@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
  * 테스트 환경에서 사용할 Firebase 설정
  * 실제 Firebase 연결 없이 테스트가 가능하도록 목 객체를 제공합니다.
  */
-@Configuration
+@TestConfiguration
 @Profile("test")
 public class FirebaseConfigTest {
 
