@@ -67,19 +67,13 @@ public class AppAuthController {
         }
 
         @PostMapping("/social-login")
-        public ResponseEntity<UserProfileDTO> socialLogin(
+        public ResponseEntity<JwtResponse> socialLogin(
                         @RequestParam("provider") String provider,
                         @RequestParam("token") String token) {
                 JwtResponse jwtResponse = authService.processSocialLogin(provider, token);
 
-                // 사용자 정보 조회
-                User user = authService.getUserByEmail(jwtResponse.email());
-
-                // 사용자 프로필 DTO 생성
-                UserProfileDTO profile = UserProfileDTO.fromEntity(user, null);
-
                 return ResponseEntity.status(HttpStatus.OK)
-                                .body(profile);
+                                .body(jwtResponse);
         }
 
         @PostMapping("/refresh")
