@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +42,25 @@ public class FirebaseConfig {
                 // 환경 변수에서 서비스 계정 정보 확인
                 if (firebaseServiceAccountJson != null && !firebaseServiceAccountJson.isEmpty()) {
                     log.info("환경 변수에서 Firebase 서비스 계정 정보를 사용합니다.");
-                    serviceAccount = new ByteArrayInputStream(
-                            firebaseServiceAccountJson.getBytes(StandardCharsets.UTF_8));
+
+                    // JSON 포맷 검증 및 교정 시도
+                    try {
+                        // 잘못된 JSON 형식 처리를 위해 lenient 설정 적용
+                        Gson gson = new GsonBuilder().setLenient().create();
+                        JsonObject jsonObject = JsonParser.parseString(firebaseServiceAccountJson).getAsJsonObject();
+                        String validJson = gson.toJson(jsonObject);
+                        serviceAccount = new ByteArrayInputStream(validJson.getBytes(StandardCharsets.UTF_8));
+                    } catch (Exception e) {
+                        log.error("환경 변수의 Firebase 서비스 계정 정보가 잘못된 JSON 형식입니다: {}", e.getMessage());
+                        // 파일에서 로드 시도
+                        log.info("대신 파일에서 Firebase 서비스 계정 정보를 로드합니다: {}", FIREBASE_SERVICE_ACCOUNT_PATH);
+                        try {
+                            serviceAccount = new FileInputStream(FIREBASE_SERVICE_ACCOUNT_PATH);
+                        } catch (IOException ex) {
+                            log.error("파일에서 Firebase 서비스 계정 정보를 로드할 수 없습니다: {}", ex.getMessage());
+                            return;
+                        }
+                    }
                 } else {
                     // 환경 변수가 없으면 파일에서 로드 시도
                     log.info("파일에서 Firebase 서비스 계정 정보를 로드합니다: {}", FIREBASE_SERVICE_ACCOUNT_PATH);

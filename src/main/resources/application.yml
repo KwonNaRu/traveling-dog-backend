@@ -27,6 +27,9 @@ spring:
     resources:
       add-mappings: false
 
+  gson:
+    lenient: true # JSON 파싱을 관대하게 처리
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -36,3 +39,7 @@ springdoc:
 
 rate-limiting:
   enabled: true
+
+# Firebase 관련 설정
+firebase:
+  service-account: ${FIREBASE_SERVICE_ACCOUNT}
