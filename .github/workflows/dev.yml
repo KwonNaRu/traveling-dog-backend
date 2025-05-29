@@ -1,65 +1,66 @@
 name: Dev Environment Deploy
 
 on:
-    push:
-        branches:
-            - dev
+  push:
+    branches:
+      - dev
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            # Config 파일 저장소 복사
-            - name: Clone Config Repository
-              run: |
-                  git clone https://${{ secrets.CONFIG_REPO_PAT }}@${{ secrets.CONFIG_REPO_URL }} config-repo
-                  cp -r config-repo/travelingdog-dev.yml ./src/main/resources/application-build.yml
+      # Config 파일 저장소 복사
+      - name: Clone Config Repository
+        run: |
+          git clone https://${{ secrets.CONFIG_REPO_PAT }}@${{ secrets.CONFIG_REPO_URL }} config-repo
+          cp -r config-repo/travelingdog-dev.yml ./src/main/resources/application-build.yml
 
-            - name: Setup SSH agent
-              uses: webfactory/ssh-agent@v0.5.3
-              with:
-                  ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-            - name: Debug Environment Variables
-              run: echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}"
+      - name: Debug Environment Variables
+        run: echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}"
 
-            - name: Log in to Docker Hub
-              uses: docker/login-action@v2
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-            # Redis 연결이 필요할 경우 사용
-            # - name: Build Docker image
-            #   run: |
-            #     docker buildx build --no-cache -f Dockerfile.development \
-            #       --build-arg REDIS_HOST="traveling.redis.cache.windows.net" \
-            #       --build-arg REDIS_PORT="6380" \
-            #       --build-arg REDIS_PASSWORD="${{ secrets.AZURE_REDIS_ACCESS_KEY }}" \
-            #       --build-arg REDIS_SSL="true" \
-            #       -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
-            - name: Build Docker image
-              run: |
-                  docker buildx build --no-cache -f Dockerfile.development \
-                    -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
+      # Redis 연결이 필요할 경우 사용
+      # - name: Build Docker image
+      #   run: |
+      #     docker buildx build --no-cache -f Dockerfile.development \
+      #       --build-arg REDIS_HOST="traveling.redis.cache.windows.net" \
+      #       --build-arg REDIS_PORT="6380" \
+      #       --build-arg REDIS_PASSWORD="${{ secrets.AZURE_REDIS_ACCESS_KEY }}" \
+      #       --build-arg REDIS_SSL="true" \
+      #       -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
+      - name: Build Docker image
+        run: |
+          docker buildx build --no-cache -f Dockerfile.development \
+            -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
 
-            - name: Push Docker image to Docker Hub
-              run: |
-                  docker push ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
 
-            - name: Install sshpass
-              run: sudo apt-get install sshpass
+      - name: Install sshpass
+        run: sudo apt-get install sshpass
 
-            - name: Deploy to Azure VM
-              run: |
-                  sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
-                  docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
-                  docker-compose down
-                  export CONFIG_SERVER_USERNAME="${{ secrets.CONFIG_SERVER_USERNAME }}"
-                  export CONFIG_SERVER_PASSWORD="${{ secrets.CONFIG_SERVER_PASSWORD }}"
-                  docker-compose up -d
-                  EOF
+      - name: Deploy to Azure VM
+        run: |
+          sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
+          docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
+          docker-compose down
+          export CONFIG_SERVER_USERNAME="${{ secrets.CONFIG_SERVER_USERNAME }}"
+          export CONFIG_SERVER_PASSWORD="${{ secrets.CONFIG_SERVER_PASSWORD }}"
+          export FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          docker-compose up -d
+          EOF

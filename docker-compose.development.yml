@@ -1,40 +1,41 @@
 version: "3.9"
 services:
-    app:
-        # build: # Dockerfile을 사용하여 이미지 빌드
-        #     context: . # 현재 디렉토리에서 Dockerfile을 찾음
-        #     dockerfile: Dockerfile.prod
-        image: dmdmdm1322/travelingdog-backend:latest # 생성할 이미지 이름
-        container_name: travelingdog-backend
-        environment:
-            - SPRING_PROFILES_ACTIVE=dev
-            - CONFIG_SERVER_USERNAME=${CONFIG_SERVER_USERNAME}
-            - CONFIG_SERVER_PASSWORD=${CONFIG_SERVER_PASSWORD}
-        ports:
-            - "8080:8080"
-        depends_on:
-            - db
-        networks:
-            - travelingdog-network
+  app:
+    # build: # Dockerfile을 사용하여 이미지 빌드
+    #     context: . # 현재 디렉토리에서 Dockerfile을 찾음
+    #     dockerfile: Dockerfile.prod
+    image: dmdmdm1322/travelingdog-backend:latest # 생성할 이미지 이름
+    container_name: travelingdog-backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - CONFIG_SERVER_USERNAME=${CONFIG_SERVER_USERNAME}
+      - CONFIG_SERVER_PASSWORD=${CONFIG_SERVER_PASSWORD}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - travelingdog-network
 
-    db:
-        image: postgis/postgis:latest
-        container_name: postgresql
-        environment:
-            POSTGRES_USER: ${POSTGRES_USER}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-            POSTGRES_DB: travelingdog
-        ports:
-            - "5432:5432"
-        volumes:
-            - postgres-data:/var/lib/postgresql/data # 데이터 영구 저장
-        networks:
-            - travelingdog-network
+  db:
+    image: postgis/postgis:latest
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: travelingdog
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # 데이터 영구 저장
+    networks:
+      - travelingdog-network
 
 volumes:
-    postgres-data:
-        driver: local
+  postgres-data:
+    driver: local
 
 networks:
-    travelingdog-network:
-        driver: bridge
+  travelingdog-network:
+    driver: bridge

@@ -245,3 +245,22 @@ Azure VM에 배포할 때 사용하는 Docker Compose 파일(예: `docker-compos
 - JPA/Hibernate를 사용한 ORM 매핑
 - 감사(Auditing) 기능을 통한 생성/수정 시간 자동 기록
 - 소프트 삭제(Soft Delete) 구현을 통한 데이터 보존
+
+## Firebase 설정
+
+이 프로젝트는 소셜 로그인을 위해 Firebase Authentication을 사용합니다.
+
+### ⚠️ 보안 주의사항 ⚠️
+
+- 이 저장소에는 Firebase 서비스 계정 키(`src/main/resources/firebase-service-account.json`)가 포함되어 있습니다.
+- 이 키는 Firebase 프로젝트 관리 권한을 가지고 있으므로, 절대 공개 저장소로 전환하지 마세요.
+- 필요한 경우 Firebase 콘솔에서 키를 무효화하고 새 키를 생성할 수 있습니다.
+
+### Firebase 서비스 계정 키 얻기
+
+현재 저장소에 서비스 계정 키가 없거나 새로운 키가 필요한 경우:
+
+1. [Firebase 콘솔](https://console.firebase.google.com/)에 접속
+2. 프로젝트 선택 → 프로젝트 설정 → 서비스 계정 탭
+3. "새 비공개 키 생성" 버튼 클릭
+4. 다운로드한 파일을 `src/main/resources/firebase-service-account.json`으로 저장
