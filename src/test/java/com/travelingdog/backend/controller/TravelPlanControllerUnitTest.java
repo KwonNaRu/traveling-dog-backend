@@ -40,6 +40,7 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.ItineraryRepository;
@@ -50,7 +51,7 @@ import com.travelingdog.backend.service.TravelPlanService;
 import com.travelingdog.backend.status.PlanStatus;
 
 @WebMvcTest(TravelPlanController.class)
-@Import({ SecurityConfig.class })
+@Import({ SecurityConfig.class, JwtAuthenticationEntryPoint.class })
 public class TravelPlanControllerUnitTest {
 
         @Autowired

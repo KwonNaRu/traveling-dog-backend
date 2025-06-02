@@ -16,10 +16,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtAuthenticationFilter;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -29,6 +29,7 @@ public class SecurityConfig {
 
         private final UserDetailsService userDetailsService;
         private final JwtTokenProvider jwtTokenProvider;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,11 +50,7 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .exceptionHandling(exception -> exception
-                                                .authenticationEntryPoint((request, response, authException) -> {
-                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                                                        response.getWriter().write("인증이 필요합니다.");
-                                                }));
-                ;
+                                                .authenticationEntryPoint(jwtAuthenticationEntryPoint));
 
                 http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                                 UsernamePasswordAuthenticationFilter.class);

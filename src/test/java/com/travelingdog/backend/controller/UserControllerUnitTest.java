@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.travelingdog.backend.config.SecurityConfig;
 import com.travelingdog.backend.dto.UserProfileDTO;
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
@@ -33,7 +34,8 @@ import com.travelingdog.backend.service.UserService;
 @Tag("unit")
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc
-@Import({ SecurityConfig.class, UserControllerUnitTest.MockConfig.class })
+@Import({ SecurityConfig.class, UserControllerUnitTest.MockConfig.class,
+        JwtAuthenticationEntryPoint.class })
 public class UserControllerUnitTest {
 
     @Autowired

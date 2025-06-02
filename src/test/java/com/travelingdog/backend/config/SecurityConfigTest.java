@@ -23,13 +23,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.travelingdog.backend.controller.ProtectedController;
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.service.AuthService;
 
 @WebMvcTest(controllers = ProtectedController.class)
-@Import({ SecurityConfig.class, SecurityConfigTest.MockConfig.class })
+@Import({ SecurityConfig.class, SecurityConfigTest.MockConfig.class,
+        JwtAuthenticationEntryPoint.class })
 public class SecurityConfigTest {
 
     @Autowired

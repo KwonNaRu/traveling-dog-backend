@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -147,10 +148,10 @@ public class AuthController {
         public ResponseEntity<Void> refreshToken(HttpServletRequest request) {
                 // 리프레시 토큰 쿠키에서 가져오기
                 String refreshToken = null;
-                jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+                Cookie[] cookies = request.getCookies();
 
                 if (cookies != null) {
-                        for (jakarta.servlet.http.Cookie cookie : cookies) {
+                        for (Cookie cookie : cookies) {
                                 if ("refresh_token".equals(cookie.getName())) {
                                         refreshToken = cookie.getValue();
                                         break;

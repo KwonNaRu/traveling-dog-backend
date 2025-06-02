@@ -3,6 +3,7 @@ package com.travelingdog.backend.jwt;
 import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,7 +13,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.travelingdog.backend.exception.ExpiredJwtException;
 import com.travelingdog.backend.exception.InvalidJwtException;
-import com.travelingdog.backend.exception.UnauthorizedException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -52,21 +52,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 토큰 유효성 검사 및 인증 처리
             if (token != null) {
-                if (!jwtTokenProvider.validateToken(token)) {
-                    throw new InvalidJwtException("유효하지 않은 JWT입니다.");
-                }
+                // 토큰 검증 - 예외가 발생하면 그대로 전파
+                jwtTokenProvider.validateToken(token);
 
+                // 인증 처리
                 processAuthentication(token, request);
             }
+
+            filterChain.doFilter(request, response);
         } catch (InvalidJwtException | ExpiredJwtException e) {
+            // 예외를 Spring Security가 처리할 수 있는 인증 예외로 변환하여 전달
             SecurityContextHolder.clearContext();
-            throw new UnauthorizedException(e.getMessage());
+            throw new BadCredentialsException(e.getMessage(), e);
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
             throw new RuntimeException("인증 처리 중 오류 발생", e);
         }
-
-        filterChain.doFilter(request, response);
     }
 
     // Bearer 토큰 추출 (앱용)

@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -138,7 +139,7 @@ public class JwtAuthIntegrationTest {
         createSampleTravelPlan();
 
         // 웹 API에 Bearer 토큰 사용 시도 - 웹 API에서는 쿠키 기반 인증만 허용하므로 예외 발생 예상
-        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
             mockMvc.perform(get("/api/travel/plan/list")
                     .header("Authorization", "Bearer " + accessToken)
                     .header("X-Client-Type", "WEB"));
@@ -152,7 +153,7 @@ public class JwtAuthIntegrationTest {
     @DisplayName("앱 API에 쿠키 기반 인증 사용 시 401 반환 (인증 방식 불일치)")
     void testWrongAuthTypeForAppAPI() throws Exception {
         // 앱 API에 쿠키 기반 인증 사용 시도 - 앱 API에서는 Bearer 토큰만 허용하므로 예외 발생 예상
-        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
             mockMvc.perform(get("/api/travel/plan/list")
                     .cookie(new Cookie("jwt", accessToken))
                     .header("X-Client-Type", "APP"));
@@ -345,7 +346,7 @@ public class JwtAuthIntegrationTest {
                 .andExpect(status().isOk());
 
         // 잘못된 X-Client-Type 값이지만 Bearer 토큰 사용 시 실패 예상
-        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
             mockMvc.perform(get("/api/travel/plan/list")
                     .header("Authorization", "Bearer " + accessToken)
                     .header("X-Client-Type", "INVALID_TYPE"));
