@@ -15,9 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
-import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.exception.InvalidRequestException;
-import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.exception.RefreshTokenException;
 import com.travelingdog.backend.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -78,12 +77,11 @@ public class AppAuthController {
 
         @PostMapping("/refresh")
         public ResponseEntity<JwtResponse> refreshToken(
-                        @RequestHeader("Authorization") String authHeader) {
+                        @RequestBody String refreshToken) {
                 // Bearer 토큰에서 리프레시 토큰 추출
-                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                        throw new InvalidRequestException("Bearer 토큰이 필요합니다.");
+                if (refreshToken == null) {
+                        throw new RefreshTokenException("리프레시 토큰이 필요합니다.");
                 }
-                String refreshToken = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
 
                 // 리프레시 토큰 검증 및 새 토큰 발급
                 JwtResponse newTokenResponse = authService.refreshToken(refreshToken);

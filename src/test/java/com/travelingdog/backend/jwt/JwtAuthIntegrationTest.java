@@ -381,12 +381,11 @@ public class JwtAuthIntegrationTest {
     }
 
     @Test
-    @DisplayName("Bearer 토큰은 /api/auth/app/refresh 경로에서 작동")
+    @DisplayName("/api/auth/app/refresh 경로는 JWT 필터를 거치지 않음")
     void testBearerTokenWorksForAppRefreshEndpoint() throws Exception {
-        // /api/auth/app/refresh 엔드포인트는 JWT 필터를 거치지 않고 Bearer 토큰 처리
+        // /api/auth/app/refresh 엔드포인트는 JWT 필터를 거치지 않고 refreshToken 처리
         mockMvc.perform(post("/api/auth/app/refresh")
-                .header("Authorization", "Bearer " + refreshToken)
-                .header("X-Client-Type", "APP"))
+                .content(refreshToken))
                 .andExpect(status().isOk());
     }
 
