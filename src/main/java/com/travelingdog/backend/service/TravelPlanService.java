@@ -36,6 +36,10 @@ import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.model.Interest;
+import com.travelingdog.backend.model.AccommodationType;
+import com.travelingdog.backend.model.Transportation;
+import com.travelingdog.backend.model.RestaurantRecommendation;
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
@@ -76,11 +80,53 @@ public class TravelPlanService {
             // 1. AI 추천 먼저 받아오기
             AIRecommendedTravelPlanDTO aiRecommendedPlan = generateTripPlanWithGemini(request);
 
+            // 2. TravelPlan 객체 생성 (fromDTO는 TravelPlan만 생성)
             TravelPlan travelPlan = TravelPlan.fromDTO(aiRecommendedPlan);
+            travelPlan.setUser(user);
+
+            // 3. 연관 엔티티 add 메서드로 추가 (양방향 세팅)
+            // TravelStyle
+            if (aiRecommendedPlan.getTravelStyle() != null) {
+                for (String style : aiRecommendedPlan.getTravelStyle()) {
+                    TravelStyle travelStyle = TravelStyle.builder().name(style).build();
+                    travelPlan.addTravelStyle(travelStyle);
+                }
+            }
+            // Interest
+            if (aiRecommendedPlan.getInterests() != null) {
+                for (String interest : aiRecommendedPlan.getInterests()) {
+                    Interest interestEntity = Interest.builder().name(interest).build();
+                    travelPlan.addInterest(interestEntity);
+                }
+            }
+            // AccommodationType
+            if (aiRecommendedPlan.getAccommodation() != null) {
+                for (String accommodation : aiRecommendedPlan.getAccommodation()) {
+                    AccommodationType accommodationType = AccommodationType.builder().name(accommodation).build();
+                    travelPlan.addAccommodationType(accommodationType);
+                }
+            }
+            // Transportation
+            if (aiRecommendedPlan.getTransportation() != null) {
+                for (String transportation : aiRecommendedPlan.getTransportation()) {
+                    Transportation transportationType = Transportation.builder().name(transportation).build();
+                    travelPlan.addTransportation(transportationType);
+                }
+            }
+            // RestaurantRecommendation
+            if (aiRecommendedPlan.getRestaurantRecommendations() != null) {
+                for (var recommendation : aiRecommendedPlan.getRestaurantRecommendations()) {
+                    RestaurantRecommendation restaurantRecommendation = RestaurantRecommendation.builder()
+                            .locationName(recommendation.getLocationName())
+                            .description(recommendation.getDescription())
+                            .build();
+                    travelPlan.addRestaurantRecommendation(restaurantRecommendation);
+                }
+            }
+            // Itinerary (fromDto에서 travelPlan 세팅됨)
             List<Itinerary> itineraries = aiRecommendedPlan.getItinerary().stream()
                     .map(dto -> Itinerary.fromDto(dto, travelPlan))
                     .collect(Collectors.toList());
-            travelPlan.setUser(user);
             travelPlan.setItineraries(itineraries);
 
             // 4. 한 번에 저장
