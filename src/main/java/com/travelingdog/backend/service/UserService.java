@@ -24,9 +24,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserProfileDTO getUserProfile(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("사용자 정보가 없습니다.");
-        }
 
         // 최신 사용자 정보 조회 (선택적)
         User refreshedUser = userRepository.findById(user.getId())

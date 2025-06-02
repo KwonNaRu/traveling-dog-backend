@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -63,10 +66,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (InvalidJwtException | ExpiredJwtException e) {
             // 예외를 Spring Security가 처리할 수 있는 인증 예외로 변환하여 전달
             SecurityContextHolder.clearContext();
-            throw new BadCredentialsException(e.getMessage(), e);
+            jwtAuthenticationEntryPoint.commence(request, response, e);
+            return;
         } catch (Exception e) {
+            // 기타 예외도 인증 오류로 처리 (401)
             SecurityContextHolder.clearContext();
-            throw new RuntimeException("인증 처리 중 오류 발생", e);
+            jwtAuthenticationEntryPoint.commence(
+                    request, response,
+                    new InsufficientAuthenticationException("인증 처리 중 오류 발생", e));
+            return;
         }
     }
 

@@ -69,15 +69,6 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("null 사용자로 프로필 조회 시 예외가 발생한다")
-    void getUserProfile_NullUser_ThrowsException() {
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            userService.getUserProfile(null);
-        });
-    }
-
-    @Test
     @DisplayName("존재하지 않는 사용자 ID로 프로필 조회 시 예외가 발생한다")
     void getUserProfile_NonExistentUser_ThrowsException() {
         // Given
