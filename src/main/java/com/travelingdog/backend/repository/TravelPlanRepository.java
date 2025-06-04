@@ -1,5 +1,6 @@
 package com.travelingdog.backend.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.status.PlanStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,14 +49,12 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      * 
      * @return 인기 여행 계획 목록
      */
-    @Query("SELECT p FROM TravelPlan p WHERE p.status = 'PUBLISHED' ORDER BY p.likeCount DESC LIMIT 10")
-    List<TravelPlan> findAllByOrderByLikeCountDesc();
+    List<TravelPlan> findByStatusOrderByLikeCountDesc(PlanStatus status, Pageable pageable);
 
     /**
      * 최근 여행 계획 목록을 조회합니다.
      * 
      * @return 최근 여행 계획 목록
      */
-    @Query("SELECT p FROM TravelPlan p WHERE p.status = 'PUBLISHED' ORDER BY p.createdAt DESC LIMIT 10")
-    List<TravelPlan> findAllByOrderByCreatedAtDesc();
+    List<TravelPlan> findByStatusOrderByCreatedAtDesc(PlanStatus status, Pageable pageable);
 }

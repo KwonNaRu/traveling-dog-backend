@@ -102,6 +102,10 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<PlanLike> likes = new ArrayList<>();
 
+    @Column(name = "like_count")
+    @Builder.Default
+    private int likeCount = 0;
+
     @Column(name = "view_count")
     @Builder.Default
     private int viewCount = 0;
@@ -157,11 +161,13 @@ public class TravelPlan extends BaseTimeEntity {
     public void addLike(PlanLike planLike) {
         likes.add(planLike);
         planLike.setTravelPlan(this);
+        this.likeCount++;
     }
 
     public void removeLike(PlanLike planLike) {
         likes.remove(planLike);
         planLike.setTravelPlan(null);
+        this.likeCount--;
     }
 
     public void incrementViewCount() {

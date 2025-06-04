@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -356,14 +357,18 @@ public class TravelPlanService {
     }
 
     public List<TravelPlanDTO> getPopularTravelPlanList() {
-        List<TravelPlan> travelPlans = travelPlanRepository.findAllByOrderByLikeCountDesc();
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByLikeCountDesc(PlanStatus.PUBLISHED,
+                pageRequest);
         return travelPlans.stream()
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public List<TravelPlanDTO> getRecentTravelPlanList() {
-        List<TravelPlan> travelPlans = travelPlanRepository.findAllByOrderByCreatedAtDesc();
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByCreatedAtDesc(PlanStatus.PUBLISHED,
+                pageRequest);
         return travelPlans.stream()
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
