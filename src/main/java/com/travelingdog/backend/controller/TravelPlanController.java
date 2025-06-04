@@ -94,6 +94,21 @@ public class TravelPlanController {
                 return ResponseEntity.ok(travelPlanDTOs);
         }
 
+        @Operation(summary = "여행 계획 좋아요 조회", description = "여행 계획을 좋아요 조회합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "여행 계획 좋아요 조회 성공", content = @Content(schema = @Schema(implementation = TravelPlanDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @GetMapping("/like")
+        public ResponseEntity<List<TravelPlanDTO>> getLike(@AuthenticationPrincipal User user) {
+
+                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getLikedTravelPlanList(user);
+                return ResponseEntity.ok(travelPlanDTOs);
+        }
+
         @Operation(summary = "여행 계획 상세 조회", description = "여행 계획 상세 정보를 조회합니다.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "여행 계획 상세 조회 성공", content = @Content(schema = @Schema(implementation = TravelPlanDTO.class))),
@@ -145,4 +160,67 @@ public class TravelPlanController {
                 return ResponseEntity.noContent().build(); // 204 No Content
         }
 
+        @Operation(summary = "여행 계획 좋아요 추가", description = "여행 계획을 좋아요 추가합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "여행 계획 좋아요 추가 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @PostMapping("/{id}/like")
+        public ResponseEntity<Void> addLike(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                travelPlanService.addLike(id, user);
+                return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        @Operation(summary = "여행 계획 좋아요 취소", description = "여행 계획을 좋아요 취소합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "여행 계획 좋아요 취소 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @DeleteMapping("/{id}/like")
+        public ResponseEntity<Void> removeLike(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                travelPlanService.removeLike(id, user);
+                return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        @Operation(summary = "여행 계획 공개", description = "여행 계획을 공개합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "여행 계획 공개 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @PutMapping("/{id}/publish")
+        public ResponseEntity<Void> publishTravelPlan(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                travelPlanService.publishTravelPlan(id, user);
+                return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        @Operation(summary = "여행 계획 비공개", description = "여행 계획을 비공개합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "여행 계획 비공개 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @PutMapping("/{id}/unpublish")
+        public ResponseEntity<Void> unpublishTravelPlan(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                travelPlanService.unpublishTravelPlan(id, user);
+                return ResponseEntity.noContent().build(); // 204 No Content
+        }
 }

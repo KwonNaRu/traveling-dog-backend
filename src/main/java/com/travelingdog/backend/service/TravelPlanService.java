@@ -1,6 +1,7 @@
 package com.travelingdog.backend.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +35,7 @@ import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
 import com.travelingdog.backend.model.Itinerary;
+import com.travelingdog.backend.model.PlanLike;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.model.User;
@@ -42,12 +44,15 @@ import com.travelingdog.backend.model.AccommodationType;
 import com.travelingdog.backend.model.Transportation;
 import com.travelingdog.backend.model.RestaurantRecommendation;
 import com.travelingdog.backend.repository.ItineraryRepository;
+import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TravelPlanService {
 
     private static final Logger log = LoggerFactory.getLogger(TravelPlanService.class);
@@ -64,16 +69,7 @@ public class TravelPlanService {
     private final RestClient restClient;
     private final GptResponseHandler gptResponseHandler;
     private final TravelPlanRepository travelPlanRepository;
-    private final ItineraryRepository itineraryRepository;
-
-    public TravelPlanService(GptResponseHandler gptResponseHandler,
-            RestClient restClient, TravelPlanRepository travelPlanRepository,
-            ItineraryRepository itineraryRepository) {
-        this.gptResponseHandler = gptResponseHandler;
-        this.restClient = restClient;
-        this.travelPlanRepository = travelPlanRepository;
-        this.itineraryRepository = itineraryRepository;
-    }
+    private final PlanLikeRepository planLikeRepository;
 
     @Transactional
     public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
@@ -289,8 +285,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 상세 조회
      */
-    public TravelPlanDTO getTravelPlanDetail(Long id, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    public TravelPlanDTO getTravelPlanDetail(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -305,8 +300,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 수정
      */
-    public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -344,8 +338,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 삭제
      */
-    public void deleteTravelPlan(Long id, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    public void deleteTravelPlan(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -353,9 +346,43 @@ public class TravelPlanService {
             throw new ForbiddenResourceAccessException("삭제할 수 없는 여행 계획입니다.");
         }
 
-        travelPlanRepository.delete(travelPlan);
+        travelPlan.softDelete();
+        travelPlanRepository.save(travelPlan);
     }
 
+    /**
+     * 여행 계획 공개
+     */
+    public void publishTravelPlan(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("공개할 수 없는 여행 계획입니다.");
+        }
+
+        travelPlan.setStatus(PlanStatus.PUBLISHED);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 비공개
+     */
+    public void unpublishTravelPlan(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("비공개할 수 없는 여행 계획입니다.");
+        }
+
+        travelPlan.setStatus(PlanStatus.PRIVATE);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 인기 여행 계획 목록 조회
+     */
     public List<TravelPlanDTO> getPopularTravelPlanList() {
         PageRequest pageRequest = PageRequest.of(0, 10);
         List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByLikeCountDesc(PlanStatus.PUBLISHED,
@@ -373,4 +400,47 @@ public class TravelPlanService {
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 여행 계획 좋아요 추가
+     */
+    public void addLike(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        PlanLike planLike = PlanLike.builder()
+                .user(user)
+                .likedAt(LocalDateTime.now())
+                .build();
+
+        travelPlan.addLike(planLike);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 취소
+     */
+    public void removeLike(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        PlanLike planLike = travelPlan.getLikes().stream()
+                .filter(like -> like.getUser().getId().equals(user.getId()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("좋아요를 찾을 수 없습니다."));
+
+        travelPlan.removeLike(planLike);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 조회
+     */
+    public List<TravelPlanDTO> getLikedTravelPlanList(User user) {
+        return planLikeRepository.findByUser(user).stream()
+                .map(PlanLike::getTravelPlan)
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }

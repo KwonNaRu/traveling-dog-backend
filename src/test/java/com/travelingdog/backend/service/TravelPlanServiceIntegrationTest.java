@@ -477,9 +477,10 @@ public class TravelPlanServiceIntegrationTest {
                 // When
                 travelPlanService.deleteTravelPlan(travelPlan.getId(), user);
 
-                // 삭제 후 엔티티가 존재하지 않는지 확인
+                // 삭제 후 엔티티의 상태가 DELETED 여야 함
                 Optional<TravelPlan> deletedPlan = travelPlanRepository.findById(travelPlan.getId());
-                assertTrue(deletedPlan.isEmpty(), "삭제된 여행 계획은 조회되지 않아야 합니다");
+                assertTrue(deletedPlan.get().getStatus() == PlanStatus.DELETED,
+                                "삭제된 여행 계회 상태가 DELETED여야 합니다");
         }
 
         /**

@@ -311,18 +311,17 @@ public class TravelPlanServiceUnitTest {
                 // Repository 모킹
                 when(travelPlanRepository.findById(travelPlanId))
                                 .thenReturn(Optional.of(existingPlan)) // 첫 번째 호출에서는 엔티티 반환
-                                .thenReturn(Optional.empty()); // 삭제 후 두 번째 호출에서는 빈 Optional 반환
+                                .thenReturn(Optional.of(existingPlan)); // 삭제 후 두 번째 호출에서는 빈 Optional 반환
 
                 // When
                 tripPlanService.deleteTravelPlan(travelPlanId, user);
 
                 // Then
-                // 삭제 메서드 호출 검증
-                verify(travelPlanRepository).delete(existingPlan);
 
                 // 삭제 후 엔티티가 존재하지 않는지 확인
                 Optional<TravelPlan> deletedPlan = travelPlanRepository.findById(travelPlanId);
-                assertTrue(deletedPlan.isEmpty(), "삭제된 여행 계획은 조회되지 않아야 합니다");
+                assertTrue(deletedPlan.get().getStatus() == PlanStatus.DELETED,
+                                "삭제된 여행 계획은 상태가 DELETED여야 합니다");
         }
 
         /**
