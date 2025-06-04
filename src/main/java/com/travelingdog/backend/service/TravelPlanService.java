@@ -355,4 +355,17 @@ public class TravelPlanService {
         travelPlanRepository.delete(travelPlan);
     }
 
+    public List<TravelPlanDTO> getPopularTravelPlanList() {
+        List<TravelPlan> travelPlans = travelPlanRepository.findAllByOrderByLikeCountDesc();
+        return travelPlans.stream()
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<TravelPlanDTO> getRecentTravelPlanList() {
+        List<TravelPlan> travelPlans = travelPlanRepository.findAllByOrderByCreatedAtDesc();
+        return travelPlans.stream()
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

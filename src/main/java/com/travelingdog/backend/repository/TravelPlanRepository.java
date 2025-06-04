@@ -41,4 +41,20 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      */
     @Query("SELECT p FROM TravelPlan p WHERE p.id = :id AND p.user.id = :userId")
     Optional<TravelPlan> findByIdWithUser(@Param("id") Long id, @Param("userId") Long userId);
+
+    /**
+     * 인기 여행 계획 목록을 조회합니다.
+     * 
+     * @return 인기 여행 계획 목록
+     */
+    @Query("SELECT p FROM TravelPlan p WHERE p.status = 'PUBLISHED' ORDER BY p.likeCount DESC LIMIT 10")
+    List<TravelPlan> findAllByOrderByLikeCountDesc();
+
+    /**
+     * 최근 여행 계획 목록을 조회합니다.
+     * 
+     * @return 최근 여행 계획 목록
+     */
+    @Query("SELECT p FROM TravelPlan p WHERE p.status = 'PUBLISHED' ORDER BY p.createdAt DESC LIMIT 10")
+    List<TravelPlan> findAllByOrderByCreatedAtDesc();
 }

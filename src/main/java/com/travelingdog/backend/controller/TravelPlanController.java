@@ -120,4 +120,29 @@ public class TravelPlanController {
                 travelPlanService.deleteTravelPlan(id, user);
                 return ResponseEntity.noContent().build(); // 204 No Content
         }
+
+        @Operation(summary = "인기 여행 리스트 조회", description = "인기 여행 리스트를 조회합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "인기 여행 리스트 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @GetMapping("/popular")
+        public ResponseEntity<List<TravelPlanDTO>> getPopularTravelPlanList() {
+                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getPopularTravelPlanList();
+                return ResponseEntity.ok(travelPlanDTOs);
+        }
+
+        @Operation(summary = "최근 여행 계획 조회", description = "최근 여행 계획을 조회합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "최근 여행 계획 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @GetMapping("/recent")
+        public ResponseEntity<List<TravelPlanDTO>> getRecentTravelPlanList() {
+                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getRecentTravelPlanList();
+                return ResponseEntity.ok(travelPlanDTOs);
+        }
+
 }
