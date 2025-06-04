@@ -71,8 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // 기타 예외도 인증 오류로 처리 (401)
             SecurityContextHolder.clearContext();
-            jwtAuthenticationEntryPoint.commence(
-                    request, response,
+            jwtAuthenticationEntryPoint.commence(request, response,
                     new InsufficientAuthenticationException("인증 처리 중 오류 발생", e));
             return;
         }
