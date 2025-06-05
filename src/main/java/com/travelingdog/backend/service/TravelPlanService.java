@@ -338,6 +338,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 삭제
      */
+    @Transactional
     public void deleteTravelPlan(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
@@ -347,14 +348,13 @@ public class TravelPlanService {
         }
 
         travelPlan.softDelete();
-        travelPlanRepository.save(travelPlan);
     }
 
     /**
      * 여행 계획 공개
      */
     @Transactional
-    public void publishTravelPlan(Long id, User user) {
+    public TravelPlanDTO publishTravelPlan(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -363,13 +363,14 @@ public class TravelPlanService {
         }
 
         travelPlan.setStatus(PlanStatus.PUBLISHED);
-        travelPlanRepository.save(travelPlan);
+        return TravelPlanDTO.fromEntity(travelPlan);
     }
 
     /**
      * 여행 계획 비공개
      */
-    public void unpublishTravelPlan(Long id, User user) {
+    @Transactional
+    public TravelPlanDTO unpublishTravelPlan(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -378,7 +379,7 @@ public class TravelPlanService {
         }
 
         travelPlan.setStatus(PlanStatus.PRIVATE);
-        travelPlanRepository.save(travelPlan);
+        return TravelPlanDTO.fromEntity(travelPlan);
     }
 
     /**

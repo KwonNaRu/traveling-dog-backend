@@ -201,11 +201,11 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @PutMapping("/{id}/publish")
-        public ResponseEntity<Void> publishTravelPlan(@PathVariable("id") Long id,
+        public ResponseEntity<TravelPlanDTO> publishTravelPlan(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 
-                travelPlanService.publishTravelPlan(id, user);
-                return ResponseEntity.noContent().build(); // 204 No Content
+                TravelPlanDTO travelPlanDTO = travelPlanService.publishTravelPlan(id, user);
+                return ResponseEntity.ok(travelPlanDTO);
         }
 
         @Operation(summary = "여행 계획 비공개", description = "여행 계획을 비공개합니다.")
@@ -217,10 +217,10 @@ public class TravelPlanController {
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @PutMapping("/{id}/unpublish")
-        public ResponseEntity<Void> unpublishTravelPlan(@PathVariable("id") Long id,
+        public ResponseEntity<TravelPlanDTO> unpublishTravelPlan(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 
-                travelPlanService.unpublishTravelPlan(id, user);
-                return ResponseEntity.noContent().build(); // 204 No Content
+                TravelPlanDTO travelPlanDTO = travelPlanService.unpublishTravelPlan(id, user);
+                return ResponseEntity.ok(travelPlanDTO);
         }
 }
