@@ -16,6 +16,7 @@ spring:
       enabled: false
 
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
     properties:
@@ -36,6 +37,16 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   packages-to-scan: com.travelingdog.backend.controller
+
+# 로깅 레벨 세부 조정
+logging:
+  level:
+    "[org.hibernate.SQL]": DEBUG # 실행된 SQL
+    "[org.hibernate.type.descriptor.sql.BasicBinder]": TRACE # 바인딩된 파라미터 값
+    "[org.springframework.orm.jpa.JpaTransactionManager]": DEBUG # JPA 트랜잭션 매니저
+    "[org.springframework.transaction]": TRACE # 트랜잭션 전체 흐름
+    "[org.springframework.transaction.interceptor]": TRACE # 트랜잭션 interceptor
+# ────────────────────────────────────────────────────
 
 rate-limiting:
   enabled: true
