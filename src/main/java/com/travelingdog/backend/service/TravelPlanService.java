@@ -363,7 +363,7 @@ public class TravelPlanService {
         }
 
         travelPlan.setStatus(PlanStatus.PUBLISHED);
-        // travelPlanRepository.save(travelPlan);
+        travelPlanRepository.save(travelPlan);
     }
 
     /**
