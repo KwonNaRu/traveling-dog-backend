@@ -102,13 +102,13 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<PlanLike> likes = new ArrayList<>();
 
-    @Column(name = "like_count")
+    @Column(name = "like_count", nullable = false)
     @Builder.Default
-    private int likeCount = 0;
+    private Integer likeCount = 0;
 
-    @Column(name = "view_count")
+    @Column(name = "view_count", nullable = false)
     @Builder.Default
-    private int viewCount = 0;
+    private Integer viewCount = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
