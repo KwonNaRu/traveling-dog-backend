@@ -1,27 +1,32 @@
 package com.travelingdog.backend.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
-import com.travelingdog.backend.dto.AIChatResponse;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
-import com.travelingdog.backend.dto.TravelLocationDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
+import com.travelingdog.backend.dto.gemini.GeminiContent;
+import com.travelingdog.backend.dto.gemini.GeminiGenerationConfig;
+import com.travelingdog.backend.dto.gemini.GeminiPart;
+import com.travelingdog.backend.dto.gemini.GeminiRequest;
+import com.travelingdog.backend.dto.gemini.GeminiResponse;
+import com.travelingdog.backend.dto.gpt.AIChatMessage;
+import com.travelingdog.backend.dto.gpt.AIChatRequest;
+import com.travelingdog.backend.dto.gpt.AIChatResponse;
+import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
@@ -29,16 +34,25 @@ import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
-import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.Itinerary;
+import com.travelingdog.backend.model.PlanLike;
 import com.travelingdog.backend.model.TravelPlan;
+import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.model.User;
-import com.travelingdog.backend.repository.TravelLocationRepository;
+import com.travelingdog.backend.model.Interest;
+import com.travelingdog.backend.model.AccommodationType;
+import com.travelingdog.backend.model.Transportation;
+import com.travelingdog.backend.model.RestaurantRecommendation;
+import com.travelingdog.backend.repository.ItineraryRepository;
+import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TravelPlanService {
 
     private static final Logger log = LoggerFactory.getLogger(TravelPlanService.class);
@@ -46,34 +60,96 @@ public class TravelPlanService {
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
+    @Value("${gemini.api.key}")
+    private String geminiApiKey;
+
+    @Value("${gemini.api.url}")
+    private String geminiApiUrl;
+
     private final RestClient restClient;
-    private final RouteOptimizationService routeOptimizationService;
     private final GptResponseHandler gptResponseHandler;
     private final TravelPlanRepository travelPlanRepository;
-    private final TravelLocationRepository travelLocationRepository;
+    private final PlanLikeRepository planLikeRepository;
 
-    public TravelPlanService(RouteOptimizationService routeOptimizationService, GptResponseHandler gptResponseHandler,
-            RestClient restClient, TravelPlanRepository travelPlanRepository,
-            TravelLocationRepository travelLocationRepository) {
-        this.routeOptimizationService = routeOptimizationService;
-        this.gptResponseHandler = gptResponseHandler;
-        this.restClient = restClient;
-        this.travelPlanRepository = travelPlanRepository;
-        this.travelLocationRepository = travelLocationRepository;
+    @Transactional
+    public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
+        try {
+            // 1. AI 추천 먼저 받아오기
+            AIRecommendedTravelPlanDTO aiRecommendedPlan = generateTripPlanWithGemini(request);
+
+            // 2. TravelPlan 객체 생성 (fromDTO는 TravelPlan만 생성)
+            TravelPlan travelPlan = TravelPlan.fromDTO(aiRecommendedPlan);
+            travelPlan.setUser(user);
+
+            // 3. 연관 엔티티 add 메서드로 추가 (양방향 세팅)
+            // TravelStyle
+            if (aiRecommendedPlan.getTravelStyle() != null) {
+                for (String style : aiRecommendedPlan.getTravelStyle()) {
+                    TravelStyle travelStyle = TravelStyle.builder().name(style).build();
+                    travelPlan.addTravelStyle(travelStyle);
+                }
+            }
+            // Interest
+            if (aiRecommendedPlan.getInterests() != null) {
+                for (String interest : aiRecommendedPlan.getInterests()) {
+                    Interest interestEntity = Interest.builder().name(interest).build();
+                    travelPlan.addInterest(interestEntity);
+                }
+            }
+            // AccommodationType
+            if (aiRecommendedPlan.getAccommodation() != null) {
+                for (String accommodation : aiRecommendedPlan.getAccommodation()) {
+                    AccommodationType accommodationType = AccommodationType.builder().name(accommodation).build();
+                    travelPlan.addAccommodationType(accommodationType);
+                }
+            }
+            // Transportation
+            if (aiRecommendedPlan.getTransportation() != null) {
+                for (String transportation : aiRecommendedPlan.getTransportation()) {
+                    Transportation transportationType = Transportation.builder().name(transportation).build();
+                    travelPlan.addTransportation(transportationType);
+                }
+            }
+            // RestaurantRecommendation
+            if (aiRecommendedPlan.getRestaurantRecommendations() != null) {
+                for (var recommendation : aiRecommendedPlan.getRestaurantRecommendations()) {
+                    RestaurantRecommendation restaurantRecommendation = RestaurantRecommendation.builder()
+                            .locationName(recommendation.getLocationName())
+                            .description(recommendation.getDescription())
+                            .build();
+                    travelPlan.addRestaurantRecommendation(restaurantRecommendation);
+                }
+            }
+            // Itinerary (fromDto에서 travelPlan 세팅됨)
+            List<Itinerary> itineraries = aiRecommendedPlan.getItinerary().stream()
+                    .map(dto -> Itinerary.fromDto(dto, travelPlan))
+                    .collect(Collectors.toList());
+            travelPlan.setItineraries(itineraries);
+
+            // 4. 한 번에 저장
+            travelPlanRepository.save(travelPlan);
+
+            // 5. DTO 반환
+            return TravelPlanDTO.fromEntity(travelPlan);
+        } catch (ExternalApiException e) {
+            log.error("AI 추천 실패: {}", e.getMessage());
+            throw new InvalidRequestException("AI 추천을 받지 못했습니다: " + e.getMessage());
+        }
     }
 
-    /**
-     * 프론트엔드에서 전달받은 여행 정보를 바탕으로 GPT API를 호출하고, 추천 장소 정보를 JSON 배열로 받아
-     * List<TravelLocation>으로 변환한 후 경로 최적화를 적용하여 반환합니다.
-     */
-    public List<TravelLocation> generateTripPlan(TravelPlanRequest request) {
+    private AIRecommendedTravelPlanDTO generateTripPlan(TravelPlanRequest request) {
         try {
             // 강화된 프롬프트 생성
             String prompt = gptResponseHandler.createEnhancedPrompt(
-                    request.getCountry(),
                     request.getCity(),
                     request.getStartDate(),
-                    request.getEndDate());
+                    request.getEndDate(),
+                    request.getTravelStyle(),
+                    request.getBudget(),
+                    request.getInterests(),
+                    request.getAccommodation(),
+                    request.getTransportation(),
+                    request.getUserSpecifiedAccommodations());
 
             // GPT API 요청 메시지 구성
             List<AIChatMessage> messages = new ArrayList<>();
@@ -101,47 +177,14 @@ public class TravelPlanService {
 
                 try {
                     // 응답 파싱 및 검증
-                    List<AIRecommendedLocationDTO> dtoList = gptResponseHandler.parseGptResponse(content);
-
-                    // DTO → TravelLocation 변환
-                    List<TravelLocation> locations = new ArrayList<>();
-                    int order = 0;
-                    for (AIRecommendedLocationDTO dto : dtoList) {
-                        TravelLocation location = new TravelLocation();
-                        location.setPlaceName(dto.getName());
-                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
-                        location.setLocationOrder(order++);
-                        location.setDescription("");
-                        // travelPlan 연관 관계는 저장할 때 할당
-                        locations.add(location);
-                    }
-
-                    // 경로 최적화 실행: 시뮬레이티드 어닐링 알고리즘 사용
-                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
-
-                    // 실제 교통 정보를 고려한 경로 최적화를 사용하려면 아래 코드 사용
-                    // return routeOptimizationService.optimizeRouteWithRealDistances(locations);
+                    return gptResponseHandler.parseGptResponse(content);
                 } catch (Exception e) {
                     log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
                     // 대체 응답 사용
-                    List<AIRecommendedLocationDTO> fallbackList = gptResponseHandler.getFallbackResponse(
-                            request.getCountry(),
+                    return gptResponseHandler.getFallbackResponse(
                             request.getCity(),
                             request.getStartDate(),
                             request.getEndDate());
-
-                    // 대체 응답으로 TravelLocation 생성
-                    List<TravelLocation> fallbackLocations = new ArrayList<>();
-                    int order = 0;
-                    for (AIRecommendedLocationDTO dto : fallbackList) {
-                        TravelLocation location = new TravelLocation();
-                        location.setPlaceName(dto.getName());
-                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
-                        location.setLocationOrder(order++);
-                        location.setDescription("대체 추천 장소");
-                        fallbackLocations.add(location);
-                    }
-                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
                 }
             }
             throw new ExternalApiException("GPT API 호출에 실패했습니다.");
@@ -154,116 +197,72 @@ public class TravelPlanService {
         }
     }
 
-    public TravelPlanDTO createTravelPlan(TravelPlanRequest request, User user) {
-        // 1. 먼저 TravelPlan 객체 생성 (빈 travelLocations 리스트로)
-        TravelPlan travelPlan = TravelPlan.builder()
-                .title(request.getTitle())
-                .country(request.getCountry()) // country와 city도 설정해야 함
-                .city(request.getCity())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .user(user)
-                .travelLocations(new ArrayList<>()) // 빈 리스트로 초기화
-                .build();
-
-        // 2. TravelPlan 저장 (ID 생성)
-        TravelPlan savedTravelPlan = travelPlanRepository.save(travelPlan);
-
-        // 3. GPT API 호출하여 추천 장소 가져오기
-        List<TravelLocation> locations = generateTripPlanLocations(request, savedTravelPlan);
-
-        // 4. 각 TravelLocation에 travelPlan 설정 및 저장
-        for (TravelLocation location : locations) {
-            location.setTravelPlan(savedTravelPlan);
-            travelLocationRepository.save(location);
-        }
-
-        // 5. TravelPlan에 locations 설정
-        savedTravelPlan.setTravelLocations(locations);
-
-        // 6. 최종 결과 반환
-        return TravelPlanDTO.fromEntity(savedTravelPlan);
-    }
-
-    // generateTripPlan 메서드를 수정하여 TravelPlan을 매개변수로 받도록 함
-    private List<TravelLocation> generateTripPlanLocations(TravelPlanRequest request, TravelPlan travelPlan) {
+    /**
+     * Gemini API를 사용하여 여행 계획을 생성합니다.
+     */
+    private AIRecommendedTravelPlanDTO generateTripPlanWithGemini(TravelPlanRequest request) {
         try {
-            // 강화된 프롬프트 생성
+            // 강화된 프롬프트 생성 (기존 프롬프트 재사용)
             String prompt = gptResponseHandler.createEnhancedPrompt(
-                    request.getCountry(),
                     request.getCity(),
                     request.getStartDate(),
-                    request.getEndDate());
+                    request.getEndDate(),
+                    request.getTravelStyle(),
+                    request.getBudget(),
+                    request.getInterests(),
+                    request.getAccommodation(),
+                    request.getTransportation(),
+                    request.getUserSpecifiedAccommodations());
 
-            // GPT API 요청 메시지 구성
-            List<AIChatMessage> messages = new ArrayList<>();
-            messages.add(new AIChatMessage("system", "You are a travel recommendation assistant."));
-            messages.add(new AIChatMessage("user", prompt));
+            List<GeminiPart> parts = new ArrayList<>();
+            parts.add(GeminiPart.builder()
+                    .text(prompt)
+                    .build());
 
-            AIChatRequest openAiRequest = new AIChatRequest();
-            openAiRequest.setModel("gpt-3.5-turbo");
-            openAiRequest.setMessages(messages);
-            openAiRequest.setTemperature(0.3); // 안정적인 JSON 응답을 위해 낮은 temperature 설정
+            List<GeminiContent> contents = new ArrayList<>();
+            contents.add(GeminiContent.builder()
+                    .parts(parts)
+                    .build());
+            // Gemini API 요청 구성
+            GeminiRequest geminiRequest = GeminiRequest.builder()
+                    .contents(contents)
+                    .generationConfig(GeminiGenerationConfig.builder()
+                            .temperature(0.3f)
+                            .topK(1)
+                            .topP(1)
+                            .maxOutputTokens(4096)
+                            .build())
+                    .build();
 
-            String openAiUrl = "https://api.openai.com/v1/chat/completions";
-
-            AIChatResponse openAiResponse = restClient.post()
-                    .uri(openAiUrl)
+            // Gemini API 호출
+            GeminiResponse geminiResponse = restClient.post()
+                    .uri(geminiApiUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiApiKey)
-                    .body(openAiRequest)
+                    .header("x-goog-api-key", geminiApiKey)
+                    .body(geminiRequest)
                     .retrieve()
-                    .body(AIChatResponse.class);
+                    .body(GeminiResponse.class);
 
-            if (openAiResponse != null && openAiResponse.getChoices() != null
-                    && !openAiResponse.getChoices().isEmpty()) {
-                String content = openAiResponse.getChoices().get(0).getMessage().getContent();
+            if (geminiResponse != null &&
+                    geminiResponse.getCandidates() != null &&
+                    !geminiResponse.getCandidates().isEmpty()) {
+
+                String content = geminiResponse.getCandidates().get(0)
+                        .getContent().getParts().get(0).getText();
 
                 try {
-                    // 응답 파싱 및 검증
-                    List<AIRecommendedLocationDTO> dtoList = gptResponseHandler.parseGptResponse(content);
-
-                    // DTO → TravelLocation 변환
-                    List<TravelLocation> locations = new ArrayList<>();
-                    int order = 0;
-                    for (AIRecommendedLocationDTO dto : dtoList) {
-                        TravelLocation location = new TravelLocation();
-                        location.setPlaceName(dto.getName());
-                        location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                .createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())));
-                        location.setLocationOrder(order++);
-                        location.setDescription("");
-                        location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
-                        locations.add(location);
-                    }
-
-                    // 경로 최적화 실행: 시뮬레이티드 어닐링 알고리즘 사용
-                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(locations);
+                    // 응답 파싱 및 검증 (기존 파서 재사용)
+                    return gptResponseHandler.parseGptResponse(content);
                 } catch (Exception e) {
-                    log.error("GPT 응답 처리 중 오류 발생: {}", e.getMessage());
+                    log.error("Gemini 응답 처리 중 오류 발생: {}", e.getMessage());
                     // 대체 응답 사용
-                    List<AIRecommendedLocationDTO> fallbackList = gptResponseHandler.getFallbackResponse(
-                            request.getCountry(),
+                    return gptResponseHandler.getFallbackResponse(
                             request.getCity(),
                             request.getStartDate(),
                             request.getEndDate());
-
-                    // 대체 응답으로 TravelLocation 생성
-                    List<TravelLocation> fallbackLocations = new ArrayList<>();
-                    int order = 0;
-                    for (AIRecommendedLocationDTO dto : fallbackList) {
-                        TravelLocation location = new TravelLocation();
-                        location.setPlaceName(dto.getName());
-                        location.setCoordinates(dto.getLongitude(), dto.getLatitude());
-                        location.setLocationOrder(order++);
-                        location.setDescription("대체 추천 장소");
-                        location.setTravelPlan(travelPlan); // 여기서 travelPlan 설정
-                        fallbackLocations.add(location);
-                    }
-                    return routeOptimizationService.optimizeRouteWithSimulatedAnnealing(fallbackLocations);
                 }
             }
-            throw new ExternalApiException("GPT API 호출에 실패했습니다.");
+            throw new ExternalApiException("Gemini API 호출에 실패했습니다.");
         } catch (ExternalApiException e) {
             log.error("외부 API 호출 중 오류 발생: {}", e.getMessage());
             throw e;
@@ -286,8 +285,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 상세 조회
      */
-    public TravelPlanDTO getTravelPlanDetail(Long id, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    public TravelPlanDTO getTravelPlanDetail(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -302,8 +300,7 @@ public class TravelPlanService {
     /**
      * 여행 계획 수정
      */
-    public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    public TravelPlanDTO updateTravelPlan(Long id, TravelPlanUpdateRequest request, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -311,21 +308,29 @@ public class TravelPlanService {
             throw new ForbiddenResourceAccessException("수정할 수 없는 여행 계획입니다.");
         }
 
-        // travelLocations가 null일 경우 빈 리스트로 처리
-        List<TravelLocation> travelLocations = request.getTravelLocations() == null
-                ? new ArrayList<>()
-                : request.getTravelLocations().stream()
-                        .map(TravelLocationDTO::toEntity)
-                        .collect(Collectors.toList());
+        // 기존 여행 계획의 속성만 업데이트
+        travelPlan.setTitle(request.getTitle());
+        travelPlan.setStartDate(request.getStartDate());
+        travelPlan.setEndDate(request.getEndDate());
 
-        TravelPlan newTravelPlan = TravelPlan.builder()
-                .id(travelPlan.getId())
-                .title(request.getTitle())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .travelLocations(travelLocations)
-                .build();
-        TravelPlan updatedTravelPlan = travelPlanRepository.save(newTravelPlan);
+        // itineraries가 null이 아닌 경우에만 업데이트
+        if (request.getItineraries() != null) {
+            // 기존 itineraries 삭제 (orphanRemoval=true로 자동 삭제됨)
+            travelPlan.getItineraries().clear();
+
+            // 새 itineraries 추가
+            for (ItineraryDTO itineraryDTO : request.getItineraries()) {
+                if (itineraryDTO != null) {
+                    Itinerary itinerary = ItineraryDTO.toEntity(itineraryDTO);
+                    if (itinerary != null) {
+                        travelPlan.addItinerary(itinerary);
+                    }
+                }
+            }
+        }
+
+        // 변경사항 저장
+        TravelPlan updatedTravelPlan = travelPlanRepository.save(travelPlan);
 
         return TravelPlanDTO.fromEntity(updatedTravelPlan);
     }
@@ -333,8 +338,8 @@ public class TravelPlanService {
     /**
      * 여행 계획 삭제
      */
-    public void deleteTravelPlan(Long id, User user)
-            throws ForbiddenResourceAccessException, ResourceNotFoundException {
+    @Transactional
+    public void deleteTravelPlan(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
@@ -342,70 +347,102 @@ public class TravelPlanService {
             throw new ForbiddenResourceAccessException("삭제할 수 없는 여행 계획입니다.");
         }
 
-        travelPlanRepository.delete(travelPlan);
+        travelPlan.softDelete();
     }
 
     /**
-     * 여행 장소의 순서를 변경합니다.
-     *
-     * @param locationId 이동할 장소 ID
-     * @param newOrder   새로운 순서 위치
-     * @return 업데이트된 여행 계획 DTO
-     * @throws ResourceNotFoundException 장소를 찾을 수 없는 경우
+     * 여행 계획 공개
      */
     @Transactional
-    public TravelPlanDTO changeTravelLocationOrder(Long locationId, int newOrder) throws ResourceNotFoundException {
-        // 1. 이동할 장소 찾기
-        TravelLocation locationToMove = travelLocationRepository.findById(locationId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("해당 여행 장소를 찾을 수 없습니다: " + locationId));
+    public TravelPlanDTO publishTravelPlan(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        // 2. 해당 장소가 속한 여행 계획 가져오기
-        TravelPlan travelPlan = locationToMove.getTravelPlan();
-
-        // 3. 현재 순서 저장
-        int currentOrder = locationToMove.getLocationOrder();
-
-        // 4. 같은 순서면 아무것도 하지 않음
-        if (currentOrder == newOrder) {
-            return TravelPlanDTO.fromEntity(travelPlan);
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("공개할 수 없는 여행 계획입니다.");
         }
 
-        // 5. 모든 장소 가져와서 순서대로 정렬
-        List<TravelLocation> locations = travelPlan.getTravelLocations()
-                .stream()
-                .sorted(Comparator.comparing(TravelLocation::getLocationOrder))
-                .collect(Collectors.toList());
-
-        // 6. 순서 재배치
-        if (currentOrder < newOrder) {
-            // 현재 위치보다 뒤로 이동하는 경우 (예: 1→3)
-            // 중간에 있는 장소들은 한 칸씩 앞으로 당김 (2→1, 3→2)
-            for (TravelLocation loc : locations) {
-                int order = loc.getLocationOrder();
-                if (order > currentOrder && order <= newOrder) {
-                    loc.setLocationOrder(order - 1);
-                }
-            }
-        } else {
-            // 현재 위치보다 앞으로 이동하는 경우 (예: 3→1)
-            // 중간에 있는 장소들은 한 칸씩 뒤로 밀림 (1→2, 2→3)
-            for (TravelLocation loc : locations) {
-                int order = loc.getLocationOrder();
-                if (order >= newOrder && order < currentOrder) {
-                    loc.setLocationOrder(order + 1);
-                }
-            }
-        }
-
-        // 7. 이동할 장소의 순서 변경
-        locationToMove.setLocationOrder(newOrder);
-
-        // 8. 변경사항 저장
-        travelLocationRepository.saveAll(locations);
-
-        // 9. 업데이트된 여행 계획 DTO 반환
+        travelPlan.setStatus(PlanStatus.PUBLISHED);
         return TravelPlanDTO.fromEntity(travelPlan);
+    }
+
+    /**
+     * 여행 계획 비공개
+     */
+    @Transactional
+    public TravelPlanDTO unpublishTravelPlan(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        if (!travelPlan.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenResourceAccessException("비공개할 수 없는 여행 계획입니다.");
+        }
+
+        travelPlan.setStatus(PlanStatus.PRIVATE);
+        return TravelPlanDTO.fromEntity(travelPlan);
+    }
+
+    /**
+     * 인기 여행 계획 목록 조회
+     */
+    public List<TravelPlanDTO> getPopularTravelPlanList() {
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByLikeCountDesc(PlanStatus.PUBLISHED,
+                pageRequest);
+        return travelPlans.stream()
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<TravelPlanDTO> getRecentTravelPlanList() {
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByCreatedAtDesc(PlanStatus.PUBLISHED,
+                pageRequest);
+        return travelPlans.stream()
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 여행 계획 좋아요 추가
+     */
+    public void addLike(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        PlanLike planLike = PlanLike.builder()
+                .user(user)
+                .likedAt(LocalDateTime.now())
+                .build();
+
+        travelPlan.addLike(planLike);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 취소
+     */
+    public void removeLike(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        PlanLike planLike = travelPlan.getLikes().stream()
+                .filter(like -> like.getUser().getId().equals(user.getId()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("좋아요를 찾을 수 없습니다."));
+
+        travelPlan.removeLike(planLike);
+        travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 조회
+     */
+    public List<TravelPlanDTO> getLikedTravelPlanList(User user) {
+        return planLikeRepository.findByUser(user).stream()
+                .map(PlanLike::getTravelPlan)
+                .map(TravelPlanDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,30 +1,56 @@
 spring:
-    application:
-        name: backend
+  application:
+    name: backend
 
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
     config:
-        import: optional:configserver:http://localhost:8888
-    cloud:
-        config:
-            name: travelingdog
-            profile: local
+      name: travelingdog
+      profile: local
+      username: ${CONFIG_SERVER_USERNAME}
+      password: ${CONFIG_SERVER_PASSWORD}
 
-    jpa:
-        hibernate:
-            ddl-auto: update
-        properties:
-            hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-                "[format_sql]": true
+  data:
+    redis:
+      enabled: false
 
-jwt:
-    secretKey: asdjrkljakljvkvlwjo9iausoidapjklbkahsiodhrijasdrkljklasjdlkrja # 256비트 이상 권장
-    accessTokenValidityInSeconds: 86400 # 24시간
-    refreshTokenValidityInSeconds: 604800 # 7일
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        "[format_sql]": true
+
+  web:
+    resources:
+      add-mappings: false
+
+  gson:
+    lenient: true # JSON 파싱을 관대하게 처리
 
 springdoc:
-    swagger-ui:
-        path: /swagger-ui.html
-    api-docs:
-        path: /v3/api-docs
-    packages-to-scan: com.travelingdog.backend.controller
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  packages-to-scan: com.travelingdog.backend.controller
+
+# 로깅 레벨 세부 조정
+logging:
+  level:
+    "[org.hibernate.SQL]": DEBUG # 실행된 SQL
+    "[org.hibernate.type.descriptor.sql.BasicBinder]": TRACE # 바인딩된 파라미터 값
+    "[org.springframework.orm.jpa.JpaTransactionManager]": DEBUG # JPA 트랜잭션 매니저
+    "[org.springframework.transaction]": TRACE # 트랜잭션 전체 흐름
+    "[org.springframework.transaction.interceptor]": TRACE # 트랜잭션 interceptor
+# ────────────────────────────────────────────────────
+
+rate-limiting:
+  enabled: true
+
+# Firebase 관련 설정
+firebase:
+  service-account: ${FIREBASE_SERVICE_ACCOUNT}

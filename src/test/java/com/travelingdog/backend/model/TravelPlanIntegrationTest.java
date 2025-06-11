@@ -6,24 +6,28 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.travelingdog.backend.config.JpaAuditingConfigTest;
-import com.travelingdog.backend.repository.TravelLocationRepository;
+import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 import com.travelingdog.backend.status.PlanStatus;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -38,7 +42,10 @@ public class TravelPlanIntegrationTest {
         private TravelPlanRepository travelPlanRepository;
 
         @Autowired
-        private TravelLocationRepository travelLocationRepository;
+        private ItineraryRepository itineraryRepository;
+
+        @PersistenceContext
+        private EntityManager entityManager;
 
         private User user;
 
@@ -62,7 +69,7 @@ public class TravelPlanIntegrationTest {
         public void whenSaveTravelPlan_thenFindById() {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -84,7 +91,7 @@ public class TravelPlanIntegrationTest {
         public void whenUpdateTravelPlan_thenUpdatedAtChanges() throws InterruptedException {
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -116,7 +123,7 @@ public class TravelPlanIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -133,76 +140,107 @@ public class TravelPlanIntegrationTest {
         }
 
         /*
-         * 여행 위치가 삭제되면 여행 계획의 여행 위치 리스트에서 제거된다.
+         * 일정이 삭제되면 여행 계획의 일정 리스트에서 제거된다.
          */
         @Test
-        public void testDeleteTravelLocation() {
-                TravelLocation travelLocation = TravelLocation.builder()
-                                .placeName("Test Travel Location")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(123.456, 78.901)))
-                                .description("Test Description")
-                                .locationOrder(1)
-                                .build();
-
+        public void testDeleteItinerary() {
+                // 여행 계획 생성
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
                                 .status(PlanStatus.PRIVATE)
                                 .build();
 
-                travelPlan.addTravelLocation(travelLocation);
                 travelPlanRepository.save(travelPlan);
 
-                TravelLocation addedTravelLocation = travelPlanRepository.findById(travelPlan.getId()).orElse(null)
-                                .getTravelLocations().get(0);
-                assertEquals(1, travelPlan.getTravelLocations().size());
-                assertEquals(addedTravelLocation.getTravelPlan(), travelPlan);
+                ArrayList<ItineraryActivity> activities = new ArrayList<>();
+                ItineraryActivity activity = ItineraryActivity.builder()
+                                .title("Test Activity")
+                                .description("Test Description")
+                                .locationName("Test Location Name")
+                                .build();
+                activities.add(activity);
 
-                travelLocationRepository.delete(addedTravelLocation);
-                travelPlan.removeTravelLocation(addedTravelLocation);
-                travelPlanRepository.save(travelPlan);
+                // 일정 생성
+                Itinerary itinerary = Itinerary.builder()
+                                .date("2024-05-10")
+                                .location("Test Location")
+                                .travelPlan(travelPlan)
+                                .build();
 
-                assertNull(travelLocationRepository.findById(addedTravelLocation.getId()).orElse(null));
-                assertEquals(0, travelPlanRepository.findById(travelPlan.getId()).orElse(null).getTravelLocations()
+                itineraryRepository.save(itinerary);
+
+                // 일정이 여행 계획에 추가되었는지 확인
+                List<Itinerary> itineraries = itineraryRepository
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
+                assertEquals(1, itineraries.size());
+                assertEquals(itinerary.getTravelPlan(), travelPlan);
+
+                // 일정 삭제
+                itineraryRepository.delete(itinerary);
+
+                // 일정이 삭제되었는지 확인
+                assertNull(itineraryRepository.findById(itinerary.getId()).orElse(null));
+                assertEquals(0, itineraryRepository.findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId())
                                 .size());
         }
 
         /*
-         * 여행 위치가 업데이트되면 여행 계획의 여행 위치 리스트도 업데이트된다.
+         * 일정이 업데이트되면 여행 계획의 일정 리스트도 업데이트된다.
          */
         @Test
-        public void testUpdateTravelLocation() {
-                TravelLocation travelLocation = TravelLocation.builder()
-                                .placeName("Test Travel Location")
-                                .coordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                                .createPoint(new Coordinate(123.456, 78.901)))
-                                .description("Test Description")
-                                .locationOrder(1)
-                                .build();
-
+        @Transactional
+        public void testUpdateItinerary() {
+                // 여행 계획 생성
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
                                 .status(PlanStatus.PRIVATE)
                                 .build();
 
-                travelPlan.addTravelLocation(travelLocation);
                 travelPlanRepository.save(travelPlan);
 
-                TravelLocation updatedTravelLocation = travelPlanRepository.findById(travelPlan.getId()).orElse(null)
-                                .getTravelLocations().get(0);
-                updatedTravelLocation.setPlaceName("Updated Travel Location");
-                travelLocationRepository.save(updatedTravelLocation);
+                // 일정 생성
+                Itinerary itinerary = Itinerary.builder()
+                                .date("2024-05-10")
+                                .location("Test Location")
+                                .travelPlan(travelPlan)
+                                .build();
 
-                assertEquals("Updated Travel Location", travelPlanRepository.findById(travelPlan.getId()).orElse(null)
-                                .getTravelLocations().get(0).getPlaceName());
+                ItineraryActivity activity = ItineraryActivity.builder()
+                                .title("Test Activity")
+                                .description("Test Description")
+                                .locationName("Test Location Name")
+                                .itinerary(itinerary)
+                                .build();
 
+                // List.of()는 불변 컬렉션을 생성하므로 ArrayList로 대체
+                List<ItineraryActivity> activities = new ArrayList<>();
+                activities.add(activity);
+                itinerary.setActivities(activities);
+
+                itineraryRepository.save(itinerary);
+
+                // 영속성 컨텍스트 초기화
+                entityManager.flush();
+                entityManager.clear();
+
+                // 일정 업데이트
+                List<Itinerary> itineraries = itineraryRepository
+                                .findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId());
+                Itinerary updatedItinerary = itineraries.get(0);
+                updatedItinerary.setLocation("Updated Location");
+                itineraryRepository.save(updatedItinerary);
+
+                // 업데이트된 일정 확인
+                assertEquals("Updated Location",
+                                itineraryRepository.findAllByTravelPlanIdOrderByDateAsc(travelPlan.getId())
+                                                .get(0).getLocation());
         }
 }

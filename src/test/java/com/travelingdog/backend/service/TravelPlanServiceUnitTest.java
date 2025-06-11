@@ -1,28 +1,27 @@
 package com.travelingdog.backend.service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
@@ -30,17 +29,23 @@ import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.ResponseSpec;
 
-import com.travelingdog.backend.dto.AIChatMessage;
-import com.travelingdog.backend.dto.AIChatRequest;
-import com.travelingdog.backend.dto.AIChatResponse;
-import com.travelingdog.backend.dto.AIRecommendedLocationDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
+import com.travelingdog.backend.dto.AIRecommendedItineraryDTO.Location;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
+import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO;
+import com.travelingdog.backend.dto.gemini.GeminiCandidate;
+import com.travelingdog.backend.dto.gemini.GeminiContent;
+import com.travelingdog.backend.dto.gemini.GeminiPart;
+import com.travelingdog.backend.dto.gemini.GeminiRequest;
+import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
-import com.travelingdog.backend.model.TravelLocation;
+import com.travelingdog.backend.model.Itinerary;
+import com.travelingdog.backend.model.ItineraryActivity;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
-import com.travelingdog.backend.repository.TravelLocationRepository;
+import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -60,27 +65,26 @@ public class TravelPlanServiceUnitTest {
         private RestClient restClient;
 
         @Mock
-        private RouteOptimizationService routeOptimizationService;
-
-        @Mock
         private GptResponseHandler gptResponseHandler;
 
         @Mock
         private TravelPlanRepository travelPlanRepository;
 
         @Mock
-        private TravelLocationRepository travelLocationRepository;
+        private ItineraryRepository itineraryRepository;
 
         @InjectMocks
         private TravelPlanService tripPlanService;
 
         private TravelPlanRequest request;
         private TravelPlan travelPlan;
-        private AIChatResponse mockResponse;
-        private List<TravelLocation> mockLocations;
+        private GeminiResponse mockResponse;
+        private List<Itinerary> mockLocations;
         private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         private LocalDate today;
         private User user;
+        private ItineraryActivity activity1;
+        private ItineraryActivity activity2;
 
         /**
          * 각 테스트 실행 전 환경 설정
@@ -101,27 +105,36 @@ public class TravelPlanServiceUnitTest {
 
                 // API 키 설정
                 ReflectionTestUtils.setField(tripPlanService, "openAiApiKey", "test-api-key");
+                ReflectionTestUtils.setField(tripPlanService, "geminiApiUrl", "test-api-url");
 
                 // 테스트 요청 데이터 설정
                 today = LocalDate.now();
                 LocalDate endDate = today.plusDays(3);
 
                 request = new TravelPlanRequest();
-                request.setCountry("South Korea");
                 request.setCity("Seoul");
                 request.setStartDate(today);
                 request.setEndDate(endDate);
+                request.setTravelStyle("Adventure");
+                request.setBudget("Budget");
+                request.setInterests("Interests");
+                request.setAccommodation("Accommodation");
+                request.setTransportation("Transportation");
 
                 // 모의 응답 데이터 설정
-                mockResponse = new AIChatResponse();
-                AIChatResponse.Choice choice = new AIChatResponse.Choice();
-                AIChatMessage message = new AIChatMessage();
-                String jsonContent = "[{\"name\":\"Gyeongbokgung Palace\",\"latitude\":37.5796,\"longitude\":126.9770}]";
-                message.setContent(jsonContent);
-                choice.setMessage(message);
-                List<AIChatResponse.Choice> choices = new ArrayList<>();
-                choices.add(choice);
-                mockResponse.setChoices(choices);
+                mockResponse = new GeminiResponse();
+                GeminiCandidate candidate = new GeminiCandidate();
+                GeminiContent content = new GeminiContent();
+                List<GeminiPart> parts = new ArrayList<>();
+                String jsonContent = "[{\"title\":\"Gyeongbokgung Palace\",\"description\":\"Gyeongbokgung Palace is a large palace complex that was the main royal palace of the Joseon Dynasty.\"}]";
+                parts.add(GeminiPart.builder()
+                                .text(jsonContent)
+                                .build());
+                content.setParts(parts);
+                candidate.setContent(content);
+                List<GeminiCandidate> candidates = new ArrayList<>();
+                candidates.add(candidate);
+                mockResponse.setCandidates(candidates);
 
                 // 모의 위치 데이터 설정
                 mockLocations = new ArrayList<>();
@@ -131,18 +144,28 @@ public class TravelPlanServiceUnitTest {
                                 .title("Test Travel Plan")
                                 .startDate(today)
                                 .endDate(endDate)
-                                .country("South Korea")
                                 .city("Seoul")
                                 .build();
 
-                TravelLocation location = new TravelLocation();
-                location.setPlaceName("Gyeongbokgung Palace");
-                location.setCoordinates(new GeometryFactory(new PrecisionModel(), 4326)
-                                .createPoint(new Coordinate(126.9770, 37.5796)));
-                location.setLocationOrder(0);
-                location.setDescription("");
+                activity1 = ItineraryActivity.builder()
+                                .title("Activity")
+                                .description("Activity")
+                                .locationName("Test Location Name")
+                                .build();
+
+                activity2 = ItineraryActivity.builder()
+                                .title("test2")
+                                .description("test2")
+                                .locationName("Test Location Name")
+                                .build();
+
+                Itinerary itinerary = new Itinerary();
+                itinerary.setLocation("Gyeongbokgung Palace");
+                itinerary.setActivities(Arrays.asList(activity1, activity2));
+                itinerary.setDate("2024-05-10");
+                itinerary.setTravelPlan(travelPlan);
                 // TravelPlan은 실제 저장 시 설정되므로 테스트에서는 필요 없음
-                mockLocations.add(location);
+                mockLocations.add(itinerary);
         }
 
         /**
@@ -165,44 +188,41 @@ public class TravelPlanServiceUnitTest {
                 when(restClient.post()).thenReturn(requestBodyUriSpec);
                 when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
-                when(requestBodySpec.body(any(AIChatRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
                 when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-                when(responseSpec.body(AIChatResponse.class)).thenReturn(mockResponse);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
 
                 // Given
-                TravelPlan savedTravelPlan = TravelPlan.builder()
-                                .id(1L)
-                                .title(request.getTitle())
-                                .startDate(request.getStartDate())
-                                .endDate(request.getEndDate())
-                                .country(request.getCountry())
-                                .city(request.getCity())
-                                .build();
+                // TravelPlan savedTravelPlan = TravelPlan.builder()
+                // .id(1L)
+                // .title(request.getTitle())
+                // .startDate(request.getStartDate())
+                // .endDate(request.getEndDate())
+                // .country(request.getCountry())
+                // .city(request.getCity())
+                // .build();
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO(
+                                "Seoul");
+
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
 
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
-                                .thenReturn(List.of(createMockLocationDTO("Gyeongbokgung Palace", 37.5796, 126.9770)));
-                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any()))
+                                .thenReturn(aiRecommendedTravelPlanDTO);
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
                                 .thenReturn("테스트 프롬프트");
-
-                // RouteOptimizationService 모킹
-                when(routeOptimizationService.optimizeRouteWithSimulatedAnnealing(any())).thenReturn(mockLocations);
-
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
-
-                // TravelLocationRepository 모킹
-                when(travelLocationRepository.save(any(TravelLocation.class))).thenReturn(mockLocations.get(0));
 
                 // When
                 TravelPlanDTO result = tripPlanService.createTravelPlan(request, user);
 
                 // Then
                 assertNotNull(result);
-                assertEquals(request.getTitle(), result.getTitle());
                 assertEquals(request.getStartDate(), result.getStartDate());
                 assertEquals(request.getEndDate(), result.getEndDate());
-                assertEquals(request.getCountry(), result.getCountry());
                 assertEquals(request.getCity(), result.getCity());
 
                 // 저장소 호출 검증
@@ -230,7 +250,6 @@ public class TravelPlanServiceUnitTest {
                                 .startDate(today)
                                 .endDate(today.plusDays(3))
                                 .status(PlanStatus.PUBLISHED)
-                                .country("South Korea")
                                 .city("Seoul")
                                 .build();
 
@@ -246,7 +265,6 @@ public class TravelPlanServiceUnitTest {
                                 .startDate(updateRequest.getStartDate())
                                 .endDate(updateRequest.getEndDate())
                                 .status(PlanStatus.PUBLISHED)
-                                .country(existingPlan.getCountry())
                                 .city(existingPlan.getCity())
                                 .build();
 
@@ -262,7 +280,6 @@ public class TravelPlanServiceUnitTest {
                 assertEquals(updateRequest.getTitle(), result.getTitle());
                 assertEquals(updateRequest.getStartDate(), result.getStartDate());
                 assertEquals(updateRequest.getEndDate(), result.getEndDate());
-                assertEquals(existingPlan.getCountry(), result.getCountry()); // 국가는 변경되지 않아야 함
                 assertEquals(existingPlan.getCity(), result.getCity()); // 도시는 변경되지 않아야 함
 
                 // 저장소 호출 검증
@@ -286,7 +303,6 @@ public class TravelPlanServiceUnitTest {
                 TravelPlan existingPlan = TravelPlan.builder()
                                 .id(travelPlanId)
                                 .title("Travel Plan to Delete")
-                                .country("South Korea")
                                 .city("Seoul")
                                 .user(user)
                                 .status(PlanStatus.PUBLISHED)
@@ -295,18 +311,17 @@ public class TravelPlanServiceUnitTest {
                 // Repository 모킹
                 when(travelPlanRepository.findById(travelPlanId))
                                 .thenReturn(Optional.of(existingPlan)) // 첫 번째 호출에서는 엔티티 반환
-                                .thenReturn(Optional.empty()); // 삭제 후 두 번째 호출에서는 빈 Optional 반환
+                                .thenReturn(Optional.of(existingPlan)); // 삭제 후 두 번째 호출에서는 빈 Optional 반환
 
                 // When
                 tripPlanService.deleteTravelPlan(travelPlanId, user);
 
                 // Then
-                // 삭제 메서드 호출 검증
-                verify(travelPlanRepository).delete(existingPlan);
 
                 // 삭제 후 엔티티가 존재하지 않는지 확인
                 Optional<TravelPlan> deletedPlan = travelPlanRepository.findById(travelPlanId);
-                assertTrue(deletedPlan.isEmpty(), "삭제된 여행 계획은 조회되지 않아야 합니다");
+                assertTrue(deletedPlan.get().getStatus() == PlanStatus.DELETED,
+                                "삭제된 여행 계획은 상태가 DELETED여야 합니다");
         }
 
         /**
@@ -315,17 +330,40 @@ public class TravelPlanServiceUnitTest {
          * 이 메소드는 테스트에 사용할 AIRecommendedLocationDTO 객체를 생성합니다. GPT 응답에서 파싱된 위치 정보를
          * 시뮬레이션하는 데 사용됩니다.
          *
-         * @param name      장소 이름
-         * @param latitude  위도
-         * @param longitude 경도
+         * @param name 장소 이름
          * @return 모의 AIRecommendedLocationDTO 객체
          */
-        private AIRecommendedLocationDTO createMockLocationDTO(
-                        String name, double latitude, double longitude) {
-                AIRecommendedLocationDTO dto = new AIRecommendedLocationDTO();
-                dto.setName(name);
-                dto.setLatitude(latitude);
-                dto.setLongitude(longitude);
+        private AIRecommendedTravelPlanDTO createMockTravelPlanDTO(
+                        String name) {
+
+                Location location = new Location();
+                location.setTitle(name);
+                location.setDescription("Description");
+                location.setLocationName("Test Location Name");
+
+                AIRecommendedItineraryDTO itinerary = new AIRecommendedItineraryDTO();
+                itinerary.setLocation(name);
+                itinerary.setDate("2024-05-10");
+                itinerary.setActivities(Arrays.asList(location, location));
+
+                LocationDTO locationDTO = new LocationDTO();
+                locationDTO.setLocationName(name);
+                locationDTO.setDescription("Description");
+
+                AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
+                dto.setDestination(name);
+                dto.setItinerary(Arrays.asList(itinerary, itinerary));
+                dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO));
+                dto.setTransportationTips("Transportation Tips");
+                dto.setTripName("Test Travel Plan");
+                dto.setStartDate(today.toString());
+                dto.setEndDate(today.plusDays(3).toString());
+                dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
+                dto.setBudget("Budget");
+                dto.setInterests(Arrays.asList("Interests"));
+                dto.setAccommodation(Arrays.asList("Accommodation"));
+                dto.setTransportation(Arrays.asList("Transportation"));
+
                 return dto;
         }
 }

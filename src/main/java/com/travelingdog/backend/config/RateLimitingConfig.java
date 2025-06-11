@@ -3,6 +3,7 @@ package com.travelingdog.backend.config;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
+import com.travelingdog.backend.exception.UnauthorizedException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
+@ConditionalOnProperty(name = "rate-limiting.enabled", havingValue = "true")
 public class RateLimitingConfig {
 
     // IP 주소별 RateLimiter를 저장하는 캐시
@@ -40,7 +43,8 @@ public class RateLimitingConfig {
 
         registrationBean.setFilter(new OncePerRequestFilter() {
             @Override
-            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            protected void doFilterInternal(HttpServletRequest request,
+                    HttpServletResponse response,
                     FilterChain filterChain)
                     throws ServletException, IOException {
 
@@ -60,8 +64,11 @@ public class RateLimitingConfig {
                         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                         response.getWriter().write("Too many requests. Please try again later.");
                     }
+                } catch (UnauthorizedException e) {
+                    // 인증 관련 예외는 상위로 전파
+                    throw e;
                 } catch (Exception e) {
-                    // 예외 발생 시 요청 처리 (Rate Limiting 실패 시에도 서비스는 계속 동작)
+                    // 다른 예외 발생 시 요청 처리 (Rate Limiting 실패 시에도 서비스는 계속 동작)
                     filterChain.doFilter(request, response);
                 }
             }

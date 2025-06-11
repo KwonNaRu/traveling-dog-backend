@@ -5,9 +5,13 @@ COPY . .
 # gradlew 파일에 실행 권한 추가
 RUN chmod +x ./gradlew
 
-RUN SPRING_PROFILES_ACTIVE=local-docker ./gradlew build
+# application-build.yml 없이 빌드 실행
+RUN SPRING_PROFILES_ACTIVE=prod ./gradlew build
 
 FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
+
+# 최종 이미지에서는 prod 프로필 사용
+ENV SPRING_PROFILES_ACTIVE=prod
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traveling-backend-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: traveling-backend-prod
+  template:
+    metadata:
+      labels:
+        app: traveling-backend-prod
+    spec:
+      containers:
+        - name: traveling-backend-prod
+          image: traveling.azurecr.io/traveling-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CONFIG_SERVER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: config-server-username
+            - name: CONFIG_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: config-server-password
+            - name: FIREBASE_SERVICE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: firebase-service-account
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

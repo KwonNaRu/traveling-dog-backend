@@ -24,6 +24,7 @@ import com.travelingdog.backend.dto.JwtResponse;
 import com.travelingdog.backend.dto.LoginRequest;
 import com.travelingdog.backend.dto.SignUpRequest;
 import com.travelingdog.backend.exception.DuplicateEmailException;
+import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
@@ -52,6 +53,9 @@ public class AuthServiceTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    @Mock
+    private JwtProperties jwtProperties;
+
     @InjectMocks
     private AuthService authService;
 
@@ -59,6 +63,7 @@ public class AuthServiceTest {
     private User user;
     private String token;
     private String refreshToken;
+    private static final long EXPECTED_TOKEN_EXPIRY = 3600L;
 
     /**
      * 각 테스트 실행 전 환경 설정
@@ -105,6 +110,7 @@ public class AuthServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(jwtTokenProvider.generateToken(anyString())).thenReturn(token);
         when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
+        when(jwtTokenProvider.getTokenRemainingTimeInSeconds(any())).thenReturn(EXPECTED_TOKEN_EXPIRY);
 
         // When
         JwtResponse result = authService.signUp(signUpRequest);
@@ -113,6 +119,7 @@ public class AuthServiceTest {
         assertNotNull(result);
         assertEquals(token, result.accessToken());
         assertEquals(refreshToken, result.refreshToken());
+        assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
     }
 
     /**
@@ -159,6 +166,7 @@ public class AuthServiceTest {
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtTokenProvider.generateToken(anyString())).thenReturn(token);
         when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
+        when(jwtTokenProvider.getTokenRemainingTimeInSeconds(any())).thenReturn(EXPECTED_TOKEN_EXPIRY);
 
         // When
         JwtResponse result = authService.login(loginRequest);
@@ -167,5 +175,54 @@ public class AuthServiceTest {
         assertNotNull(result);
         assertEquals(token, result.accessToken());
         assertEquals(refreshToken, result.refreshToken());
+        assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
+    }
+
+    /**
+     * 리프레시 토큰 갱신 테스트
+     * 
+     * 이 테스트는 유효한 리프레시 토큰으로 AuthService의 refreshToken 메소드를 호출했을 때
+     * 새로운 액세스 토큰이 발급되는지 검증합니다.
+     */
+    @Test
+    @DisplayName("유효한 리프레시 토큰으로 토큰 갱신 시 새 액세스 토큰을 반환한다")
+    void refreshToken_ValidRefreshToken_ReturnsNewAccessToken() {
+        // Given
+        String validRefreshToken = "valid.refresh.token";
+        String newAccessToken = "new.access.token";
+
+        when(jwtTokenProvider.validateRefreshToken(validRefreshToken)).thenReturn(true);
+        when(jwtTokenProvider.extractEmail(validRefreshToken)).thenReturn("test@example.com");
+        when(jwtTokenProvider.generateToken(anyString())).thenReturn(newAccessToken);
+        when(jwtTokenProvider.getTokenRemainingTimeInSeconds(newAccessToken)).thenReturn(EXPECTED_TOKEN_EXPIRY);
+
+        // When
+        JwtResponse result = authService.refreshToken(validRefreshToken);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(newAccessToken, result.accessToken());
+        assertEquals(validRefreshToken, result.refreshToken());
+        assertEquals(EXPECTED_TOKEN_EXPIRY, result.expiresIn());
+    }
+
+    /**
+     * 토큰 갱신 실패 테스트
+     * 
+     * 이 테스트는 유효하지 않은 리프레시 토큰으로 AuthService의 refreshToken 메소드를 호출했을 때
+     * 예외가 발생하는지 검증합니다.
+     */
+    @Test
+    @DisplayName("유효하지 않은 리프레시 토큰으로 토큰 갱신 시 예외가 발생한다")
+    void refreshToken_InvalidRefreshToken_ThrowsException() {
+        // Given
+        String invalidRefreshToken = "invalid.refresh.token";
+
+        when(jwtTokenProvider.validateRefreshToken(invalidRefreshToken)).thenReturn(false);
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(invalidRefreshToken);
+        });
     }
 }

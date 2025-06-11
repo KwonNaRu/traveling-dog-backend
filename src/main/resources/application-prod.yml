@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: backend
+
+  config:
+    import: optional:configserver:http://20.249.216.130:8888
+
+  cloud:
+    config:
+      name: travelingdog
+      profile: prod
+      username: ${CONFIG_SERVER_USERNAME}
+      password: ${CONFIG_SERVER_PASSWORD}

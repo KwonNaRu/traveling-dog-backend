@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.FirebaseConfigTest;
+
+import org.springframework.context.annotation.Import;
+
 /**
  * 스프링 부트 애플리케이션 컨텍스트 로드 테스트
  * 
@@ -13,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(FirebaseConfigTest.class)
 class BackendApplicationTests {
 
 	/**

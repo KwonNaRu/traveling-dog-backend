@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,8 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.travelingdog.backend.config.FirebaseConfigTest;
 import com.travelingdog.backend.dto.ErrorResponse;
 import com.travelingdog.backend.dto.SignUpRequest;
+import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
 
@@ -31,6 +34,7 @@ import com.travelingdog.backend.repository.UserRepository;
 @AutoConfigureTestDatabase
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
+@Import(FirebaseConfigTest.class)
 public class AuthControllerIntegrationTest {
 
     @Autowired
@@ -64,15 +68,16 @@ public class AuthControllerIntegrationTest {
         SignUpRequest request = new SignUpRequest("newUser", "new@test.com", "password123!");
 
         // When
-        ResponseEntity<Void> response = restTemplate.exchange(
+        ResponseEntity<UserProfileDTO> response = restTemplate.exchange(
                 "/api/auth/signup",
                 HttpMethod.POST,
                 new HttpEntity<>(request),
-                Void.class);
+                UserProfileDTO.class);
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
+        assertThat(response.getBody()).isNotNull();
         assertThat(userRepository.findByEmail("new@test.com")).isPresent();
     }
 
@@ -102,14 +107,15 @@ public class AuthControllerIntegrationTest {
         headers.set("Authorization", encodeBasic("existing@test.com", "password123!"));
 
         // When
-        ResponseEntity<Void> response = restTemplate.exchange(
+        ResponseEntity<UserProfileDTO> response = restTemplate.exchange(
                 "/api/auth/login",
                 HttpMethod.POST,
                 new HttpEntity<>(headers),
-                Void.class);
+                UserProfileDTO.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNotEmpty();
     }
 
@@ -144,6 +150,6 @@ public class AuthControllerIntegrationTest {
     @Test
     void accessProtectedResource_WithoutCookie_ReturnsForbidden() {
         ResponseEntity<String> response = restTemplate.getForEntity("/api/protected", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

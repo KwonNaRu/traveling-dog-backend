@@ -21,7 +21,6 @@ import lombok.Setter;
 public class PlanLike {
     @Id
     @GeneratedValue
-
     private Long id;
 
     @ManyToOne

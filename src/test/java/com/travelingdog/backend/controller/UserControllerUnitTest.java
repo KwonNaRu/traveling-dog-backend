@@ -24,17 +24,18 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.travelingdog.backend.config.SecurityConfig;
 import com.travelingdog.backend.dto.UserProfileDTO;
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtProperties;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.UserRepository;
-import com.travelingdog.backend.service.SessionService;
 import com.travelingdog.backend.service.UserService;
 
 @Tag("unit")
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc
-@Import({ SecurityConfig.class, UserControllerUnitTest.MockConfig.class })
+@Import({ SecurityConfig.class, UserControllerUnitTest.MockConfig.class,
+        JwtAuthenticationEntryPoint.class })
 public class UserControllerUnitTest {
 
     @Autowired
@@ -42,9 +43,6 @@ public class UserControllerUnitTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private SessionService sessionService;
 
     private User testUser;
 
@@ -104,9 +102,9 @@ public class UserControllerUnitTest {
 
     @Test
     @DisplayName("인증되지 않은 사용자는 프로필 정보를 조회할 수 없다")
-    void getProfile_UnauthenticatedUser_ReturnsForbidden() throws Exception {
+    void getProfile_UnauthenticatedUser_ReturnsUnauthorized() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/user/profile"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }

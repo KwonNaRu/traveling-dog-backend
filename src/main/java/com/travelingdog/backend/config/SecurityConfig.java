@@ -1,26 +1,26 @@
 package com.travelingdog.backend.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.travelingdog.backend.jwt.JwtAuthenticationEntryPoint;
 import com.travelingdog.backend.jwt.JwtAuthenticationFilter;
 import com.travelingdog.backend.jwt.JwtTokenProvider;
-import com.travelingdog.backend.service.SessionService;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +29,13 @@ public class SecurityConfig {
 
         private final UserDetailsService userDetailsService;
         private final JwtTokenProvider jwtTokenProvider;
-        private final SessionService sessionService;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+        @Bean
+        public JwtAuthenticationFilter jwtAuthenticationFilter() {
+                return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService,
+                                jwtAuthenticationEntryPoint);
+        }
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,6 +46,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/user/**").authenticated()
                                                 .requestMatchers("/api/protected/**").authenticated()
+                                                .requestMatchers("/api/travel/**").authenticated()
                                                 .requestMatchers("/swagger-ui.html").permitAll()
                                                 .requestMatchers("/swagger-ui/**").permitAll()
                                                 .requestMatchers("/v3/api-docs/**").permitAll()
@@ -47,10 +54,11 @@ public class SecurityConfig {
                                                 .requestMatchers("/webjars/**").permitAll()
                                                 .anyRequest().permitAll())
                                 .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint(jwtAuthenticationEntryPoint));
 
-                http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, sessionService),
-                                UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
@@ -59,10 +67,7 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(Arrays.asList(
-                                "http://localhost:3000",
-                                "https://traveling-dev.narudog.com",
-                                "https://traveling.narudog.com"));
+                configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "https://*.narudog.com"));
 
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 

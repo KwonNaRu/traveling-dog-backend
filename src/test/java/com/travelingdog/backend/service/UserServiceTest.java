@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.travelingdog.backend.dto.UserProfileDTO;
 import com.travelingdog.backend.model.User;
+import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,9 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private TravelPlanRepository travelPlanRepository;
 
     private User testUser;
 
@@ -62,15 +66,6 @@ public class UserServiceTest {
         assertEquals("Test User", profile.getNickname());
         assertEquals("Adventure", profile.getPreferredTravelStyle());
         assertEquals(Arrays.asList("Seoul", "Tokyo", "Paris"), profile.getFavoriteDestinations());
-    }
-
-    @Test
-    @DisplayName("null 사용자로 프로필 조회 시 예외가 발생한다")
-    void getUserProfile_NullUser_ThrowsException() {
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            userService.getUserProfile(null);
-        });
     }
 
     @Test

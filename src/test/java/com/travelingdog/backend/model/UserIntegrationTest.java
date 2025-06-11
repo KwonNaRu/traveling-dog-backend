@@ -23,8 +23,8 @@ import com.travelingdog.backend.status.PlanStatus;
 
 @Tag("integration")
 @DataJpaTest
-@ActiveProfiles("test")
 @Import(JpaAuditingConfigTest.class)
+@ActiveProfiles("test")
 public class UserIntegrationTest {
 
         @Autowired
@@ -137,7 +137,7 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))
@@ -170,7 +170,7 @@ public class UserIntegrationTest {
 
                 TravelPlan travelPlan = TravelPlan.builder()
                                 .title("Test Travel Plan")
-                                .country("South Korea")
+                                .country("Korea")
                                 .city("Seoul")
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(7))

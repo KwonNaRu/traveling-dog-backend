@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.travelingdog.backend.exception.DuplicateEmailException;
 import com.travelingdog.backend.exception.ExternalApiException;
@@ -31,6 +32,7 @@ import com.travelingdog.backend.exception.ResourceNotFoundException;
  * - 리소스 찾을 수 없음 예외 (ResourceNotFoundException)
  * - 잘못된 요청 예외 (InvalidRequestException)
  * - 외부 API 예외 (ExternalApiException)
+ * - 존재하지 않는 경로 예외 (NoHandlerFoundException)
  */
 @Tag("unit")
 public class GlobalExceptionHandlerTest {
@@ -90,6 +92,17 @@ public class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.errors.api").value("OpenAI API 호출 중 오류가 발생했습니다."));
     }
 
+    @Test
+    @DisplayName("NoHandlerFoundException 처리 테스트")
+    void handleNoHandlerFoundException() throws Exception {
+        // NoHandlerFoundException 직접 발생시키기
+        mockMvc.perform(get("/test/no-handler-found")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("요청한 리소스를 찾을 수 없습니다."));
+    }
+
     // 테스트용 컨트롤러
     @RestController
     @RequestMapping("/test")
@@ -113,6 +126,11 @@ public class GlobalExceptionHandlerTest {
         @GetMapping("/external-api-error")
         public void throwExternalApiException() {
             throw new ExternalApiException("OpenAI API 호출 중 오류가 발생했습니다.");
+        }
+
+        @GetMapping("/no-handler-found")
+        public void throwNoHandlerFoundException() throws NoHandlerFoundException {
+            throw new NoHandlerFoundException("GET", "/non-existent-url", null);
         }
     }
 }

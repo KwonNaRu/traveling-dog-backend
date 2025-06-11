@@ -1,6 +1,7 @@
 package com.travelingdog.backend.dto.travelPlan;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,12 +12,6 @@ import lombok.Setter;
 @Setter
 public class TravelPlanRequest {
 
-    @NotBlank(message = "Title is required")
-    private String title;
-
-    @NotBlank(message = "Country is required")
-    private String country;
-
     @NotBlank(message = "City is required")
     private String city;
 
@@ -25,4 +20,22 @@ public class TravelPlanRequest {
 
     @NotNull(message = "End date is required")
     private LocalDate endDate;
+
+    @NotBlank(message = "Travel style is required")
+    private String travelStyle;
+
+    @NotBlank(message = "Budget is required")
+    private String budget;
+
+    @NotBlank(message = "Interests are required")
+    private String interests;
+
+    @NotBlank(message = "Accommodation is required")
+    private String accommodation;
+
+    @NotBlank(message = "Transportation is required")
+    private String transportation;
+
+    private List<UserSpecifiedAccommodation> userSpecifiedAccommodations;
+
 }

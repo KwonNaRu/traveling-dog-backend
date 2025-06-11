@@ -5,9 +5,31 @@ COPY . .
 # gradlew 파일에 실행 권한 추가
 RUN chmod +x ./gradlew
 
+# 빌드 인자를 환경 변수로 설정
+# ARG REDIS_HOST
+# ARG REDIS_PORT
+# ARG REDIS_PASSWORD
+# ARG REDIS_SSL
+
+# ENV REDIS_HOST=${REDIS_HOST}
+# ENV REDIS_PORT=${REDIS_PORT}
+# ENV REDIS_PASSWORD=${REDIS_PASSWORD}
+# ENV REDIS_SSL=${REDIS_SSL}
+# ENV CI=true
+
+# CI=true 환경 변수 설정 및 테스트 실행 (Azure Redis Cache 포트 사용)
+# RUN SPRING_PROFILES_ACTIVE=build ./gradlew test
+
+# # 테스트 성공 후 application-build.yml 삭제
+# RUN rm -f ./src/main/resources/application-build.yml
+
+# application-build.yml 없이 빌드 실행
 RUN SPRING_PROFILES_ACTIVE=dev ./gradlew build
 
 FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
+
+# 최종 이미지에서는 dev 프로필 사용
+ENV SPRING_PROFILES_ACTIVE=dev
 ENTRYPOINT ["java", "-jar", "app.jar"]
