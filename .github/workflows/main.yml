@@ -25,15 +25,14 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Build Docker image
         run: |
           docker buildx build --no-cache -f Dockerfile \
-            --platform linux/amd64 \
-            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" .
-
-      - name: Push Docker image to ACR
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest
+            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" \
+            --push .
 
       - name: Set up Azure CLI
         uses: azure/login@v1
