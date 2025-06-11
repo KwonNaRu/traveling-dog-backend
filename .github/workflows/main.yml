@@ -28,11 +28,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker buildx build --no-cache -f Dockerfile \
-            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" .
-
-      - name: Push Docker image to ACR
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest
+            --platform linux/amd64,linux/arm64 \
+            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" \
+            --push .
 
       - name: Set up Azure CLI
         uses: azure/login@v1
