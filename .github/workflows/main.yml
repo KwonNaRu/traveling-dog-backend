@@ -54,6 +54,15 @@ jobs:
             --from-literal=firebase-service-account='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Create ACR image pull secret
+        run: |
+          kubectl create secret docker-registry acr-secret \
+            --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
+            --docker-username=${{ secrets.ACR_USERNAME }} \
+            --docker-password=${{ secrets.ACR_PASSWORD }} \
+            --docker-email=kwonnaru@kakao.com \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy to AKS
         run: |
           kubectl apply -f k8s/deployment.yaml
