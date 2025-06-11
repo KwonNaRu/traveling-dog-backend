@@ -1,4 +1,4 @@
-name: Production Environment Deploy
+name: Production AKS Deploy
 
 on:
   push:
@@ -18,31 +18,44 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build Docker image
         run: |
-          docker buildx build --no-cache -f Dockerfile.production \
-            -t "${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest" .
+          docker buildx build --no-cache -f Dockerfile \
+            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" .
 
-      - name: Push Docker image to Docker Hub
+      - name: Push Docker image to ACR
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest
 
-      - name: Install sshpass
-        run: sudo apt-get install sshpass
+      - name: Set up Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure VM
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Get AKS credentials
         run: |
-          sshpass -p "${{ secrets.AZURE_SSH_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_SSH_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
-          docker pull ${{ secrets.DOCKER_USERNAME }}/travelingdog-backend:latest
-          docker-compose down
-          export CONFIG_SERVER_USERNAME="${{ secrets.CONFIG_SERVER_USERNAME }}"
-          export CONFIG_SERVER_PASSWORD="${{ secrets.CONFIG_SERVER_PASSWORD }}"
-          export FIREBASE_SERVICE_ACCOUNT='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          docker-compose up -d
-          EOF
+          az aks get-credentials --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Create Kubernetes secrets
+        run: |
+          kubectl create secret generic app-secrets \
+            --from-literal=config-server-username="${{ secrets.CONFIG_SERVER_USERNAME }}" \
+            --from-literal=config-server-password="${{ secrets.CONFIG_SERVER_PASSWORD }}" \
+            --from-literal=firebase-service-account='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
