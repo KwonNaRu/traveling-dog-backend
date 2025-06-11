@@ -31,7 +31,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker buildx build --no-cache -f Dockerfile \
-            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:latest" \
+            -t "${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:${{ github.sha }}" \
             --push .
 
       - name: Set up Azure CLI
