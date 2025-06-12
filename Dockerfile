@@ -8,7 +8,7 @@ RUN chmod +x ./gradlew
 # application-build.yml 없이 빌드 실행
 RUN SPRING_PROFILES_ACTIVE=prod ./gradlew clean bootJar
 
-FROM openjdk:21
+FROM arm64v8/openjdk:21-ea-21-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/build/libs/*SNAPSHOT.jar /app/app.jar
 
