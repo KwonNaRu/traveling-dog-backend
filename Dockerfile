@@ -1,4 +1,4 @@
-FROM arm64v8/gradle:jdk21 AS builder
+FROM gradle:jdk21 AS builder
 WORKDIR /app
 COPY . .
 
@@ -6,12 +6,12 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # application-build.yml 없이 빌드 실행
-RUN SPRING_PROFILES_ACTIVE=prod ./gradlew build
+RUN SPRING_PROFILES_ACTIVE=prod ./gradlew clean bootJar
 
-FROM arm64v8/openjdk:21
+FROM openjdk:21-jdk-slim
 WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar /app/
+COPY --from=builder /app/build/libs/*SNAPSHOT.jar /app/app.jar
 
 # 최종 이미지에서는 prod 프로필 사용
 ENV SPRING_PROFILES_ACTIVE=prod
-ENTRYPOINT ["sh", "-c", "java -jar /app/*.jar"]
+ENTRYPOINT ["sh", "-c", "java -jar /app/app.jar"]
