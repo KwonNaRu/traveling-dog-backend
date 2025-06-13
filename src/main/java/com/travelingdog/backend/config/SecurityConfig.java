@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/travel/plan/recent").permitAll()
+                                                .requestMatchers("/api/travel/plan/popular").permitAll()
                                                 .requestMatchers("/api/user/**").authenticated()
                                                 .requestMatchers("/api/protected/**").authenticated()
                                                 .requestMatchers("/api/travel/**").authenticated()
