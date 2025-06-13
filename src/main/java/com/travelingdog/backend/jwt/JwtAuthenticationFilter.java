@@ -34,47 +34,64 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            String token = null;
-            String requestPath = request.getHeader("X-Client-Type");
+            boolean isPublicEndpoint = isPublicEndpoint(request);
+            String token = extractToken(request, isPublicEndpoint);
 
-            // URL 패턴으로 앱 요청 구분
-            if (requestPath != null && requestPath.equals("APP")) {
-                // 앱 요청은 Bearer 토큰만 허용
-                token = extractBearerToken(request);
-                if (token == null) {
-                    throw new InvalidJwtException("앱 API는 Bearer 토큰이 필요합니다.");
-                }
-            } else {
-                // 일반 웹 요청은 쿠키만 허용
-                token = extractCookieToken(request);
-                // Bearer 토큰으로 시도하는 경우 차단
-                if (extractBearerToken(request) != null) {
-                    throw new InvalidJwtException("웹 API는 쿠키 기반 인증만 허용됩니다.");
-                }
-            }
-
-            // 토큰 유효성 검사 및 인증 처리
+            // 토큰이 있으면 인증 처리
             if (token != null) {
-                // 토큰 검증 - 예외가 발생하면 그대로 전파
                 jwtTokenProvider.validateToken(token);
-
-                // 인증 처리
                 processAuthentication(token, request);
             }
 
             filterChain.doFilter(request, response);
         } catch (InvalidJwtException | ExpiredJwtException e) {
-            // 예외를 Spring Security가 처리할 수 있는 인증 예외로 변환하여 전달
-            SecurityContextHolder.clearContext();
-            jwtAuthenticationEntryPoint.commence(request, response, e);
-            return;
+            handleAuthenticationException(request, response, e);
         } catch (Exception e) {
-            // 기타 예외도 인증 오류로 처리 (401)
-            SecurityContextHolder.clearContext();
-            jwtAuthenticationEntryPoint.commence(request, response,
+            handleAuthenticationException(request, response,
                     new InsufficientAuthenticationException("인증 처리 중 오류 발생", e));
-            return;
         }
+    }
+
+    private boolean isPublicEndpoint(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/")
+                || path.equals("/api/travel/plan/recent")
+                || path.equals("/api/travel/plan/popular")
+                || path.matches("/api/travel/plan/\\d+");
+    }
+
+    private String extractToken(HttpServletRequest request, boolean isPublicEndpoint) {
+        String clientType = request.getHeader("X-Client-Type");
+        boolean isAppRequest = "APP".equals(clientType);
+
+        if (isAppRequest) {
+            return handleAppRequest(request, isPublicEndpoint);
+        } else {
+            return handleWebRequest(request, isPublicEndpoint);
+        }
+    }
+
+    private String handleAppRequest(HttpServletRequest request, boolean isPublicEndpoint) {
+        String token = extractBearerToken(request);
+        if (token == null && !isPublicEndpoint) {
+            throw new InvalidJwtException("앱 API는 Bearer 토큰이 필요합니다.");
+        }
+        return token;
+    }
+
+    private String handleWebRequest(HttpServletRequest request, boolean isPublicEndpoint) {
+        String token = extractCookieToken(request);
+        // Bearer 토큰 사용 시도를 차단 (공개 API는 제외)
+        if (extractBearerToken(request) != null && !isPublicEndpoint) {
+            throw new InvalidJwtException("웹 API는 쿠키 기반 인증만 허용됩니다.");
+        }
+        return token;
+    }
+
+    private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException e) throws IOException, ServletException {
+        SecurityContextHolder.clearContext();
+        jwtAuthenticationEntryPoint.commence(request, response, e);
     }
 
     // Bearer 토큰 추출 (앱용)
@@ -113,7 +130,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/api/auth/");
+        // 공개 API는 필터를 거치지 않음
+        return isPublicEndpoint(request);
     }
 }

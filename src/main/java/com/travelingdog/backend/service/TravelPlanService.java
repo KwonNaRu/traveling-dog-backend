@@ -289,8 +289,13 @@ public class TravelPlanService {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        if (!travelPlan.getStatus().equals(PlanStatus.PUBLISHED)
-                && !travelPlan.getUser().getId().equals(user.getId())) {
+        // 공개된 여행 계획은 누구나 조회 가능
+        if (travelPlan.getStatus().equals(PlanStatus.PUBLISHED)) {
+            return TravelPlanDTO.fromEntity(travelPlan);
+        }
+
+        // 비공개 여행 계획은 작성자만 조회 가능
+        if (user == null || !travelPlan.getUser().getId().equals(user.getId())) {
             throw new ForbiddenResourceAccessException("접근 금지된 여행 계획입니다.");
         }
 
