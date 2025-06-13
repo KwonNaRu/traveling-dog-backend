@@ -46,7 +46,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/travel/plan/recent").permitAll()
                                                 .requestMatchers("/api/travel/plan/popular").permitAll()
-                                                .requestMatchers("/api/travel/plan/{id}").permitAll()
+                                                .requestMatchers("/api/travel/plan/\\d+").permitAll()
                                                 .requestMatchers("/api/user/**").authenticated()
                                                 .requestMatchers("/api/protected/**").authenticated()
                                                 .requestMatchers("/api/travel/**").authenticated()
