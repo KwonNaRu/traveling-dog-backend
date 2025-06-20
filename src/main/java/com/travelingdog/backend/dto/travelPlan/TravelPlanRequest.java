@@ -24,9 +24,6 @@ public class TravelPlanRequest {
     @NotBlank(message = "Travel style is required")
     private String travelStyle;
 
-    @NotBlank(message = "Budget is required")
-    private String budget;
-
     @NotBlank(message = "Interests are required")
     private String interests;
 

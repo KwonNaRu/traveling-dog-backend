@@ -116,7 +116,6 @@ public class TravelPlanServiceUnitTest {
                 request.setStartDate(today);
                 request.setEndDate(endDate);
                 request.setTravelStyle("Adventure");
-                request.setBudget("Budget");
                 request.setInterests("Interests");
                 request.setAccommodation("Accommodation");
                 request.setTransportation("Transportation");
@@ -210,8 +209,7 @@ public class TravelPlanServiceUnitTest {
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
                                 .thenReturn(aiRecommendedTravelPlanDTO);
-                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(),
-                                any(), any()))
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
                                 .thenReturn("테스트 프롬프트");
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
@@ -359,7 +357,6 @@ public class TravelPlanServiceUnitTest {
                 dto.setStartDate(today.toString());
                 dto.setEndDate(today.plusDays(3).toString());
                 dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
-                dto.setBudget("Budget");
                 dto.setInterests(Arrays.asList("Interests"));
                 dto.setAccommodation(Arrays.asList("Accommodation"));
                 dto.setTransportation(Arrays.asList("Transportation"));

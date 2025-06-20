@@ -76,7 +76,7 @@ public class GptResponseHandlerTest {
     @DisplayName("정상적인 JSON 응답을 파싱할 수 있어야 한다")
     void testParseValidJson() {
         // Given
-        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":\"2024-07-01\",\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
+        String validJson = "{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":\"2024-07-01\",\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(validJson);
@@ -87,7 +87,6 @@ public class GptResponseHandlerTest {
         assertEquals("2024-07-01", result.getStartDate());
         assertEquals("2024-07-04", result.getEndDate());
         assertEquals(2, result.getTravelStyle().size());
-        assertEquals("100만원", result.getBudget());
         assertEquals("제주시", result.getDestination());
         assertEquals(2, result.getInterests().size());
         assertEquals(1, result.getAccommodation().size());
@@ -118,7 +117,7 @@ public class GptResponseHandlerTest {
     @DisplayName("코드 블록으로 감싸진 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonInCodeBlock() {
         // Given
-        String jsonInCodeBlock = "```json\n{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"budget\":\"100만원\",\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\",\"location_name\":\"성산일출봉\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
+        String jsonInCodeBlock = "```json\n{\"trip_name\":\"제주도 3박 4일 여행\",\"start_date\":\"2024-07-01\",\"end_date\":\"2024-07-04\",\"travel_style\":[\"해변\",\"자연 풍경 감상\"],\"destination\":\"제주시\",\"interests\":[\"맛집\",\"자연\"],\"accommodation\":[\"호텔\"],\"transportation\":[\"렌터카\"],\"itinerary\":[{\"date\":1,\"location\":\"성산일출봉\",\"activities\":[{\"title\":\"성산일출봉 등반\",\"description\":\"제주도의 상징적인 화산 등반\",\"location_name\":\"성산일출봉\"}]}],\"restaurant_recommendations\":[{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}],\"transportation_tips\":\"제주도는 렌터카를 이용하는 것이 가장 편리합니다.\"}";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonInCodeBlock);
@@ -129,7 +128,6 @@ public class GptResponseHandlerTest {
         assertEquals("2024-07-01", result.getStartDate());
         assertEquals("2024-07-04", result.getEndDate());
         assertEquals(2, result.getTravelStyle().size());
-        assertEquals("100만원", result.getBudget());
         assertEquals("제주시", result.getDestination());
         assertEquals(2, result.getInterests().size());
         assertEquals(1, result.getAccommodation().size());
@@ -153,7 +151,7 @@ public class GptResponseHandlerTest {
     @DisplayName("추가 텍스트가 포함된 JSON 응답을 파싱할 수 있어야 한다")
     void testParseJsonWithAdditionalText() {
         // Given
-        String jsonWithText = "```json{\"trip_name\": \"삿포로 3박 4일 맛집 여행\", \"start_date\": \"2025-04-02\", \"end_date\": \"2025-04-05\", \"travel_style\": [\"맛집 탐방\", \"역사 문화 체험\"], \"budget\": \"100만원\", \"destination\": \"삿포로\",\n  \"interests\": [\n    \"역사 문화재\",\n    \"유명 맛집 방문\"\n  ],\n  \"accommodation\": [\n    \"캡슐호텔\"\n  ],\n  \"transportation\": [\n    \"지하철\"\n  ],\n  \"itinerary\": [\n    {\n      \"date\": 1,\n      \"location\": \"삿포로 시내\",\n      \"activities\": [{\"title\": \"신치토세 공항\",\"description\": \"신치토세 공항 도착 및 삿포로 시내 이동\",\"location_name\":\"신치토세 공항\"},\n{\"title\": \"삿포로역\",\"description\": \"삿포로역 도착 및 캡슐호텔 체크인\",\"location_name\":\"삿포로역\"}]},{\"date\": 2,\"location\": \"오타루\",\"activities\": [{\"title\": \"오타루 운하\",\"description\": \"오타루 운하 관광 및 사진 촬영\",\"location_name\":\"오타루 운하\"},{\"title\": \"오르골당 본관\",\"description\": \"오르골당 본관 방문 및 오르골 구경\",\"location_name\":\"오르골당 본관\"}]},{\"date\": 3,\"location\": \"삿포로 시내\",\"activities\": [{\"title\": \"삿포로 맥주 박물관\",\"description\": \"삿포로 맥주 박물관 관람\",\"location_name\":\"삿포로 맥주 박물관\"},{\n\"title\": \"홋카이도청 구 본청사\",\n\"description\": \"홋카이도청 구 본청사 방문 및 역사 탐방\",\"location_name\":\"홋카이도청 구 본청사\"}]},{\"date\": 4,\n\"location\": \"귀국\",\n\"activities\": [\n{\n\"title\": \"신치토세 공항\",\n\"description\": \"신치토세 공항으로 이동 및 귀국 준비\",\"location_name\":\"신치토세 공항\"}]}],\"restaurant_recommendations\": [{\"location_name\": \"징기스칸 다루마 6.4점\",\"description\": \"삿포로 명물 징기스칸 맛집\"},{\"location_name\": \"스시젠 본점\",\"description\": \"오타루 유명 스시 맛집\"\n},\n{\n\"location_name\": \"게요리 전문점 카니혼케\",\"description\": \"삿포로 게요리 전문점\"}],\"transportation_tips\": \"삿포로는 지하철이 잘 되어 있어 지하철을 이용하는 것이 편리합니다. 삿포로 시내를 둘러보는 데는 지하철 1일권을 구매하는 것이 좋습니다. 오타루는 삿포로에서 JR로 이동할 수 있습니다.\"\n}\n```";
+        String jsonWithText = "```json{\"trip_name\": \"삿포로 3박 4일 맛집 여행\", \"start_date\": \"2025-04-02\", \"end_date\": \"2025-04-05\", \"travel_style\": [\"맛집 탐방\", \"역사 문화 체험\"],\"destination\": \"삿포로\",\n  \"interests\": [\n    \"역사 문화재\",\n    \"유명 맛집 방문\"\n  ],\n  \"accommodation\": [\n    \"캡슐호텔\"\n  ],\n  \"transportation\": [\n    \"지하철\"\n  ],\n  \"itinerary\": [\n    {\n      \"date\": 1,\n      \"location\": \"삿포로 시내\",\n      \"activities\": [{\"title\": \"신치토세 공항\",\"description\": \"신치토세 공항 도착 및 삿포로 시내 이동\",\"location_name\":\"신치토세 공항\"},\n{\"title\": \"삿포로역\",\"description\": \"삿포로역 도착 및 캡슐호텔 체크인\",\"location_name\":\"삿포로역\"}]},{\"date\": 2,\"location\": \"오타루\",\"activities\": [{\"title\": \"오타루 운하\",\"description\": \"오타루 운하 관광 및 사진 촬영\",\"location_name\":\"오타루 운하\"},{\"title\": \"오르골당 본관\",\"description\": \"오르골당 본관 방문 및 오르골 구경\",\"location_name\":\"오르골당 본관\"}]},{\"date\": 3,\"location\": \"삿포로 시내\",\"activities\": [{\"title\": \"삿포로 맥주 박물관\",\"description\": \"삿포로 맥주 박물관 관람\",\"location_name\":\"삿포로 맥주 박물관\"},{\n\"title\": \"홋카이도청 구 본청사\",\n\"description\": \"홋카이도청 구 본청사 방문 및 역사 탐방\",\"location_name\":\"홋카이도청 구 본청사\"}]},{\"date\": 4,\n\"location\": \"귀국\",\n\"activities\": [\n{\n\"title\": \"신치토세 공항\",\n\"description\": \"신치토세 공항으로 이동 및 귀국 준비\",\"location_name\":\"신치토세 공항\"}]}],\"restaurant_recommendations\": [{\"location_name\": \"징기스칸 다루마 6.4점\",\"description\": \"삿포로 명물 징기스칸 맛집\"},{\"location_name\": \"스시젠 본점\",\"description\": \"오타루 유명 스시 맛집\"\n},\n{\n\"location_name\": \"게요리 전문점 카니혼케\",\"description\": \"삿포로 게요리 전문점\"}],\"transportation_tips\": \"삿포로는 지하철이 잘 되어 있어 지하철을 이용하는 것이 편리합니다. 삿포로 시내를 둘러보는 데는 지하철 1일권을 구매하는 것이 좋습니다. 오타루는 삿포로에서 JR로 이동할 수 있습니다.\"\n}\n```";
 
         // When
         AIRecommendedTravelPlanDTO result = gptResponseHandler.parseGptResponse(jsonWithText);
@@ -164,7 +162,6 @@ public class GptResponseHandlerTest {
         assertEquals("2025-04-02", result.getStartDate());
         assertEquals("2025-04-05", result.getEndDate());
         assertEquals(2, result.getTravelStyle().size());
-        assertEquals("100만원", result.getBudget());
         assertEquals("삿포로", result.getDestination());
         assertEquals(2, result.getInterests().size());
         assertEquals(1, result.getAccommodation().size());
@@ -214,7 +211,6 @@ public class GptResponseHandlerTest {
         LocalDate startDate = today;
         LocalDate endDate = today.plusDays(3);
         String travelStyle = "해변, 자연 풍경 감상";
-        String budget = "100만원";
         String interests = "맛집, 자연";
         String accommodation = "호텔";
         String transportation = "렌터카";
@@ -226,7 +222,7 @@ public class GptResponseHandlerTest {
 
         // When
         String enhancedPrompt = gptResponseHandler.createEnhancedPrompt(city, startDate, endDate,
-                travelStyle, budget, interests, accommodation, transportation, userSpecifiedAccommodation);
+                travelStyle, interests, accommodation, transportation, userSpecifiedAccommodation);
 
         // Then
         assertNotNull(enhancedPrompt);
@@ -234,7 +230,6 @@ public class GptResponseHandlerTest {
         assertTrue(enhancedPrompt.contains(startDate.format(formatter)));
         assertTrue(enhancedPrompt.contains(endDate.format(formatter)));
         assertTrue(enhancedPrompt.contains(travelStyle));
-        assertTrue(enhancedPrompt.contains(budget));
         assertTrue(enhancedPrompt.contains(interests));
         assertTrue(enhancedPrompt.contains(accommodation));
         assertTrue(enhancedPrompt.contains(transportation));

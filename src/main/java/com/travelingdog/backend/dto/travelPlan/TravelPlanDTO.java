@@ -24,7 +24,6 @@ public class TravelPlanDTO {
         private LocalDate startDate;
         private LocalDate endDate;
         private List<TravelStyleDTO> travelStyles;
-        private String budget;
         private List<InterestDTO> interests;
         private List<AccommodationTypeDTO> accommodation;
         private List<TransportationTypeDTO> transportation;
@@ -51,7 +50,6 @@ public class TravelPlanDTO {
                                 .travelStyles(entity.getTravelStyles().stream()
                                                 .map(TravelStyleDTO::fromEntity)
                                                 .collect(Collectors.toList()))
-                                .budget(entity.getBudget())
                                 .interests(entity.getInterests().stream()
                                                 .map(InterestDTO::fromEntity)
                                                 .collect(Collectors.toList()))

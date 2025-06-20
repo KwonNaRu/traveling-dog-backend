@@ -27,8 +27,6 @@ public class AIRecommendedTravelPlanDTO {
     @JsonProperty("travel_style")
     private List<String> travelStyle;
 
-    private String budget;
-
     private String country;
 
     private String destination;
@@ -56,6 +54,8 @@ public class AIRecommendedTravelPlanDTO {
         private String locationName;
 
         private String description;
+
+        private String cost;
     }
 
 }

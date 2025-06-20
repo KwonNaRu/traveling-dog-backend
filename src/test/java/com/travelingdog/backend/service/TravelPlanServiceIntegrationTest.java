@@ -116,7 +116,6 @@ public class TravelPlanServiceIntegrationTest {
                                 .title("Test Travel Plan")
                                 .itineraries(new ArrayList<>())
                                 .startDate(today)
-                                .budget("Budget")
                                 .transportationTips("Transportation Tips")
                                 .travelStyles(new ArrayList<>())
                                 .interests(new ArrayList<>())
@@ -163,7 +162,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"start_date\":\"" + today + "\","
                                 + "\"end_date\":\"" + today.plusDays(7) + "\","
                                 + "\"travel_style\":[\"도시\",\"문화\"],"
-                                + "\"budget\":\"중간\","
                                 + "\"country\":\"한국\","
                                 + "\"destination\":\"서울\","
                                 + "\"interests\":[\"역사\",\"쇼핑\"],"
@@ -231,7 +229,6 @@ public class TravelPlanServiceIntegrationTest {
                 request.setStartDate(LocalDate.now());
                 request.setEndDate(LocalDate.now().plusDays(7));
                 request.setTravelStyle("Adventure");
-                request.setBudget("Budget");
                 request.setInterests("Interests");
                 request.setAccommodation("Accommodation");
                 request.setTransportation("Transportation");
@@ -271,7 +268,6 @@ public class TravelPlanServiceIntegrationTest {
                 secondRequest.setStartDate(LocalDate.now());
                 secondRequest.setEndDate(LocalDate.now().plusDays(7));
                 secondRequest.setTravelStyle("Adventure");
-                secondRequest.setBudget("Budget");
                 secondRequest.setInterests("Interests");
                 secondRequest.setAccommodation("Accommodation");
                 secondRequest.setTransportation("Transportation");

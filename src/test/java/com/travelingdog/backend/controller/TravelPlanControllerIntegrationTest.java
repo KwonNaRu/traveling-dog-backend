@@ -92,7 +92,6 @@ public class TravelPlanControllerIntegrationTest {
                 testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
                 testTravelPlan.setUser(testUser);
                 testTravelPlan.setStatus(PlanStatus.PUBLISHED);
-                testTravelPlan.setBudget("1000000");
                 testTravelPlan.setTravelStyles(new ArrayList<>());
                 testTravelPlan.setInterests(new ArrayList<>());
                 testTravelPlan.setAccommodationTypes(new ArrayList<>());
@@ -120,7 +119,6 @@ public class TravelPlanControllerIntegrationTest {
                 request.setStartDate(LocalDate.now().plusDays(10));
                 request.setEndDate(LocalDate.now().plusDays(15));
                 request.setTravelStyle("Adventure");
-                request.setBudget("1000000");
                 request.setInterests("Shopping, Food, Culture");
                 request.setAccommodation("Hotel");
                 request.setTransportation("Train, Bus");
@@ -153,7 +151,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setEndDate(LocalDate.now().plusDays(15));
                 mockResponse.setItineraries(itineraries);
                 mockResponse.setTravelStyles(new ArrayList<>());
-                mockResponse.setBudget("1000000");
                 mockResponse.setInterests(new ArrayList<>());
                 mockResponse.setAccommodation(new ArrayList<>());
                 mockResponse.setTransportation(new ArrayList<>());
@@ -202,7 +199,6 @@ public class TravelPlanControllerIntegrationTest {
                 dto.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                dto.setBudget(testTravelPlan.getBudget());
                 dto.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -260,7 +256,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                mockResponse.setBudget(testTravelPlan.getBudget());
                 mockResponse.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -302,7 +297,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                mockResponse.setBudget(testTravelPlan.getBudget());
                 mockResponse.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));

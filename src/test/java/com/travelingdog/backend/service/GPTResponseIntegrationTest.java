@@ -111,7 +111,6 @@ public class GPTResponseIntegrationTest {
                 request.setStartDate(today);
                 request.setEndDate(endDate);
                 request.setTravelStyle("해변, 자연 풍경 감상");
-                request.setBudget("100만원");
                 request.setInterests("맛집, 자연");
                 request.setAccommodation("호텔");
                 request.setTransportation("렌터카");
@@ -171,7 +170,6 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"start_date\":\"").append(startDate.format(formatter)).append("\",");
                 jsonBuilder.append("\"end_date\":\"").append(startDate.plusDays(3).format(formatter)).append("\",");
                 jsonBuilder.append("\"travel_style\":[\"해변\",\"자연 풍경 감상\"],");
-                jsonBuilder.append("\"budget\":\"100만원\",");
                 jsonBuilder.append("\"country\":\"한국\",");
                 jsonBuilder.append("\"destination\":\"제주시\",");
                 jsonBuilder.append("\"interests\":[\"맛집\",\"자연\"],");

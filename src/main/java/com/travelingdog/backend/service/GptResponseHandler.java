@@ -131,7 +131,7 @@ public class GptResponseHandler {
      * 강화된 프롬프트를 생성합니다.
      */
     public String createEnhancedPrompt(String city, LocalDate startDate, LocalDate endDate, String travelStyle,
-            String budget, String interests, String accommodation, String transportation,
+            String interests, String accommodation, String transportation,
             List<UserSpecifiedAccommodation> userSpecifiedAccommodation) {
         String userAccommodationJson;
         try {
@@ -155,7 +155,6 @@ public class GptResponseHandler {
                 + "\"start_date\": \"여행 시작일(YYYY-MM-DD 형식, 예: 2024-07-01)\","
                 + "\"end_date\": \"여행 종료일(YYYY-MM-DD 형식, 예: 2024-07-06)\","
                 + "\"travel_style\": [\"여행 스타일1(문자열, 예: 해변)\", \"여행 스타일2(문자열, 예: 자연 풍경 감상)\", ...],"
-                + "\"budget\": \"예산(문자열, 예: 100만원)\","
                 + "\"country\": \"국가(문자열, 예: 일본)\","
                 + "\"destination\": \"도시(문자열, 예: 오키나와)\","
                 + "\"interests\": [\"관심사1(문자열, 예: 유명 맛집 방문)\", \"관심사2(문자열, 예: 전통 축제 참여)\", ...],"
@@ -170,26 +169,31 @@ public class GptResponseHandler {
                 + "\"title\": \"활동명(문자열, 예: 호텔 조식)\","
                 + "\"location_name\": \"정확한 위치명(문자열, 예: 하카타 엑셀 호텔 도큐 조식 뷔페)\","
                 + "\"description\": \"활동 설명(문자열, 예: 호텔 조식 뷔페 이용)\""
+                + "\"cost\": \"예상 비용(문자열, 예: 150000원)\""
                 + "},"
                 + "{"
                 + "\"title\": \"활동명(문자열, 예: 캐널시티 하카타 방문)\","
                 + "\"location_name\": \"정확한 위치명(문자열, 예: 캐널시티 하카타 (Canal City Hakata))\","
                 + "\"description\": \"활동 설명(문자열, 예: 캐널시티 하카타 쇼핑 및 분수 쇼 관람)\""
+                + "\"cost\": \"예상 비용(문자열, 예: 10000원)\""
                 + "},"
                 + "{"
                 + "\"title\": \"활동명(문자열, 예: 점심 식사: 잇푸도 라멘 하카타점)\","
                 + "\"location_name\": \"정확한 위치명(문자열, 예: 잇푸도 라멘 하카타점 (Ippudo Ramen Hakata Branch))\","
                 + "\"description\": \"활동 설명(문자열, 예: 일본 라멘 체인점 잇푸도에서 점심 식사)\""
+                + "\"cost\": \"예상 비용(문자열, 예: 15000원)\""
                 + "},"
                 + "{"
                 + "\"title\": \"활동명(문자열, 예: 후쿠오카 공항 이동)\","
                 + "\"location_name\": \"정확한 위치명(문자열, 예: 후쿠오카 공항 (Fukuoka Airport))\","
                 + "\"description\": \"활동 설명(문자열, 예: 후쿠오카 공항으로 이동 및 출국 준비)\""
+                + "\"cost\": \"예상 비용(문자열, 예: 6000원)\""
                 + "},"
                 + "{"
                 + "\"title\": \"활동명(문자열, 예: 후쿠오카 공항 출국)\","
                 + "\"location_name\": \"정확한 위치명(문자열, 예: 후쿠오카 공항 (Fukuoka Airport))\","
                 + "\"description\": \"활동 설명(문자열, 예: 후쿠오카 공항에서 출국)\""
+                + "\"cost\": \"예상 비용(문자열, 예: 120000원)\""
                 + "},"
                 + "...]"
                 + "},"
@@ -215,7 +219,6 @@ public class GptResponseHandler {
                 + "입력 정보 - 여행 시작일: " + startDate
                 + ", 여행 종료일: " + endDate
                 + ", 여행 스타일: " + travelStyle
-                + ", 예산: " + budget
                 + ", 도시: " + city
                 + ", 관심사: " + interests
                 + ", 숙소 유형: " + accommodation

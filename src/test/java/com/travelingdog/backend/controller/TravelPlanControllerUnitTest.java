@@ -96,7 +96,6 @@ public class TravelPlanControllerUnitTest {
                 request.setStartDate(LocalDate.now().plusDays(1));
                 request.setEndDate(LocalDate.now().plusDays(5));
                 request.setTravelStyle("Cultural and historical exploration");
-                request.setBudget("1000000");
                 request.setInterests("Cultural heritage, historical sites");
                 request.setAccommodation("Hotel");
                 request.setTransportation("Public transportation");
@@ -110,7 +109,6 @@ public class TravelPlanControllerUnitTest {
                 travelPlanDTO.setStartDate(LocalDate.now().plusDays(1));
                 travelPlanDTO.setEndDate(LocalDate.now().plusDays(5));
                 travelPlanDTO.setTravelStyles(new ArrayList<>());
-                travelPlanDTO.setBudget("1000000");
                 travelPlanDTO.setInterests(new ArrayList<>());
                 travelPlanDTO.setAccommodation(new ArrayList<>());
                 travelPlanDTO.setTransportation(new ArrayList<>());
@@ -199,7 +197,6 @@ public class TravelPlanControllerUnitTest {
                                 .itineraries(new ArrayList<>())
                                 .city("Seoul")
                                 .travelStyles(new ArrayList<>())
-                                .budget("1000000")
                                 .interests(new ArrayList<>())
                                 .accommodation(new ArrayList<>())
                                 .transportation(new ArrayList<>())
