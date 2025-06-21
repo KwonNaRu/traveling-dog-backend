@@ -286,6 +286,64 @@ public class TravelPlanControllerUnitTest {
         }
 
         /**
+         * 여행 계획 생성 - 선택사항 필드들이 null인 경우 처리 테스트
+         */
+        @Test
+        @WithMockCustomUser(email = "test@example.com", roles = "USER")
+        public void testCreateTravelPlan_WithNullOptionalFields() throws Exception {
+                // Given
+                TravelPlanRequest requestWithNullFields = new TravelPlanRequest();
+                requestWithNullFields.setCity("Seoul");
+                requestWithNullFields.setStartDate(LocalDate.now().plusDays(1));
+                requestWithNullFields.setEndDate(LocalDate.now().plusDays(3));
+                // travelStyle, interests, accommodation, transportation은 null로 둠
+                requestWithNullFields.setTravelStyle(null);
+                requestWithNullFields.setInterests(null);
+                requestWithNullFields.setAccommodation(null);
+                requestWithNullFields.setTransportation(null);
+
+                when(travelPlanService.createTravelPlan(any(TravelPlanRequest.class), any(User.class)))
+                                .thenReturn(travelPlanDTO);
+
+                // When & Then
+                mockMvc.perform(post("/api/travel/plan")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(requestWithNullFields)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.itineraries.length()").value(1));
+        }
+
+        /**
+         * 여행 계획 생성 - 선택사항 필드들이 빈 문자열인 경우 처리 테스트
+         */
+        @Test
+        @WithMockCustomUser(email = "test@example.com", roles = "USER")
+        public void testCreateTravelPlan_WithEmptyOptionalFields() throws Exception {
+                // Given
+                TravelPlanRequest requestWithEmptyFields = new TravelPlanRequest();
+                requestWithEmptyFields.setCity("Seoul");
+                requestWithEmptyFields.setStartDate(LocalDate.now().plusDays(1));
+                requestWithEmptyFields.setEndDate(LocalDate.now().plusDays(3));
+                // travelStyle, interests, accommodation, transportation을 빈 문자열로 설정
+                requestWithEmptyFields.setTravelStyle("");
+                requestWithEmptyFields.setInterests("");
+                requestWithEmptyFields.setAccommodation("");
+                requestWithEmptyFields.setTransportation("");
+
+                when(travelPlanService.createTravelPlan(any(TravelPlanRequest.class), any(User.class)))
+                                .thenReturn(travelPlanDTO);
+
+                // When & Then
+                mockMvc.perform(post("/api/travel/plan")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(requestWithEmptyFields)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.itineraries.length()").value(1));
+        }
+
+        /**
          * 여행 계획 업데이트 - 다른 사용자의 여행 계획 업데이트 실패 테스트
          */
         @Test

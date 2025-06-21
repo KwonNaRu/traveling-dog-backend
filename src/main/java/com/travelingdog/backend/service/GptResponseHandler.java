@@ -133,19 +133,51 @@ public class GptResponseHandler {
     public String createEnhancedPrompt(String city, LocalDate startDate, LocalDate endDate, String travelStyle,
             String interests, String accommodation, String transportation,
             List<UserSpecifiedAccommodation> userSpecifiedAccommodation) {
+
         String userAccommodationJson;
         try {
             userAccommodationJson = objectMapper.writeValueAsString(userSpecifiedAccommodation);
         } catch (JsonProcessingException e) {
-            // 예외 발생 시 기본값 제공
             userAccommodationJson = "숙소 정보가 없습니다.";
-            // 또는 로그 기록
             log.error("숙소 정보 변환 중 오류 발생: {}", e.getMessage());
+        }
+
+        // 값이 있는 경우에만 프롬프트에 포함할 추가 정보 생성
+        StringBuilder additionalInfo = new StringBuilder();
+        additionalInfo.append("입력 정보 - 여행 시작일: ").append(startDate);
+        additionalInfo.append(", 여행 종료일: ").append(endDate);
+        additionalInfo.append(", 도시: ").append(city);
+
+        if (travelStyle != null && !travelStyle.trim().isEmpty()) {
+            additionalInfo.append(", 여행 스타일: ").append(travelStyle);
+        }
+
+        if (interests != null && !interests.trim().isEmpty()) {
+            additionalInfo.append(", 관심사: ").append(interests);
+        }
+
+        if (accommodation != null && !accommodation.trim().isEmpty()) {
+            additionalInfo.append(", 숙소 유형: ").append(accommodation);
+        }
+
+        if (transportation != null && !transportation.trim().isEmpty()) {
+            additionalInfo.append(", 교통 수단: ").append(transportation);
+        }
+
+        additionalInfo.append(".");
+
+        // 숙소 관련 지시사항 - accommodation이 있는 경우에만 특별 지시
+        String accommodationInstruction = "";
+        if (accommodation != null && !accommodation.trim().isEmpty()) {
+            accommodationInstruction = "만약 특정 날짜에 숙소 정보가 없다면, '" + accommodation
+                    + "'를 기반으로 여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택하여 해당 숙소 정보를 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함시켜줘. ";
+        } else {
+            accommodationInstruction = "사용자가 별도로 숙소 유형을 지정하지 않았으므로, 해당 도시에 적합한 일반적인 숙소를 추천해줘. ";
         }
 
         return "다음 정보를 기반으로, 사용자의 여행 계획을 JSON 형식으로 생성해줘. 각 날짜별 일정에는 활동 정보가 'activities' 배열에 포함되어야 하며, 각 항목은 활동 제목, 설명, 위치 이름을 포함해야 해."
                 + "사용자가 특정 날짜에 숙소를 지정했다면, 해당 숙소 정보가 그 날짜의 'activities' 배열에 포함되어야 해."
-                + "만약 특정 날짜에 숙소 정보가 없다면, 'accommodation'를 기반으로 **여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택**하여 해당 숙소 정보가 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함되어야 해."
+                + accommodationInstruction
                 + "점심과 저녁 식사도 각각 하나의 활동으로 포함되어야 해."
                 + "'activities'에 포함되지 않은 추가적인 맛집과 숙소 추천 정보도 제공해줘."
                 + "여행 시작일과 종료일, 그리고 사용자가 지정한 숙소 정보 및 선호 숙소 정보를 바탕으로 여행 계획을 생성해줘."
@@ -214,15 +246,7 @@ public class GptResponseHandler {
                 + "특히 'location_name' 필드에는 구글맵에서 정확하게 검색될 수 있는 위치의 명칭을 기재해야 합니다."
                 + "사용자가 다음과 같이 숙소를 지정했습니다:" + userAccommodationJson + "."
                 + "각 날짜별로 지정된 숙소가 있다면, 해당 숙소 이름을 해당 날짜의 'activities' 배열에 포함시켜줘."
-                + "만약 특정 날짜에 숙소 정보가 없다면, '" + accommodation
-                + "'를 기반으로 여행 전체 기간 동안 사용할 하나의 추천 숙소를 선택하여 해당 숙소 정보를 숙소가 지정되지 않은 모든 날짜의 'activities' 배열에 포함시켜줘. "
-                + "입력 정보 - 여행 시작일: " + startDate
-                + ", 여행 종료일: " + endDate
-                + ", 여행 스타일: " + travelStyle
-                + ", 도시: " + city
-                + ", 관심사: " + interests
-                + ", 숙소 유형: " + accommodation
-                + ", 교통 수단: " + transportation + ".";
+                + additionalInfo.toString();
     }
 
     /**

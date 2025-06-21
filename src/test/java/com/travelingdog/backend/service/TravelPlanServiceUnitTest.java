@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -225,6 +226,130 @@ public class TravelPlanServiceUnitTest {
 
                 // 저장소 호출 검증
                 verify(travelPlanRepository).save(any(TravelPlan.class));
+        }
+
+        /**
+         * 여행 계획 생성 - 선택사항 필드들이 null인 경우 테스트
+         */
+        @Test
+        @DisplayName("여행 계획 생성 - 선택사항 필드들이 null인 경우")
+        void testCreateTravelPlan_WithNullOptionalFields() {
+                // RestClient 모킹 설정
+                RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
+                when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
+
+                // Given
+                TravelPlanRequest requestWithNullFields = new TravelPlanRequest();
+                requestWithNullFields.setCity("Seoul");
+                requestWithNullFields.setStartDate(today);
+                requestWithNullFields.setEndDate(today.plusDays(3));
+                // 선택사항 필드들을 null로 설정
+                requestWithNullFields.setTravelStyle(null);
+                requestWithNullFields.setInterests(null);
+                requestWithNullFields.setAccommodation(null);
+                requestWithNullFields.setTransportation(null);
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO("Seoul");
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
+
+                // GptResponseHandler 모킹
+                when(gptResponseHandler.parseGptResponse(any(String.class)))
+                                .thenReturn(aiRecommendedTravelPlanDTO);
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
+                                .thenReturn("테스트 프롬프트");
+                when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
+
+                // When
+                TravelPlanDTO result = tripPlanService.createTravelPlan(requestWithNullFields, user);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(requestWithNullFields.getStartDate(), result.getStartDate());
+                assertEquals(requestWithNullFields.getEndDate(), result.getEndDate());
+                assertEquals(requestWithNullFields.getCity(), result.getCity());
+
+                // 저장소 호출 검증
+                verify(travelPlanRepository).save(any(TravelPlan.class));
+                // createEnhancedPrompt가 null 값들과 함께 호출되었는지 검증
+                verify(gptResponseHandler).createEnhancedPrompt(
+                                eq("Seoul"),
+                                eq(today),
+                                eq(today.plusDays(3)),
+                                eq(null), // travelStyle
+                                eq(null), // interests
+                                eq(null), // accommodation
+                                eq(null), // transportation
+                                any());
+        }
+
+        /**
+         * 여행 계획 생성 - 선택사항 필드들이 빈 문자열인 경우 테스트
+         */
+        @Test
+        @DisplayName("여행 계획 생성 - 선택사항 필드들이 빈 문자열인 경우")
+        void testCreateTravelPlan_WithEmptyOptionalFields() {
+                // RestClient 모킹 설정
+                RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
+                when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
+
+                // Given
+                TravelPlanRequest requestWithEmptyFields = new TravelPlanRequest();
+                requestWithEmptyFields.setCity("Seoul");
+                requestWithEmptyFields.setStartDate(today);
+                requestWithEmptyFields.setEndDate(today.plusDays(3));
+                // 선택사항 필드들을 빈 문자열로 설정
+                requestWithEmptyFields.setTravelStyle("");
+                requestWithEmptyFields.setInterests("");
+                requestWithEmptyFields.setAccommodation("");
+                requestWithEmptyFields.setTransportation("");
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO("Seoul");
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
+
+                // GptResponseHandler 모킹
+                when(gptResponseHandler.parseGptResponse(any(String.class)))
+                                .thenReturn(aiRecommendedTravelPlanDTO);
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
+                                .thenReturn("테스트 프롬프트");
+                when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
+
+                // When
+                TravelPlanDTO result = tripPlanService.createTravelPlan(requestWithEmptyFields, user);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(requestWithEmptyFields.getStartDate(), result.getStartDate());
+                assertEquals(requestWithEmptyFields.getEndDate(), result.getEndDate());
+                assertEquals(requestWithEmptyFields.getCity(), result.getCity());
+
+                // 저장소 호출 검증
+                verify(travelPlanRepository).save(any(TravelPlan.class));
+                // createEnhancedPrompt가 빈 문자열들과 함께 호출되었는지 검증
+                verify(gptResponseHandler).createEnhancedPrompt(
+                                eq("Seoul"),
+                                eq(today),
+                                eq(today.plusDays(3)),
+                                eq(""), // travelStyle
+                                eq(""), // interests
+                                eq(""), // accommodation
+                                eq(""), // transportation
+                                any());
         }
 
         /**
