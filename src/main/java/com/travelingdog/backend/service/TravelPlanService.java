@@ -483,16 +483,20 @@ public class TravelPlanService {
      * 위치로 여행 계획 필터링
      */
     private Page<TravelPlan> searchByLocation(String city, String country, String sortBy, PageRequest pageRequest) {
+        // null이나 빈 문자열을 안전하게 처리
+        String safeCity = (city != null && !city.trim().isEmpty()) ? city.trim() : "";
+        String safeCountry = (country != null && !country.trim().isEmpty()) ? country.trim() : "";
+
         switch (sortBy.toLowerCase()) {
             case "popular":
-                return travelPlanRepository.findByLocationOrderByPopular(city, country, PlanStatus.PUBLISHED,
+                return travelPlanRepository.findByLocationOrderByPopular(safeCity, safeCountry, PlanStatus.PUBLISHED,
                         pageRequest);
             case "oldest":
-                return travelPlanRepository.findByLocationOrderByOldest(city, country, PlanStatus.PUBLISHED,
+                return travelPlanRepository.findByLocationOrderByOldest(safeCity, safeCountry, PlanStatus.PUBLISHED,
                         pageRequest);
             case "recent":
             default:
-                return travelPlanRepository.findByLocationOrderByRecent(city, country, PlanStatus.PUBLISHED,
+                return travelPlanRepository.findByLocationOrderByRecent(safeCity, safeCountry, PlanStatus.PUBLISHED,
                         pageRequest);
         }
     }
@@ -501,14 +505,15 @@ public class TravelPlanService {
      * 전체 여행 계획 조회 (정렬 기준에 따라)
      */
     private Page<TravelPlan> getAllTravelPlans(String sortBy, PageRequest pageRequest) {
+        // null 대신 빈 문자열 전달
         switch (sortBy.toLowerCase()) {
             case "popular":
-                return travelPlanRepository.findByLocationOrderByPopular(null, null, PlanStatus.PUBLISHED, pageRequest);
+                return travelPlanRepository.findByLocationOrderByPopular("", "", PlanStatus.PUBLISHED, pageRequest);
             case "oldest":
-                return travelPlanRepository.findByLocationOrderByOldest(null, null, PlanStatus.PUBLISHED, pageRequest);
+                return travelPlanRepository.findByLocationOrderByOldest("", "", PlanStatus.PUBLISHED, pageRequest);
             case "recent":
             default:
-                return travelPlanRepository.findByLocationOrderByRecent(null, null, PlanStatus.PUBLISHED, pageRequest);
+                return travelPlanRepository.findByLocationOrderByRecent("", "", PlanStatus.PUBLISHED, pageRequest);
         }
     }
 

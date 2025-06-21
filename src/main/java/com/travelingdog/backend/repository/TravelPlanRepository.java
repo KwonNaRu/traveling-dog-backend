@@ -110,8 +110,8 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      * @return 필터링된 여행 계획 페이지
      */
     @Query("SELECT p FROM TravelPlan p WHERE p.status = :status AND " +
-            "(:city IS NULL OR LOWER(p.city) = LOWER(:city)) AND " +
-            "(:country IS NULL OR LOWER(p.country) = LOWER(:country)) " +
+            "(:city = '' OR LOWER(p.city) = LOWER(:city)) AND " +
+            "(:country = '' OR LOWER(p.country) = LOWER(:country)) " +
             "ORDER BY p.likeCount DESC, p.createdAt DESC")
     Page<TravelPlan> findByLocationOrderByPopular(@Param("city") String city,
             @Param("country") String country,
@@ -128,8 +128,8 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      * @return 필터링된 여행 계획 페이지
      */
     @Query("SELECT p FROM TravelPlan p WHERE p.status = :status AND " +
-            "(:city IS NULL OR LOWER(p.city) = LOWER(:city)) AND " +
-            "(:country IS NULL OR LOWER(p.country) = LOWER(:country)) " +
+            "(:city = '' OR LOWER(p.city) = LOWER(:city)) AND " +
+            "(:country = '' OR LOWER(p.country) = LOWER(:country)) " +
             "ORDER BY p.createdAt DESC")
     Page<TravelPlan> findByLocationOrderByRecent(@Param("city") String city,
             @Param("country") String country,
@@ -146,8 +146,8 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
      * @return 필터링된 여행 계획 페이지
      */
     @Query("SELECT p FROM TravelPlan p WHERE p.status = :status AND " +
-            "(:city IS NULL OR LOWER(p.city) = LOWER(:city)) AND " +
-            "(:country IS NULL OR LOWER(p.country) = LOWER(:country)) " +
+            "(:city = '' OR LOWER(p.city) = LOWER(:city)) AND " +
+            "(:country = '' OR LOWER(p.country) = LOWER(:country)) " +
             "ORDER BY p.createdAt ASC")
     Page<TravelPlan> findByLocationOrderByOldest(@Param("city") String city,
             @Param("country") String country,
