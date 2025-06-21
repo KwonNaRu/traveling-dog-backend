@@ -33,7 +33,7 @@ import org.springframework.web.client.RestClient.ResponseSpec;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO.Location;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
-import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO;
+// import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO; // 별도 API로 분리됨
 import com.travelingdog.backend.dto.gemini.GeminiCandidate;
 import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
@@ -469,14 +469,15 @@ public class TravelPlanServiceUnitTest {
                 itinerary.setDate("2024-05-10");
                 itinerary.setActivities(Arrays.asList(location, location));
 
-                LocationDTO locationDTO = new LocationDTO();
-                locationDTO.setLocationName(name);
-                locationDTO.setDescription("Description");
+                // LocationDTO locationDTO = new LocationDTO();
+                // locationDTO.setLocationName(name);
+                // locationDTO.setDescription("Description"); // 별도 API로 분리됨
 
                 AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
                 dto.setDestination(name);
                 dto.setItinerary(Arrays.asList(itinerary, itinerary));
-                dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO));
+                // dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO)); //
+                // 별도 API로 분리됨
                 dto.setTransportationTips("Transportation Tips");
                 dto.setTripName("Test Travel Plan");
                 dto.setStartDate(today.toString());

@@ -72,6 +72,7 @@ public class Itinerary {
                 activityEntity.setTitle(activity.getTitle());
                 activityEntity.setDescription(activity.getDescription());
                 activityEntity.setLocationName(activity.getLocationName());
+                activityEntity.setCost(activity.getCost());
                 itinerary.addActivity(activityEntity); // 연관관계 메서드 사용
             }
         }

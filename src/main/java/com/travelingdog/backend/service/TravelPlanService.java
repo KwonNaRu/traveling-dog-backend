@@ -42,7 +42,7 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.model.Interest;
 import com.travelingdog.backend.model.AccommodationType;
 import com.travelingdog.backend.model.Transportation;
-import com.travelingdog.backend.model.RestaurantRecommendation;
+
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
@@ -110,16 +110,7 @@ public class TravelPlanService {
                     travelPlan.addTransportation(transportationType);
                 }
             }
-            // RestaurantRecommendation
-            if (aiRecommendedPlan.getRestaurantRecommendations() != null) {
-                for (var recommendation : aiRecommendedPlan.getRestaurantRecommendations()) {
-                    RestaurantRecommendation restaurantRecommendation = RestaurantRecommendation.builder()
-                            .locationName(recommendation.getLocationName())
-                            .description(recommendation.getDescription())
-                            .build();
-                    travelPlan.addRestaurantRecommendation(restaurantRecommendation);
-                }
-            }
+
             // Itinerary (fromDto에서 travelPlan 세팅됨)
             List<Itinerary> itineraries = aiRecommendedPlan.getItinerary().stream()
                     .map(dto -> Itinerary.fromDto(dto, travelPlan))

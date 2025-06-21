@@ -121,7 +121,7 @@ public class TravelPlanServiceIntegrationTest {
                                 .interests(new ArrayList<>())
                                 .accommodationTypes(new ArrayList<>())
                                 .transportationTypes(new ArrayList<>())
-                                .restaurantRecommendations(new ArrayList<>())
+                                // .restaurantRecommendations(new ArrayList<>()) // 별도 API로 분리됨
                                 .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
@@ -175,7 +175,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "   \"activities\":[{\"title\":\"남산타워\",\"location_name\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
-                                + "\"restaurant_recommendations\":[{\"location_name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 

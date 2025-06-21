@@ -97,7 +97,8 @@ public class TravelPlanControllerIntegrationTest {
                 testTravelPlan.setAccommodationTypes(new ArrayList<>());
                 testTravelPlan.setTransportationTypes(new ArrayList<>());
                 testTravelPlan.setItineraries(new ArrayList<>());
-                testTravelPlan.setRestaurantRecommendations(new ArrayList<>());
+                // testTravelPlan.setRestaurantRecommendations(new ArrayList<>()); // 별도 API로
+                // 분리됨
                 testTravelPlan.setLikes(new ArrayList<>());
                 testTravelPlan.setViewCount(0);
                 travelPlanRepository.save(testTravelPlan);

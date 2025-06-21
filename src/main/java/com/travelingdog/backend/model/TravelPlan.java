@@ -91,10 +91,6 @@ public class TravelPlan extends BaseTimeEntity {
     @Builder.Default
     private List<Transportation> transportationTypes = new ArrayList<>(); // 교통 수단 리스트
 
-    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<RestaurantRecommendation> restaurantRecommendations = new ArrayList<>(); // 맛집 추천 리스트
-
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default
     private List<PlanLike> likes = new ArrayList<>();
@@ -143,11 +139,6 @@ public class TravelPlan extends BaseTimeEntity {
     public void addTransportation(Transportation transportation) {
         transportationTypes.add(transportation);
         transportation.setTravelPlan(this);
-    }
-
-    public void addRestaurantRecommendation(RestaurantRecommendation recommendation) {
-        restaurantRecommendations.add(recommendation);
-        recommendation.setTravelPlan(this);
     }
 
     public void softDelete() {
