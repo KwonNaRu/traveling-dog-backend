@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.UnauthorizedException;
 import com.travelingdog.backend.model.User;
@@ -70,28 +72,23 @@ public class TravelPlanController {
                 return ResponseEntity.ok(travelPlanDTOs);
         }
 
-        @Operation(summary = "인기 여행 리스트 조회", description = "인기 여행 리스트를 조회합니다.")
+        @Operation(summary = "여행 계획 검색", description = "키워드, 도시, 국가 등으로 여행 계획을 검색합니다.")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "인기 여행 리스트 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
+                        @ApiResponse(responseCode = "200", description = "여행 계획 검색 성공", content = @Content(schema = @Schema(implementation = TravelPlanSearchResponse.class))),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @GetMapping("/popular")
-        public ResponseEntity<List<TravelPlanDTO>> getPopularTravelPlanList() {
-                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getPopularTravelPlanList();
-                return ResponseEntity.ok(travelPlanDTOs);
-        }
+        @PostMapping("/search")
+        public ResponseEntity<TravelPlanSearchResponse> searchTravelPlans(
+                        @Parameter(description = "검색 조건", required = false) @RequestBody(required = false) TravelPlanSearchRequest searchRequest) {
 
-        @Operation(summary = "최근 여행 계획 조회", description = "최근 여행 계획을 조회합니다.")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "최근 여행 계획 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
-                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-                        @ApiResponse(responseCode = "500", description = "서버 오류")
-        })
-        @GetMapping("/recent")
-        public ResponseEntity<List<TravelPlanDTO>> getRecentTravelPlanList() {
-                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getRecentTravelPlanList();
-                return ResponseEntity.ok(travelPlanDTOs);
+                // 요청이 null인 경우 기본값으로 초기화
+                if (searchRequest == null) {
+                        searchRequest = new TravelPlanSearchRequest();
+                }
+
+                TravelPlanSearchResponse response = travelPlanService.searchTravelPlans(searchRequest);
+                return ResponseEntity.ok(response);
         }
 
         @Operation(summary = "여행 계획 좋아요 조회", description = "여행 계획을 좋아요 조회합니다.")

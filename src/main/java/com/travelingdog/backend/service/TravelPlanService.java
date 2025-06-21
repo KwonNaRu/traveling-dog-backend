@@ -7,6 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +32,8 @@ import com.travelingdog.backend.dto.gpt.AIChatResponse;
 import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
@@ -376,26 +381,8 @@ public class TravelPlanService {
         return TravelPlanDTO.fromEntity(travelPlan);
     }
 
-    /**
-     * 인기 여행 계획 목록 조회
-     */
-    public List<TravelPlanDTO> getPopularTravelPlanList() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByLikeCountDesc(PlanStatus.PUBLISHED,
-                pageRequest);
-        return travelPlans.stream()
-                .map(TravelPlanDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<TravelPlanDTO> getRecentTravelPlanList() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByCreatedAtDesc(PlanStatus.PUBLISHED,
-                pageRequest);
-        return travelPlans.stream()
-                .map(TravelPlanDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
+    // 기존의 getPopularTravelPlanList()와 getRecentTravelPlanList() 메서드는
+    // 이제 searchTravelPlans() 메서드로 통합되어 제거되었습니다.
 
     /**
      * 여행 계획 좋아요 추가
@@ -437,6 +424,92 @@ public class TravelPlanService {
                 .map(PlanLike::getTravelPlan)
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 여행 계획 검색
+     */
+    public TravelPlanSearchResponse searchTravelPlans(TravelPlanSearchRequest searchRequest) {
+        PageRequest pageRequest = PageRequest.of(searchRequest.getPage(), searchRequest.getSize());
+        Page<TravelPlan> travelPlansPage;
+
+        // 키워드가 있는 경우 키워드 검색
+        if (searchRequest.getKeyword() != null && !searchRequest.getKeyword().trim().isEmpty()) {
+            travelPlansPage = searchByKeyword(searchRequest.getKeyword(), searchRequest.getSortBy(), pageRequest);
+        }
+        // 도시나 국가 필터가 있는 경우 위치 필터링
+        else if ((searchRequest.getCity() != null && !searchRequest.getCity().trim().isEmpty()) ||
+                (searchRequest.getCountry() != null && !searchRequest.getCountry().trim().isEmpty())) {
+            travelPlansPage = searchByLocation(searchRequest.getCity(), searchRequest.getCountry(),
+                    searchRequest.getSortBy(), pageRequest);
+        }
+        // 조건이 없는 경우 전체 목록을 정렬 기준에 따라 조회
+        else {
+            travelPlansPage = getAllTravelPlans(searchRequest.getSortBy(), pageRequest);
+        }
+
+        // Page를 TravelPlanSearchResponse로 변환
+        return TravelPlanSearchResponse.builder()
+                .content(travelPlansPage.getContent().stream()
+                        .map(TravelPlanDTO::fromEntity)
+                        .collect(Collectors.toList()))
+                .page(travelPlansPage.getNumber())
+                .size(travelPlansPage.getSize())
+                .totalElements(travelPlansPage.getTotalElements())
+                .totalPages(travelPlansPage.getTotalPages())
+                .first(travelPlansPage.isFirst())
+                .last(travelPlansPage.isLast())
+                .sortBy(searchRequest.getSortBy())
+                .keyword(searchRequest.getKeyword())
+                .build();
+    }
+
+    /**
+     * 키워드로 여행 계획 검색
+     */
+    private Page<TravelPlan> searchByKeyword(String keyword, String sortBy, PageRequest pageRequest) {
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.searchByKeywordOrderByPopular(keyword, PlanStatus.PUBLISHED, pageRequest);
+            case "oldest":
+                return travelPlanRepository.searchByKeywordOrderByOldest(keyword, PlanStatus.PUBLISHED, pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.searchByKeywordOrderByRecent(keyword, PlanStatus.PUBLISHED, pageRequest);
+        }
+    }
+
+    /**
+     * 위치로 여행 계획 필터링
+     */
+    private Page<TravelPlan> searchByLocation(String city, String country, String sortBy, PageRequest pageRequest) {
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.findByLocationOrderByPopular(city, country, PlanStatus.PUBLISHED,
+                        pageRequest);
+            case "oldest":
+                return travelPlanRepository.findByLocationOrderByOldest(city, country, PlanStatus.PUBLISHED,
+                        pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.findByLocationOrderByRecent(city, country, PlanStatus.PUBLISHED,
+                        pageRequest);
+        }
+    }
+
+    /**
+     * 전체 여행 계획 조회 (정렬 기준에 따라)
+     */
+    private Page<TravelPlan> getAllTravelPlans(String sortBy, PageRequest pageRequest) {
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.findByLocationOrderByPopular(null, null, PlanStatus.PUBLISHED, pageRequest);
+            case "oldest":
+                return travelPlanRepository.findByLocationOrderByOldest(null, null, PlanStatus.PUBLISHED, pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.findByLocationOrderByRecent(null, null, PlanStatus.PUBLISHED, pageRequest);
+        }
     }
 
 }
