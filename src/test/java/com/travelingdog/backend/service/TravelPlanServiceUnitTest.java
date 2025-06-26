@@ -1,7 +1,9 @@
 package com.travelingdog.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,11 +44,14 @@ import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
+import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
+import com.travelingdog.backend.model.PlanLike;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.ItineraryRepository;
+import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -73,6 +78,9 @@ public class TravelPlanServiceUnitTest {
 
         @Mock
         private ItineraryRepository itineraryRepository;
+
+        @Mock
+        private PlanLikeRepository planLikeRepository;
 
         @InjectMocks
         private TravelPlanService tripPlanService;
@@ -456,6 +464,177 @@ public class TravelPlanServiceUnitTest {
          * @param name 장소 이름
          * @return 모의 AIRecommendedLocationDTO 객체
          */
+        /**
+         * 좋아요 추가 테스트 (토글 방식)
+         */
+        @Test
+        @DisplayName("좋아요 추가 기능 테스트")
+        void testAddLike() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.empty());
+
+                // When
+                tripPlanService.addLike(travelPlanId, otherUser);
+
+                // Then
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 이미 좋아요를 누른 상태에서 취소
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 취소")
+        void testToggleLikeRemove() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                PlanLike existingLike = PlanLike.builder()
+                                .user(otherUser)
+                                .travelPlan(travelPlan)
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.of(existingLike));
+
+                // When
+                boolean result = tripPlanService.toggleLike(travelPlanId, otherUser);
+
+                // Then
+                assertFalse(result); // 좋아요 취소됨
+                verify(planLikeRepository).delete(existingLike);
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 새로 좋아요 추가
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 추가")
+        void testToggleLikeAdd() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.empty());
+
+                // When
+                boolean result = tripPlanService.toggleLike(travelPlanId, otherUser);
+
+                // Then
+                assertTrue(result); // 좋아요 추가됨
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 자신의 여행 계획 좋아요 방지 테스트
+         */
+        @Test
+        @DisplayName("자신의 여행 계획 좋아요 방지 테스트")
+        void testAddLikeOwnPlan() {
+                // Given
+                Long travelPlanId = 1L;
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+
+                // When & Then
+                assertThrows(InvalidRequestException.class, () -> {
+                        tripPlanService.addLike(travelPlanId, user);
+                });
+        }
+
+        /**
+         * 좋아요 취소 테스트
+         */
+        @Test
+        @DisplayName("좋아요 취소 기능 테스트")
+        void testRemoveLike() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                PlanLike planLike = PlanLike.builder()
+                                .user(otherUser)
+                                .travelPlan(travelPlan)
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.of(planLike));
+
+                // When
+                tripPlanService.removeLike(travelPlanId, otherUser);
+
+                // Then
+                verify(planLikeRepository).delete(planLike);
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 상태 확인 테스트
+         */
+        @Test
+        @DisplayName("좋아요 상태 확인 테스트")
+        void testIsLiked() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.existsByUserAndTravelPlan(otherUser, travelPlan)).thenReturn(true);
+
+                // When
+                boolean result = tripPlanService.isLiked(travelPlanId, otherUser);
+
+                // Then
+                assertTrue(result);
+        }
+
         private AIRecommendedTravelPlanDTO createMockTravelPlanDTO(
                         String name) {
 

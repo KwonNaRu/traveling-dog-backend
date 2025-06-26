@@ -64,7 +64,7 @@ public class TravelPlanDTO {
                                                 .map(ItineraryDTO::fromEntity)
                                                 .collect(Collectors.toList()))
                                 .viewCount(entity.getViewCount())
-                                .likeCount(entity.getLikes().size())
+                                .likeCount(entity.getLikeCount())
                                 .status(entity.getStatus())
 
                                 .build();

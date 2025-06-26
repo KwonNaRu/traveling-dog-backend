@@ -518,6 +518,123 @@ public class TravelPlanServiceIntegrationTest {
                 });
         }
 
+        /**
+         * 좋아요 추가 테스트
+         */
+        @Test
+        @DisplayName("좋아요 추가 테스트")
+        void testAddLike() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser")
+                                .password("password123!")
+                                .email("other@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                // 공개된 여행 계획으로 설정
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                int initialLikeCount = travelPlan.getLikeCount();
+
+                // When
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+
+                // Then
+                TravelPlan updatedPlan = travelPlanRepository.findById(travelPlan.getId()).get();
+                assertEquals(initialLikeCount + 1, updatedPlan.getLikeCount());
+                assertTrue(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 중복 요청시 취소
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 중복 요청시 취소")
+        void testToggleLikeDuplicate() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser2")
+                                .password("password123!")
+                                .email("other2@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 첫 번째 좋아요 (추가)
+                boolean firstResult = travelPlanService.toggleLike(travelPlan.getId(), otherUser);
+                assertTrue(firstResult); // 좋아요 추가됨
+
+                // 두 번째 좋아요 (취소)
+                boolean secondResult = travelPlanService.toggleLike(travelPlan.getId(), otherUser);
+                assertFalse(secondResult); // 좋아요 취소됨
+
+                // 최종 상태 확인
+                assertFalse(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 좋아요 취소 테스트
+         */
+        @Test
+        @DisplayName("좋아요 취소 테스트")
+        void testRemoveLike() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser3")
+                                .password("password123!")
+                                .email("other3@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 좋아요 추가
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+                int likeCountAfterAdd = travelPlanRepository.findById(travelPlan.getId()).get().getLikeCount();
+
+                // When - 좋아요 취소
+                travelPlanService.removeLike(travelPlan.getId(), otherUser);
+
+                // Then
+                TravelPlan updatedPlan = travelPlanRepository.findById(travelPlan.getId()).get();
+                assertEquals(likeCountAfterAdd - 1, updatedPlan.getLikeCount());
+                assertFalse(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 사용자가 좋아요한 여행 계획 목록 조회 테스트
+         */
+        @Test
+        @DisplayName("사용자가 좋아요한 여행 계획 목록 조회 테스트")
+        void testGetLikedTravelPlanList() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser4")
+                                .password("password123!")
+                                .email("other4@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 좋아요 추가
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+
+                // When
+                List<TravelPlanDTO> likedPlans = travelPlanService.getLikedTravelPlanList(otherUser);
+
+                // Then
+                assertNotNull(likedPlans);
+                assertEquals(1, likedPlans.size());
+                assertEquals(travelPlan.getId(), likedPlans.get(0).getId());
+        }
+
         private void setAuthenticationUser(User user) {
                 // 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

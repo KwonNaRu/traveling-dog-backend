@@ -157,20 +157,20 @@ public class TravelPlanController {
                 return ResponseEntity.noContent().build(); // 204 No Content
         }
 
-        @Operation(summary = "여행 계획 좋아요 추가", description = "여행 계획을 좋아요 추가합니다.")
+        @Operation(summary = "여행 계획 좋아요 토글", description = "여행 계획 좋아요를 추가하거나 취소합니다. 이미 좋아요를 누른 상태면 취소하고, 아니면 추가합니다.")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "여행 계획 좋아요 추가 성공"),
+                        @ApiResponse(responseCode = "200", description = "좋아요 토글 성공 (true: 좋아요 추가됨, false: 좋아요 취소됨)"),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "401", description = "인증 실패"),
                         @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @PostMapping("/{id}/like")
-        public ResponseEntity<Void> addLike(@PathVariable("id") Long id,
+        public ResponseEntity<Boolean> toggleLike(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 
-                travelPlanService.addLike(id, user);
-                return ResponseEntity.noContent().build(); // 204 No Content
+                boolean isLiked = travelPlanService.toggleLike(id, user);
+                return ResponseEntity.ok(isLiked); // true: 좋아요 추가됨, false: 좋아요 취소됨
         }
 
         @Operation(summary = "여행 계획 좋아요 취소", description = "여행 계획을 좋아요 취소합니다.")
@@ -187,6 +187,22 @@ public class TravelPlanController {
 
                 travelPlanService.removeLike(id, user);
                 return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        @Operation(summary = "여행 계획 좋아요 상태 확인", description = "사용자가 특정 여행 계획에 좋아요를 눌렀는지 확인합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "좋아요 상태 확인 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "404", description = "여행 계획을 찾을 수 없음"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @GetMapping("/{id}/like/status")
+        public ResponseEntity<Boolean> getLikeStatus(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                boolean isLiked = travelPlanService.isLiked(id, user);
+                return ResponseEntity.ok(isLiked);
         }
 
         @Operation(summary = "여행 계획 공개", description = "여행 계획을 공개합니다.")

@@ -325,4 +325,56 @@ public class TravelPlanControllerIntegrationTest {
                 mockMvc.perform(delete("/api/travel/plan/{id}", testTravelPlan.getId()))
                                 .andExpect(status().isNoContent());
         }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testToggleLike() throws Exception {
+                // Given
+                when(travelPlanService.toggleLike(any(Long.class), any())).thenReturn(true);
+
+                // When & Then
+                mockMvc.perform(post("/api/travel/plan/{id}/like", testTravelPlan.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").value(true));
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testRemoveLike() throws Exception {
+                // When & Then
+                mockMvc.perform(delete("/api/travel/plan/{id}/like", testTravelPlan.getId()))
+                                .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testGetLikeStatus() throws Exception {
+                // Given
+                when(travelPlanService.isLiked(any(Long.class), any())).thenReturn(true);
+
+                // When & Then
+                mockMvc.perform(get("/api/travel/plan/{id}/like/status", testTravelPlan.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").value(true));
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testGetLikedTravelPlanList() throws Exception {
+                // Given
+                List<TravelPlanDTO> mockResponse = new ArrayList<>();
+                TravelPlanDTO dto = new TravelPlanDTO();
+                dto.setId(testTravelPlan.getId());
+                dto.setTitle(testTravelPlan.getTitle());
+                dto.setLikeCount(1);
+                mockResponse.add(dto);
+
+                when(travelPlanService.getLikedTravelPlanList(any())).thenReturn(mockResponse);
+
+                // When & Then
+                mockMvc.perform(get("/api/travel/plan/like"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id").value(testTravelPlan.getId()))
+                                .andExpect(jsonPath("$[0].likeCount").value(1));
+        }
 }

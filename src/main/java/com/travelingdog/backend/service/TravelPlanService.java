@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -385,35 +386,73 @@ public class TravelPlanService {
     // 이제 searchTravelPlans() 메서드로 통합되어 제거되었습니다.
 
     /**
-     * 여행 계획 좋아요 추가
+     * 여행 계획 좋아요 토글 (추가/취소)
+     * 이미 좋아요를 누른 상태면 취소하고, 아니면 추가합니다.
      */
-    public void addLike(Long id, User user) {
+    @Transactional
+    public boolean toggleLike(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        PlanLike planLike = PlanLike.builder()
-                .user(user)
-                .likedAt(LocalDateTime.now())
-                .build();
+        // 자신의 여행 계획에는 좋아요를 누를 수 없음
+        if (travelPlan.getUser().getId().equals(user.getId())) {
+            throw new InvalidRequestException("자신의 여행 계획에는 좋아요를 누를 수 없습니다.");
+        }
 
-        travelPlan.addLike(planLike);
-        travelPlanRepository.save(travelPlan);
+        // 이미 좋아요를 누른 상태인지 확인
+        Optional<PlanLike> existingLike = planLikeRepository.findByUserAndTravelPlan(user, travelPlan);
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            travelPlan.removeLike(existingLike.get());
+            planLikeRepository.delete(existingLike.get());
+            travelPlanRepository.save(travelPlan);
+            return false; // 좋아요 취소됨
+        } else {
+            // 좋아요 추가
+            PlanLike planLike = PlanLike.builder()
+                    .user(user)
+                    .likedAt(LocalDateTime.now())
+                    .build();
+
+            travelPlan.addLike(planLike);
+            travelPlanRepository.save(travelPlan);
+            return true; // 좋아요 추가됨
+        }
+    }
+
+    /**
+     * 여행 계획 좋아요 추가 (기존 메서드 - 토글 방식으로 리다이렉트)
+     */
+    @Transactional
+    public void addLike(Long id, User user) {
+        toggleLike(id, user);
     }
 
     /**
      * 여행 계획 좋아요 취소
      */
+    @Transactional
     public void removeLike(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        PlanLike planLike = travelPlan.getLikes().stream()
-                .filter(like -> like.getUser().getId().equals(user.getId()))
-                .findFirst()
+        PlanLike planLike = planLikeRepository.findByUserAndTravelPlan(user, travelPlan)
                 .orElseThrow(() -> new ResourceNotFoundException("좋아요를 찾을 수 없습니다."));
 
         travelPlan.removeLike(planLike);
+        planLikeRepository.delete(planLike);
         travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 상태 확인
+     */
+    public boolean isLiked(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        return planLikeRepository.existsByUserAndTravelPlan(user, travelPlan);
     }
 
     /**
@@ -422,6 +461,7 @@ public class TravelPlanService {
     public List<TravelPlanDTO> getLikedTravelPlanList(User user) {
         return planLikeRepository.findByUser(user).stream()
                 .map(PlanLike::getTravelPlan)
+                .filter(travelPlan -> !travelPlan.getStatus().equals(PlanStatus.DELETED)) // 삭제된 계획 제외
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
     }
