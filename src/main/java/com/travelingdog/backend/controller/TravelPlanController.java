@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -116,7 +117,12 @@ public class TravelPlanController {
         })
         @GetMapping("/{id}")
         public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable("id") Long id,
-                        @AuthenticationPrincipal User user) {
+                        Authentication authentication) {
+
+                // Bearer Token이 있고 유효하면 User 객체, 없으면 null
+                User user = (authentication != null && authentication.getPrincipal() instanceof User)
+                                ? (User) authentication.getPrincipal()
+                                : null;
 
                 TravelPlanDTO travelPlanDTO = travelPlanService.getTravelPlanDetail(id, user);
                 return ResponseEntity.ok(travelPlanDTO);

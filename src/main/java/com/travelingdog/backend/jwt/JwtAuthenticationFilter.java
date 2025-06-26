@@ -129,7 +129,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // 공개 API는 필터를 거치지 않음
-        return isPublicEndpoint(request);
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/");
     }
 }
