@@ -27,8 +27,6 @@ public class AIRecommendedTravelPlanDTO {
     @JsonProperty("travel_style")
     private List<String> travelStyle;
 
-    private String budget;
-
     private String country;
 
     private String destination;
@@ -41,21 +39,7 @@ public class AIRecommendedTravelPlanDTO {
 
     private List<AIRecommendedItineraryDTO> itinerary;
 
-    @JsonProperty("restaurant_recommendations")
-    private List<LocationDTO> restaurantRecommendations;
-
     @JsonProperty("transportation_tips")
     private String transportationTips;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class LocationDTO {
-
-        @JsonProperty("location_name")
-        private String locationName;
-
-        private String description;
-    }
 
 }

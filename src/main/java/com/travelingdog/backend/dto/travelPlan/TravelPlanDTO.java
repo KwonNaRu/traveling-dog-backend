@@ -24,7 +24,6 @@ public class TravelPlanDTO {
         private LocalDate startDate;
         private LocalDate endDate;
         private List<TravelStyleDTO> travelStyles;
-        private String budget;
         private List<InterestDTO> interests;
         private List<AccommodationTypeDTO> accommodation;
         private List<TransportationTypeDTO> transportation;
@@ -34,7 +33,6 @@ public class TravelPlanDTO {
         private int viewCount;
         private int likeCount;
         private PlanStatus status;
-        private List<RestaurantRecommendationDTO> restaurantRecommendations;
 
         public static TravelPlanDTO fromEntity(TravelPlan entity) {
                 if (entity == null) {
@@ -51,7 +49,6 @@ public class TravelPlanDTO {
                                 .travelStyles(entity.getTravelStyles().stream()
                                                 .map(TravelStyleDTO::fromEntity)
                                                 .collect(Collectors.toList()))
-                                .budget(entity.getBudget())
                                 .interests(entity.getInterests().stream()
                                                 .map(InterestDTO::fromEntity)
                                                 .collect(Collectors.toList()))
@@ -67,11 +64,9 @@ public class TravelPlanDTO {
                                                 .map(ItineraryDTO::fromEntity)
                                                 .collect(Collectors.toList()))
                                 .viewCount(entity.getViewCount())
-                                .likeCount(entity.getLikes().size())
+                                .likeCount(entity.getLikeCount())
                                 .status(entity.getStatus())
-                                .restaurantRecommendations(entity.getRestaurantRecommendations().stream()
-                                                .map(RestaurantRecommendationDTO::fromEntity)
-                                                .collect(Collectors.toList()))
+
                                 .build();
         }
 

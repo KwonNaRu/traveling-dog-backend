@@ -32,5 +32,7 @@ public class AIRecommendedItineraryDTO {
         private String locationName;
 
         private String description;
+
+        private String cost; // 예상 비용 추가
     }
 }

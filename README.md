@@ -202,7 +202,7 @@ Azure VM에 배포할 때 사용하는 Docker Compose 파일(예: `docker-compos
 
 #### TravelPlan (여행 계획)
 
-- 속성: id, title, country, city, startDate, endDate, budget, transportationTips, viewCount, status, deletedAt
+- 속성: id, title, country, city, startDate, endDate, transportationTips, viewCount, status, deletedAt
 - 관계:
   - TravelPlan은 하나의 User에 속합니다. (N:1)
   - TravelPlan은 여러 개의 Itinerary를 가질 수 있습니다. (1:N)

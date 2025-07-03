@@ -64,9 +64,6 @@ public class TravelPlan extends BaseTimeEntity {
     @Future(message = "End date must be in the future")
     private LocalDate endDate; // 여행 종료 날짜
 
-    @Column(name = "budget", length = 100)
-    private String budget; // 예산
-
     @Column(name = "transportation_tips", length = 500)
     private String transportationTips; // 교통 팁
 
@@ -93,10 +90,6 @@ public class TravelPlan extends BaseTimeEntity {
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Transportation> transportationTypes = new ArrayList<>(); // 교통 수단 리스트
-
-    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<RestaurantRecommendation> restaurantRecommendations = new ArrayList<>(); // 맛집 추천 리스트
 
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL)
     @Builder.Default
@@ -148,11 +141,6 @@ public class TravelPlan extends BaseTimeEntity {
         transportation.setTravelPlan(this);
     }
 
-    public void addRestaurantRecommendation(RestaurantRecommendation recommendation) {
-        restaurantRecommendations.add(recommendation);
-        recommendation.setTravelPlan(this);
-    }
-
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
         this.status = PlanStatus.DELETED;
@@ -181,7 +169,6 @@ public class TravelPlan extends BaseTimeEntity {
                 .city(aiRecommendedPlan.getDestination())
                 .startDate(LocalDate.parse(aiRecommendedPlan.getStartDate()))
                 .endDate(LocalDate.parse(aiRecommendedPlan.getEndDate()))
-                .budget(aiRecommendedPlan.getBudget())
                 .transportationTips(aiRecommendedPlan.getTransportationTips())
                 .build();
     }

@@ -116,13 +116,12 @@ public class TravelPlanServiceIntegrationTest {
                                 .title("Test Travel Plan")
                                 .itineraries(new ArrayList<>())
                                 .startDate(today)
-                                .budget("Budget")
                                 .transportationTips("Transportation Tips")
                                 .travelStyles(new ArrayList<>())
                                 .interests(new ArrayList<>())
                                 .accommodationTypes(new ArrayList<>())
                                 .transportationTypes(new ArrayList<>())
-                                .restaurantRecommendations(new ArrayList<>())
+                                // .restaurantRecommendations(new ArrayList<>()) // 별도 API로 분리됨
                                 .endDate(futureDate)
                                 .status(PlanStatus.PUBLISHED)
                                 .build();
@@ -163,7 +162,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "\"start_date\":\"" + today + "\","
                                 + "\"end_date\":\"" + today.plusDays(7) + "\","
                                 + "\"travel_style\":[\"도시\",\"문화\"],"
-                                + "\"budget\":\"중간\","
                                 + "\"country\":\"한국\","
                                 + "\"destination\":\"서울\","
                                 + "\"interests\":[\"역사\",\"쇼핑\"],"
@@ -177,7 +175,6 @@ public class TravelPlanServiceIntegrationTest {
                                 + "   \"activities\":[{\"title\":\"남산타워\",\"location_name\":\"Test Location Name\",\"description\":\"서울의 랜드마크\"}]"
                                 + "  }"
                                 + "],"
-                                + "\"restaurant_recommendations\":[{\"location_name\":\"명동 음식점\",\"description\":\"인기 관광지의 맛집\"}],"
                                 + "\"transportation_tips\":\"서울은 대중교통이 잘 발달되어 있습니다.\""
                                 + "}";
 
@@ -231,7 +228,6 @@ public class TravelPlanServiceIntegrationTest {
                 request.setStartDate(LocalDate.now());
                 request.setEndDate(LocalDate.now().plusDays(7));
                 request.setTravelStyle("Adventure");
-                request.setBudget("Budget");
                 request.setInterests("Interests");
                 request.setAccommodation("Accommodation");
                 request.setTransportation("Transportation");
@@ -271,7 +267,6 @@ public class TravelPlanServiceIntegrationTest {
                 secondRequest.setStartDate(LocalDate.now());
                 secondRequest.setEndDate(LocalDate.now().plusDays(7));
                 secondRequest.setTravelStyle("Adventure");
-                secondRequest.setBudget("Budget");
                 secondRequest.setInterests("Interests");
                 secondRequest.setAccommodation("Accommodation");
                 secondRequest.setTransportation("Transportation");
@@ -521,6 +516,123 @@ public class TravelPlanServiceIntegrationTest {
                 assertThrows(ForbiddenResourceAccessException.class, () -> {
                         travelPlanService.deleteTravelPlan(savedOtherUserPlan.getId(), user);
                 });
+        }
+
+        /**
+         * 좋아요 추가 테스트
+         */
+        @Test
+        @DisplayName("좋아요 추가 테스트")
+        void testAddLike() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser")
+                                .password("password123!")
+                                .email("other@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                // 공개된 여행 계획으로 설정
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                int initialLikeCount = travelPlan.getLikeCount();
+
+                // When
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+
+                // Then
+                TravelPlan updatedPlan = travelPlanRepository.findById(travelPlan.getId()).get();
+                assertEquals(initialLikeCount + 1, updatedPlan.getLikeCount());
+                assertTrue(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 중복 요청시 취소
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 중복 요청시 취소")
+        void testToggleLikeDuplicate() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser2")
+                                .password("password123!")
+                                .email("other2@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 첫 번째 좋아요 (추가)
+                boolean firstResult = travelPlanService.toggleLike(travelPlan.getId(), otherUser);
+                assertTrue(firstResult); // 좋아요 추가됨
+
+                // 두 번째 좋아요 (취소)
+                boolean secondResult = travelPlanService.toggleLike(travelPlan.getId(), otherUser);
+                assertFalse(secondResult); // 좋아요 취소됨
+
+                // 최종 상태 확인
+                assertFalse(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 좋아요 취소 테스트
+         */
+        @Test
+        @DisplayName("좋아요 취소 테스트")
+        void testRemoveLike() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser3")
+                                .password("password123!")
+                                .email("other3@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 좋아요 추가
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+                int likeCountAfterAdd = travelPlanRepository.findById(travelPlan.getId()).get().getLikeCount();
+
+                // When - 좋아요 취소
+                travelPlanService.removeLike(travelPlan.getId(), otherUser);
+
+                // Then
+                TravelPlan updatedPlan = travelPlanRepository.findById(travelPlan.getId()).get();
+                assertEquals(likeCountAfterAdd - 1, updatedPlan.getLikeCount());
+                assertFalse(travelPlanService.isLiked(travelPlan.getId(), otherUser));
+        }
+
+        /**
+         * 사용자가 좋아요한 여행 계획 목록 조회 테스트
+         */
+        @Test
+        @DisplayName("사용자가 좋아요한 여행 계획 목록 조회 테스트")
+        void testGetLikedTravelPlanList() {
+                // Given
+                final User otherUser = userRepository.save(User.builder()
+                                .nickname("otherUser4")
+                                .password("password123!")
+                                .email("other4@example.com")
+                                .roles(new HashSet<>(Collections.singleton("ROLE_USER")))
+                                .build());
+
+                travelPlan.setStatus(PlanStatus.PUBLISHED);
+                travelPlanRepository.save(travelPlan);
+
+                // 좋아요 추가
+                travelPlanService.addLike(travelPlan.getId(), otherUser);
+
+                // When
+                List<TravelPlanDTO> likedPlans = travelPlanService.getLikedTravelPlanList(otherUser);
+
+                // Then
+                assertNotNull(likedPlans);
+                assertEquals(1, likedPlans.size());
+                assertEquals(travelPlan.getId(), likedPlans.get(0).getId());
         }
 
         private void setAuthenticationUser(User user) {

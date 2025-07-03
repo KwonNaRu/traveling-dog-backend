@@ -5,7 +5,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,8 @@ import com.travelingdog.backend.dto.gpt.AIChatResponse;
 import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
@@ -42,7 +48,7 @@ import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.model.Interest;
 import com.travelingdog.backend.model.AccommodationType;
 import com.travelingdog.backend.model.Transportation;
-import com.travelingdog.backend.model.RestaurantRecommendation;
+
 import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
@@ -110,16 +116,7 @@ public class TravelPlanService {
                     travelPlan.addTransportation(transportationType);
                 }
             }
-            // RestaurantRecommendation
-            if (aiRecommendedPlan.getRestaurantRecommendations() != null) {
-                for (var recommendation : aiRecommendedPlan.getRestaurantRecommendations()) {
-                    RestaurantRecommendation restaurantRecommendation = RestaurantRecommendation.builder()
-                            .locationName(recommendation.getLocationName())
-                            .description(recommendation.getDescription())
-                            .build();
-                    travelPlan.addRestaurantRecommendation(restaurantRecommendation);
-                }
-            }
+
             // Itinerary (fromDto에서 travelPlan 세팅됨)
             List<Itinerary> itineraries = aiRecommendedPlan.getItinerary().stream()
                     .map(dto -> Itinerary.fromDto(dto, travelPlan))
@@ -145,7 +142,6 @@ public class TravelPlanService {
                     request.getStartDate(),
                     request.getEndDate(),
                     request.getTravelStyle(),
-                    request.getBudget(),
                     request.getInterests(),
                     request.getAccommodation(),
                     request.getTransportation(),
@@ -208,7 +204,6 @@ public class TravelPlanService {
                     request.getStartDate(),
                     request.getEndDate(),
                     request.getTravelStyle(),
-                    request.getBudget(),
                     request.getInterests(),
                     request.getAccommodation(),
                     request.getTransportation(),
@@ -387,57 +382,77 @@ public class TravelPlanService {
         return TravelPlanDTO.fromEntity(travelPlan);
     }
 
-    /**
-     * 인기 여행 계획 목록 조회
-     */
-    public List<TravelPlanDTO> getPopularTravelPlanList() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByLikeCountDesc(PlanStatus.PUBLISHED,
-                pageRequest);
-        return travelPlans.stream()
-                .map(TravelPlanDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<TravelPlanDTO> getRecentTravelPlanList() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        List<TravelPlan> travelPlans = travelPlanRepository.findByStatusOrderByCreatedAtDesc(PlanStatus.PUBLISHED,
-                pageRequest);
-        return travelPlans.stream()
-                .map(TravelPlanDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
+    // 기존의 getPopularTravelPlanList()와 getRecentTravelPlanList() 메서드는
+    // 이제 searchTravelPlans() 메서드로 통합되어 제거되었습니다.
 
     /**
-     * 여행 계획 좋아요 추가
+     * 여행 계획 좋아요 토글 (추가/취소)
+     * 이미 좋아요를 누른 상태면 취소하고, 아니면 추가합니다.
      */
-    public void addLike(Long id, User user) {
+    @Transactional
+    public boolean toggleLike(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        PlanLike planLike = PlanLike.builder()
-                .user(user)
-                .likedAt(LocalDateTime.now())
-                .build();
+        // 자신의 여행 계획에는 좋아요를 누를 수 없음
+        if (travelPlan.getUser().getId().equals(user.getId())) {
+            throw new InvalidRequestException("자신의 여행 계획에는 좋아요를 누를 수 없습니다.");
+        }
 
-        travelPlan.addLike(planLike);
-        travelPlanRepository.save(travelPlan);
+        // 이미 좋아요를 누른 상태인지 확인
+        Optional<PlanLike> existingLike = planLikeRepository.findByUserAndTravelPlan(user, travelPlan);
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            travelPlan.removeLike(existingLike.get());
+            planLikeRepository.delete(existingLike.get());
+            travelPlanRepository.save(travelPlan);
+            return false; // 좋아요 취소됨
+        } else {
+            // 좋아요 추가
+            PlanLike planLike = PlanLike.builder()
+                    .user(user)
+                    .likedAt(LocalDateTime.now())
+                    .build();
+
+            travelPlan.addLike(planLike);
+            travelPlanRepository.save(travelPlan);
+            return true; // 좋아요 추가됨
+        }
+    }
+
+    /**
+     * 여행 계획 좋아요 추가 (기존 메서드 - 토글 방식으로 리다이렉트)
+     */
+    @Transactional
+    public void addLike(Long id, User user) {
+        toggleLike(id, user);
     }
 
     /**
      * 여행 계획 좋아요 취소
      */
+    @Transactional
     public void removeLike(Long id, User user) {
         TravelPlan travelPlan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
 
-        PlanLike planLike = travelPlan.getLikes().stream()
-                .filter(like -> like.getUser().getId().equals(user.getId()))
-                .findFirst()
+        PlanLike planLike = planLikeRepository.findByUserAndTravelPlan(user, travelPlan)
                 .orElseThrow(() -> new ResourceNotFoundException("좋아요를 찾을 수 없습니다."));
 
         travelPlan.removeLike(planLike);
+        planLikeRepository.delete(planLike);
         travelPlanRepository.save(travelPlan);
+    }
+
+    /**
+     * 여행 계획 좋아요 상태 확인
+     */
+    public boolean isLiked(Long id, User user) {
+        TravelPlan travelPlan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("여행 계획을 찾을 수 없습니다."));
+
+        return planLikeRepository.existsByUserAndTravelPlan(user, travelPlan);
     }
 
     /**
@@ -446,8 +461,100 @@ public class TravelPlanService {
     public List<TravelPlanDTO> getLikedTravelPlanList(User user) {
         return planLikeRepository.findByUser(user).stream()
                 .map(PlanLike::getTravelPlan)
+                .filter(travelPlan -> !travelPlan.getStatus().equals(PlanStatus.DELETED)) // 삭제된 계획 제외
                 .map(TravelPlanDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 여행 계획 검색
+     */
+    public TravelPlanSearchResponse searchTravelPlans(TravelPlanSearchRequest searchRequest) {
+        PageRequest pageRequest = PageRequest.of(searchRequest.getPage(), searchRequest.getSize());
+        Page<TravelPlan> travelPlansPage;
+
+        // 키워드가 있는 경우 키워드 검색
+        if (searchRequest.getKeyword() != null && !searchRequest.getKeyword().trim().isEmpty()) {
+            travelPlansPage = searchByKeyword(searchRequest.getKeyword(), searchRequest.getSortBy(), pageRequest);
+        }
+        // 도시나 국가 필터가 있는 경우 위치 필터링
+        else if ((searchRequest.getCity() != null && !searchRequest.getCity().trim().isEmpty()) ||
+                (searchRequest.getCountry() != null && !searchRequest.getCountry().trim().isEmpty())) {
+            travelPlansPage = searchByLocation(searchRequest.getCity(), searchRequest.getCountry(),
+                    searchRequest.getSortBy(), pageRequest);
+        }
+        // 조건이 없는 경우 전체 목록을 정렬 기준에 따라 조회
+        else {
+            travelPlansPage = getAllTravelPlans(searchRequest.getSortBy(), pageRequest);
+        }
+
+        // Page를 TravelPlanSearchResponse로 변환
+        return TravelPlanSearchResponse.builder()
+                .content(travelPlansPage.getContent().stream()
+                        .map(TravelPlanDTO::fromEntity)
+                        .collect(Collectors.toList()))
+                .page(travelPlansPage.getNumber())
+                .size(travelPlansPage.getSize())
+                .totalElements(travelPlansPage.getTotalElements())
+                .totalPages(travelPlansPage.getTotalPages())
+                .first(travelPlansPage.isFirst())
+                .last(travelPlansPage.isLast())
+                .sortBy(searchRequest.getSortBy())
+                .keyword(searchRequest.getKeyword())
+                .build();
+    }
+
+    /**
+     * 키워드로 여행 계획 검색
+     */
+    private Page<TravelPlan> searchByKeyword(String keyword, String sortBy, PageRequest pageRequest) {
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.searchByKeywordOrderByPopular(keyword, PlanStatus.PUBLISHED, pageRequest);
+            case "oldest":
+                return travelPlanRepository.searchByKeywordOrderByOldest(keyword, PlanStatus.PUBLISHED, pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.searchByKeywordOrderByRecent(keyword, PlanStatus.PUBLISHED, pageRequest);
+        }
+    }
+
+    /**
+     * 위치로 여행 계획 필터링
+     */
+    private Page<TravelPlan> searchByLocation(String city, String country, String sortBy, PageRequest pageRequest) {
+        // null이나 빈 문자열을 안전하게 처리
+        String safeCity = (city != null && !city.trim().isEmpty()) ? city.trim() : "";
+        String safeCountry = (country != null && !country.trim().isEmpty()) ? country.trim() : "";
+
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.findByLocationOrderByPopular(safeCity, safeCountry, PlanStatus.PUBLISHED,
+                        pageRequest);
+            case "oldest":
+                return travelPlanRepository.findByLocationOrderByOldest(safeCity, safeCountry, PlanStatus.PUBLISHED,
+                        pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.findByLocationOrderByRecent(safeCity, safeCountry, PlanStatus.PUBLISHED,
+                        pageRequest);
+        }
+    }
+
+    /**
+     * 전체 여행 계획 조회 (정렬 기준에 따라)
+     */
+    private Page<TravelPlan> getAllTravelPlans(String sortBy, PageRequest pageRequest) {
+        // null 대신 빈 문자열 전달
+        switch (sortBy.toLowerCase()) {
+            case "popular":
+                return travelPlanRepository.findByLocationOrderByPopular("", "", PlanStatus.PUBLISHED, pageRequest);
+            case "oldest":
+                return travelPlanRepository.findByLocationOrderByOldest("", "", PlanStatus.PUBLISHED, pageRequest);
+            case "recent":
+            default:
+                return travelPlanRepository.findByLocationOrderByRecent("", "", PlanStatus.PUBLISHED, pageRequest);
+        }
     }
 
 }

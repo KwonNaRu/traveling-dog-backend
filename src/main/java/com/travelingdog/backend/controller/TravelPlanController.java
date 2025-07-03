@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.travelingdog.backend.dto.travelPlan.ItineraryDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchRequest;
+import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
 import com.travelingdog.backend.exception.UnauthorizedException;
 import com.travelingdog.backend.model.User;
@@ -70,28 +73,23 @@ public class TravelPlanController {
                 return ResponseEntity.ok(travelPlanDTOs);
         }
 
-        @Operation(summary = "인기 여행 리스트 조회", description = "인기 여행 리스트를 조회합니다.")
+        @Operation(summary = "여행 계획 검색", description = "키워드, 도시, 국가 등으로 여행 계획을 검색합니다.")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "인기 여행 리스트 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
+                        @ApiResponse(responseCode = "200", description = "여행 계획 검색 성공", content = @Content(schema = @Schema(implementation = TravelPlanSearchResponse.class))),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
-        @GetMapping("/popular")
-        public ResponseEntity<List<TravelPlanDTO>> getPopularTravelPlanList() {
-                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getPopularTravelPlanList();
-                return ResponseEntity.ok(travelPlanDTOs);
-        }
+        @PostMapping("/search")
+        public ResponseEntity<TravelPlanSearchResponse> searchTravelPlans(
+                        @Parameter(description = "검색 조건", required = false) @RequestBody(required = false) TravelPlanSearchRequest searchRequest) {
 
-        @Operation(summary = "최근 여행 계획 조회", description = "최근 여행 계획을 조회합니다.")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "최근 여행 계획 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TravelPlanDTO.class)))),
-                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-                        @ApiResponse(responseCode = "500", description = "서버 오류")
-        })
-        @GetMapping("/recent")
-        public ResponseEntity<List<TravelPlanDTO>> getRecentTravelPlanList() {
-                List<TravelPlanDTO> travelPlanDTOs = travelPlanService.getRecentTravelPlanList();
-                return ResponseEntity.ok(travelPlanDTOs);
+                // 요청이 null인 경우 기본값으로 초기화
+                if (searchRequest == null) {
+                        searchRequest = new TravelPlanSearchRequest();
+                }
+
+                TravelPlanSearchResponse response = travelPlanService.searchTravelPlans(searchRequest);
+                return ResponseEntity.ok(response);
         }
 
         @Operation(summary = "여행 계획 좋아요 조회", description = "여행 계획을 좋아요 조회합니다.")
@@ -119,7 +117,12 @@ public class TravelPlanController {
         })
         @GetMapping("/{id}")
         public ResponseEntity<TravelPlanDTO> getTravelPlanDetail(@PathVariable("id") Long id,
-                        @AuthenticationPrincipal User user) {
+                        Authentication authentication) {
+
+                // Bearer Token이 있고 유효하면 User 객체, 없으면 null
+                User user = (authentication != null && authentication.getPrincipal() instanceof User)
+                                ? (User) authentication.getPrincipal()
+                                : null;
 
                 TravelPlanDTO travelPlanDTO = travelPlanService.getTravelPlanDetail(id, user);
                 return ResponseEntity.ok(travelPlanDTO);
@@ -160,20 +163,20 @@ public class TravelPlanController {
                 return ResponseEntity.noContent().build(); // 204 No Content
         }
 
-        @Operation(summary = "여행 계획 좋아요 추가", description = "여행 계획을 좋아요 추가합니다.")
+        @Operation(summary = "여행 계획 좋아요 토글", description = "여행 계획 좋아요를 추가하거나 취소합니다. 이미 좋아요를 누른 상태면 취소하고, 아니면 추가합니다.")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "여행 계획 좋아요 추가 성공"),
+                        @ApiResponse(responseCode = "200", description = "좋아요 토글 성공 (true: 좋아요 추가됨, false: 좋아요 취소됨)"),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                         @ApiResponse(responseCode = "401", description = "인증 실패"),
                         @ApiResponse(responseCode = "403", description = "접근 금지된 여행 계획"),
                         @ApiResponse(responseCode = "500", description = "서버 오류")
         })
         @PostMapping("/{id}/like")
-        public ResponseEntity<Void> addLike(@PathVariable("id") Long id,
+        public ResponseEntity<Boolean> toggleLike(@PathVariable("id") Long id,
                         @AuthenticationPrincipal User user) {
 
-                travelPlanService.addLike(id, user);
-                return ResponseEntity.noContent().build(); // 204 No Content
+                boolean isLiked = travelPlanService.toggleLike(id, user);
+                return ResponseEntity.ok(isLiked); // true: 좋아요 추가됨, false: 좋아요 취소됨
         }
 
         @Operation(summary = "여행 계획 좋아요 취소", description = "여행 계획을 좋아요 취소합니다.")
@@ -190,6 +193,22 @@ public class TravelPlanController {
 
                 travelPlanService.removeLike(id, user);
                 return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        @Operation(summary = "여행 계획 좋아요 상태 확인", description = "사용자가 특정 여행 계획에 좋아요를 눌렀는지 확인합니다.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "좋아요 상태 확인 성공"),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                        @ApiResponse(responseCode = "401", description = "인증 실패"),
+                        @ApiResponse(responseCode = "404", description = "여행 계획을 찾을 수 없음"),
+                        @ApiResponse(responseCode = "500", description = "서버 오류")
+        })
+        @GetMapping("/{id}/like/status")
+        public ResponseEntity<Boolean> getLikeStatus(@PathVariable("id") Long id,
+                        @AuthenticationPrincipal User user) {
+
+                boolean isLiked = travelPlanService.isLiked(id, user);
+                return ResponseEntity.ok(isLiked);
         }
 
         @Operation(summary = "여행 계획 공개", description = "여행 계획을 공개합니다.")

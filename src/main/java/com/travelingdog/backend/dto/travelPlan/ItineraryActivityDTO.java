@@ -20,12 +20,15 @@ public class ItineraryActivityDTO {
 
     private String locationName; // 활동 위치 이름
 
+    private String cost; // 예상 비용
+
     public static ItineraryActivityDTO fromEntity(ItineraryActivity entity) {
         return ItineraryActivityDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .locationName(entity.getLocationName())
+                .cost(entity.getCost())
                 .build();
     }
 
@@ -35,6 +38,7 @@ public class ItineraryActivityDTO {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .locationName(dto.getLocationName())
+                .cost(dto.getCost())
                 .build();
     }
 }

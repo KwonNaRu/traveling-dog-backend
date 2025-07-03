@@ -111,7 +111,6 @@ public class GPTResponseIntegrationTest {
                 request.setStartDate(today);
                 request.setEndDate(endDate);
                 request.setTravelStyle("해변, 자연 풍경 감상");
-                request.setBudget("100만원");
                 request.setInterests("맛집, 자연");
                 request.setAccommodation("호텔");
                 request.setTransportation("렌터카");
@@ -171,7 +170,6 @@ public class GPTResponseIntegrationTest {
                 jsonBuilder.append("\"start_date\":\"").append(startDate.format(formatter)).append("\",");
                 jsonBuilder.append("\"end_date\":\"").append(startDate.plusDays(3).format(formatter)).append("\",");
                 jsonBuilder.append("\"travel_style\":[\"해변\",\"자연 풍경 감상\"],");
-                jsonBuilder.append("\"budget\":\"100만원\",");
                 jsonBuilder.append("\"country\":\"한국\",");
                 jsonBuilder.append("\"destination\":\"제주시\",");
                 jsonBuilder.append("\"interests\":[\"맛집\",\"자연\"],");
@@ -196,11 +194,6 @@ public class GPTResponseIntegrationTest {
                                 "{\"title\":\"만장굴 탐험\",\"location_name\":\"Test Location Name\",\"description\":\"제주도의 대표적인 용암동굴 탐험\"}");
                 jsonBuilder.append("]");
                 jsonBuilder.append("}");
-                jsonBuilder.append("],");
-
-                jsonBuilder.append("\"restaurant_recommendations\":[");
-                jsonBuilder.append(
-                                "{\"location_name\":\"제주 흑돼지 맛집\",\"description\":\"제주 전통 흑돼지 구이 맛집\"}");
                 jsonBuilder.append("],");
                 jsonBuilder.append("\"transportation_tips\":\"제주도 내 렌터카 대여 추천\"");
                 jsonBuilder.append("}");

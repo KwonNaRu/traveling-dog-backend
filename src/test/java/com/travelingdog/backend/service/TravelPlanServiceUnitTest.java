@@ -1,9 +1,12 @@
 package com.travelingdog.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +35,7 @@ import org.springframework.web.client.RestClient.ResponseSpec;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedItineraryDTO.Location;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
-import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO;
+// import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO.LocationDTO; // 별도 API로 분리됨
 import com.travelingdog.backend.dto.gemini.GeminiCandidate;
 import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiPart;
@@ -41,11 +44,14 @@ import com.travelingdog.backend.dto.gemini.GeminiResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanDTO;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
+import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.ItineraryActivity;
+import com.travelingdog.backend.model.PlanLike;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.repository.ItineraryRepository;
+import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;
 
@@ -72,6 +78,9 @@ public class TravelPlanServiceUnitTest {
 
         @Mock
         private ItineraryRepository itineraryRepository;
+
+        @Mock
+        private PlanLikeRepository planLikeRepository;
 
         @InjectMocks
         private TravelPlanService tripPlanService;
@@ -116,7 +125,6 @@ public class TravelPlanServiceUnitTest {
                 request.setStartDate(today);
                 request.setEndDate(endDate);
                 request.setTravelStyle("Adventure");
-                request.setBudget("Budget");
                 request.setInterests("Interests");
                 request.setAccommodation("Accommodation");
                 request.setTransportation("Transportation");
@@ -210,8 +218,7 @@ public class TravelPlanServiceUnitTest {
                 // GptResponseHandler 모킹
                 when(gptResponseHandler.parseGptResponse(any(String.class)))
                                 .thenReturn(aiRecommendedTravelPlanDTO);
-                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(),
-                                any(), any()))
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
                                 .thenReturn("테스트 프롬프트");
                 // TravelPlanRepository 모킹
                 when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
@@ -227,6 +234,130 @@ public class TravelPlanServiceUnitTest {
 
                 // 저장소 호출 검증
                 verify(travelPlanRepository).save(any(TravelPlan.class));
+        }
+
+        /**
+         * 여행 계획 생성 - 선택사항 필드들이 null인 경우 테스트
+         */
+        @Test
+        @DisplayName("여행 계획 생성 - 선택사항 필드들이 null인 경우")
+        void testCreateTravelPlan_WithNullOptionalFields() {
+                // RestClient 모킹 설정
+                RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
+                when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
+
+                // Given
+                TravelPlanRequest requestWithNullFields = new TravelPlanRequest();
+                requestWithNullFields.setCity("Seoul");
+                requestWithNullFields.setStartDate(today);
+                requestWithNullFields.setEndDate(today.plusDays(3));
+                // 선택사항 필드들을 null로 설정
+                requestWithNullFields.setTravelStyle(null);
+                requestWithNullFields.setInterests(null);
+                requestWithNullFields.setAccommodation(null);
+                requestWithNullFields.setTransportation(null);
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO("Seoul");
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
+
+                // GptResponseHandler 모킹
+                when(gptResponseHandler.parseGptResponse(any(String.class)))
+                                .thenReturn(aiRecommendedTravelPlanDTO);
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
+                                .thenReturn("테스트 프롬프트");
+                when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
+
+                // When
+                TravelPlanDTO result = tripPlanService.createTravelPlan(requestWithNullFields, user);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(requestWithNullFields.getStartDate(), result.getStartDate());
+                assertEquals(requestWithNullFields.getEndDate(), result.getEndDate());
+                assertEquals(requestWithNullFields.getCity(), result.getCity());
+
+                // 저장소 호출 검증
+                verify(travelPlanRepository).save(any(TravelPlan.class));
+                // createEnhancedPrompt가 null 값들과 함께 호출되었는지 검증
+                verify(gptResponseHandler).createEnhancedPrompt(
+                                eq("Seoul"),
+                                eq(today),
+                                eq(today.plusDays(3)),
+                                eq(null), // travelStyle
+                                eq(null), // interests
+                                eq(null), // accommodation
+                                eq(null), // transportation
+                                any());
+        }
+
+        /**
+         * 여행 계획 생성 - 선택사항 필드들이 빈 문자열인 경우 테스트
+         */
+        @Test
+        @DisplayName("여행 계획 생성 - 선택사항 필드들이 빈 문자열인 경우")
+        void testCreateTravelPlan_WithEmptyOptionalFields() {
+                // RestClient 모킹 설정
+                RequestBodyUriSpec requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
+                RequestBodySpec requestBodySpec = Mockito.mock(RequestBodySpec.class);
+                ResponseSpec responseSpec = Mockito.mock(ResponseSpec.class);
+
+                when(restClient.post()).thenReturn(requestBodyUriSpec);
+                when(requestBodyUriSpec.uri(any(String.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.header(any(), any())).thenReturn(requestBodySpec);
+                when(requestBodySpec.body(any(GeminiRequest.class))).thenReturn(requestBodySpec);
+                when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+                when(responseSpec.body(GeminiResponse.class)).thenReturn(mockResponse);
+
+                // Given
+                TravelPlanRequest requestWithEmptyFields = new TravelPlanRequest();
+                requestWithEmptyFields.setCity("Seoul");
+                requestWithEmptyFields.setStartDate(today);
+                requestWithEmptyFields.setEndDate(today.plusDays(3));
+                // 선택사항 필드들을 빈 문자열로 설정
+                requestWithEmptyFields.setTravelStyle("");
+                requestWithEmptyFields.setInterests("");
+                requestWithEmptyFields.setAccommodation("");
+                requestWithEmptyFields.setTransportation("");
+
+                AIRecommendedTravelPlanDTO aiRecommendedTravelPlanDTO = createMockTravelPlanDTO("Seoul");
+                TravelPlan savedTravelPlan = TravelPlan.fromDTO(aiRecommendedTravelPlanDTO);
+
+                // GptResponseHandler 모킹
+                when(gptResponseHandler.parseGptResponse(any(String.class)))
+                                .thenReturn(aiRecommendedTravelPlanDTO);
+                when(gptResponseHandler.createEnhancedPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
+                                .thenReturn("테스트 프롬프트");
+                when(travelPlanRepository.save(any(TravelPlan.class))).thenReturn(savedTravelPlan);
+
+                // When
+                TravelPlanDTO result = tripPlanService.createTravelPlan(requestWithEmptyFields, user);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(requestWithEmptyFields.getStartDate(), result.getStartDate());
+                assertEquals(requestWithEmptyFields.getEndDate(), result.getEndDate());
+                assertEquals(requestWithEmptyFields.getCity(), result.getCity());
+
+                // 저장소 호출 검증
+                verify(travelPlanRepository).save(any(TravelPlan.class));
+                // createEnhancedPrompt가 빈 문자열들과 함께 호출되었는지 검증
+                verify(gptResponseHandler).createEnhancedPrompt(
+                                eq("Seoul"),
+                                eq(today),
+                                eq(today.plusDays(3)),
+                                eq(""), // travelStyle
+                                eq(""), // interests
+                                eq(""), // accommodation
+                                eq(""), // transportation
+                                any());
         }
 
         /**
@@ -333,6 +464,177 @@ public class TravelPlanServiceUnitTest {
          * @param name 장소 이름
          * @return 모의 AIRecommendedLocationDTO 객체
          */
+        /**
+         * 좋아요 추가 테스트 (토글 방식)
+         */
+        @Test
+        @DisplayName("좋아요 추가 기능 테스트")
+        void testAddLike() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.empty());
+
+                // When
+                tripPlanService.addLike(travelPlanId, otherUser);
+
+                // Then
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 이미 좋아요를 누른 상태에서 취소
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 취소")
+        void testToggleLikeRemove() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                PlanLike existingLike = PlanLike.builder()
+                                .user(otherUser)
+                                .travelPlan(travelPlan)
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.of(existingLike));
+
+                // When
+                boolean result = tripPlanService.toggleLike(travelPlanId, otherUser);
+
+                // Then
+                assertFalse(result); // 좋아요 취소됨
+                verify(planLikeRepository).delete(existingLike);
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 토글 테스트 - 새로 좋아요 추가
+         */
+        @Test
+        @DisplayName("좋아요 토글 테스트 - 추가")
+        void testToggleLikeAdd() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.empty());
+
+                // When
+                boolean result = tripPlanService.toggleLike(travelPlanId, otherUser);
+
+                // Then
+                assertTrue(result); // 좋아요 추가됨
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 자신의 여행 계획 좋아요 방지 테스트
+         */
+        @Test
+        @DisplayName("자신의 여행 계획 좋아요 방지 테스트")
+        void testAddLikeOwnPlan() {
+                // Given
+                Long travelPlanId = 1L;
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+
+                // When & Then
+                assertThrows(InvalidRequestException.class, () -> {
+                        tripPlanService.addLike(travelPlanId, user);
+                });
+        }
+
+        /**
+         * 좋아요 취소 테스트
+         */
+        @Test
+        @DisplayName("좋아요 취소 기능 테스트")
+        void testRemoveLike() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                PlanLike planLike = PlanLike.builder()
+                                .user(otherUser)
+                                .travelPlan(travelPlan)
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.findByUserAndTravelPlan(otherUser, travelPlan))
+                                .thenReturn(Optional.of(planLike));
+
+                // When
+                tripPlanService.removeLike(travelPlanId, otherUser);
+
+                // Then
+                verify(planLikeRepository).delete(planLike);
+                verify(travelPlanRepository).save(travelPlan);
+        }
+
+        /**
+         * 좋아요 상태 확인 테스트
+         */
+        @Test
+        @DisplayName("좋아요 상태 확인 테스트")
+        void testIsLiked() {
+                // Given
+                Long travelPlanId = 1L;
+                User otherUser = User.builder()
+                                .id(2L)
+                                .email("other@test.com")
+                                .password("password123!")
+                                .build();
+
+                // TravelPlan에 User 설정
+                travelPlan.setUser(user);
+
+                when(travelPlanRepository.findById(travelPlanId)).thenReturn(Optional.of(travelPlan));
+                when(planLikeRepository.existsByUserAndTravelPlan(otherUser, travelPlan)).thenReturn(true);
+
+                // When
+                boolean result = tripPlanService.isLiked(travelPlanId, otherUser);
+
+                // Then
+                assertTrue(result);
+        }
+
         private AIRecommendedTravelPlanDTO createMockTravelPlanDTO(
                         String name) {
 
@@ -346,20 +648,20 @@ public class TravelPlanServiceUnitTest {
                 itinerary.setDate("2024-05-10");
                 itinerary.setActivities(Arrays.asList(location, location));
 
-                LocationDTO locationDTO = new LocationDTO();
-                locationDTO.setLocationName(name);
-                locationDTO.setDescription("Description");
+                // LocationDTO locationDTO = new LocationDTO();
+                // locationDTO.setLocationName(name);
+                // locationDTO.setDescription("Description"); // 별도 API로 분리됨
 
                 AIRecommendedTravelPlanDTO dto = new AIRecommendedTravelPlanDTO();
                 dto.setDestination(name);
                 dto.setItinerary(Arrays.asList(itinerary, itinerary));
-                dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO));
+                // dto.setRestaurantRecommendations(Arrays.asList(locationDTO, locationDTO)); //
+                // 별도 API로 분리됨
                 dto.setTransportationTips("Transportation Tips");
                 dto.setTripName("Test Travel Plan");
                 dto.setStartDate(today.toString());
                 dto.setEndDate(today.plusDays(3).toString());
                 dto.setTravelStyle(Arrays.asList("Adventure", "Relaxation"));
-                dto.setBudget("Budget");
                 dto.setInterests(Arrays.asList("Interests"));
                 dto.setAccommodation(Arrays.asList("Accommodation"));
                 dto.setTransportation(Arrays.asList("Transportation"));

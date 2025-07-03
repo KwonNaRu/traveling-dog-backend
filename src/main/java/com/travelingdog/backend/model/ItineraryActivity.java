@@ -34,6 +34,9 @@ public class ItineraryActivity {
     @Column(name = "location_name", nullable = false)
     private String locationName; // 활동 위치 이름
 
+    @Column
+    private String cost; // 예상 비용
+
     @ManyToOne
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;

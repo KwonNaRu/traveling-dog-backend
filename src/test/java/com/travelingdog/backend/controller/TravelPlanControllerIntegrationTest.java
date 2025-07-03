@@ -92,13 +92,13 @@ public class TravelPlanControllerIntegrationTest {
                 testTravelPlan.setEndDate(LocalDate.now().plusDays(5));
                 testTravelPlan.setUser(testUser);
                 testTravelPlan.setStatus(PlanStatus.PUBLISHED);
-                testTravelPlan.setBudget("1000000");
                 testTravelPlan.setTravelStyles(new ArrayList<>());
                 testTravelPlan.setInterests(new ArrayList<>());
                 testTravelPlan.setAccommodationTypes(new ArrayList<>());
                 testTravelPlan.setTransportationTypes(new ArrayList<>());
                 testTravelPlan.setItineraries(new ArrayList<>());
-                testTravelPlan.setRestaurantRecommendations(new ArrayList<>());
+                // testTravelPlan.setRestaurantRecommendations(new ArrayList<>()); // 별도 API로
+                // 분리됨
                 testTravelPlan.setLikes(new ArrayList<>());
                 testTravelPlan.setViewCount(0);
                 travelPlanRepository.save(testTravelPlan);
@@ -120,7 +120,6 @@ public class TravelPlanControllerIntegrationTest {
                 request.setStartDate(LocalDate.now().plusDays(10));
                 request.setEndDate(LocalDate.now().plusDays(15));
                 request.setTravelStyle("Adventure");
-                request.setBudget("1000000");
                 request.setInterests("Shopping, Food, Culture");
                 request.setAccommodation("Hotel");
                 request.setTransportation("Train, Bus");
@@ -153,7 +152,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setEndDate(LocalDate.now().plusDays(15));
                 mockResponse.setItineraries(itineraries);
                 mockResponse.setTravelStyles(new ArrayList<>());
-                mockResponse.setBudget("1000000");
                 mockResponse.setInterests(new ArrayList<>());
                 mockResponse.setAccommodation(new ArrayList<>());
                 mockResponse.setTransportation(new ArrayList<>());
@@ -202,7 +200,6 @@ public class TravelPlanControllerIntegrationTest {
                 dto.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                dto.setBudget(testTravelPlan.getBudget());
                 dto.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -260,7 +257,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                mockResponse.setBudget(testTravelPlan.getBudget());
                 mockResponse.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -302,7 +298,6 @@ public class TravelPlanControllerIntegrationTest {
                 mockResponse.setTravelStyles(testTravelPlan.getTravelStyles().stream()
                                 .map(TravelStyleDTO::fromEntity)
                                 .collect(Collectors.toList()));
-                mockResponse.setBudget(testTravelPlan.getBudget());
                 mockResponse.setInterests(testTravelPlan.getInterests().stream()
                                 .map(InterestDTO::fromEntity)
                                 .collect(Collectors.toList()));
@@ -329,5 +324,57 @@ public class TravelPlanControllerIntegrationTest {
                 // When & Then
                 mockMvc.perform(delete("/api/travel/plan/{id}", testTravelPlan.getId()))
                                 .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testToggleLike() throws Exception {
+                // Given
+                when(travelPlanService.toggleLike(any(Long.class), any())).thenReturn(true);
+
+                // When & Then
+                mockMvc.perform(post("/api/travel/plan/{id}/like", testTravelPlan.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").value(true));
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testRemoveLike() throws Exception {
+                // When & Then
+                mockMvc.perform(delete("/api/travel/plan/{id}/like", testTravelPlan.getId()))
+                                .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testGetLikeStatus() throws Exception {
+                // Given
+                when(travelPlanService.isLiked(any(Long.class), any())).thenReturn(true);
+
+                // When & Then
+                mockMvc.perform(get("/api/travel/plan/{id}/like/status", testTravelPlan.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").value(true));
+        }
+
+        @Test
+        @WithMockCustomUser(email = "test@example.com")
+        public void testGetLikedTravelPlanList() throws Exception {
+                // Given
+                List<TravelPlanDTO> mockResponse = new ArrayList<>();
+                TravelPlanDTO dto = new TravelPlanDTO();
+                dto.setId(testTravelPlan.getId());
+                dto.setTitle(testTravelPlan.getTitle());
+                dto.setLikeCount(1);
+                mockResponse.add(dto);
+
+                when(travelPlanService.getLikedTravelPlanList(any())).thenReturn(mockResponse);
+
+                // When & Then
+                mockMvc.perform(get("/api/travel/plan/like"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id").value(testTravelPlan.getId()))
+                                .andExpect(jsonPath("$[0].likeCount").value(1));
         }
 }
