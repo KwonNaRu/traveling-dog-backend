@@ -62,7 +62,10 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy to AKS
-        run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/ingress.yaml
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: traveling
+          manifests: |
+            k8s/deployment.yaml
+          images: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/traveling-backend:${{ github.sha }}
