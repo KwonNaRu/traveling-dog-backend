@@ -27,7 +27,7 @@ jobs:
         run: |
           az acr build \
             --registry traveling \
-            --image traveling-backend:latest \
+            --image traveling-backend:${{ github.sha }} \
             .
 
       - name: Log in to Azure Container Registry
