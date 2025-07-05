@@ -1,8 +1,5 @@
 package com.travelingdog.backend.dto.itinerary;
 
-import java.math.BigDecimal;
-import java.time.LocalTime;
-
 import com.travelingdog.backend.model.ItineraryActivity;
 
 import lombok.AllArgsConstructor;

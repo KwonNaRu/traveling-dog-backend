@@ -21,7 +21,6 @@ import com.travelingdog.backend.dto.travelPlan.TravelPlanRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchRequest;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanSearchResponse;
 import com.travelingdog.backend.dto.travelPlan.TravelPlanUpdateRequest;
-import com.travelingdog.backend.exception.UnauthorizedException;
 import com.travelingdog.backend.model.User;
 import com.travelingdog.backend.service.TravelPlanService;
 

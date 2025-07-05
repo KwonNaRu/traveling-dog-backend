@@ -43,18 +43,15 @@ public class SecurityConfig {
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers("/api/travel/plan/search").permitAll()
-                                                .requestMatchers("/api/travel/plan/\\d+").permitAll()
-                                                .requestMatchers("/api/user/**").authenticated()
-                                                .requestMatchers("/api/protected/**").authenticated()
-                                                .requestMatchers("/api/travel/**").authenticated()
-                                                .requestMatchers("/swagger-ui.html").permitAll()
-                                                .requestMatchers("/swagger-ui/**").permitAll()
-                                                .requestMatchers("/v3/api-docs/**").permitAll()
-                                                .requestMatchers("/swagger-resources/**").permitAll()
-                                                .requestMatchers("/webjars/**").permitAll()
-                                                .anyRequest().permitAll())
+                                                .requestMatchers("/api/auth/**", "/error").permitAll()
+                                                .requestMatchers(
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-resources/**",
+                                                                "/webjars/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .exceptionHandling(exception -> exception

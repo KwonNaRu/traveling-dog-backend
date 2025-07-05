@@ -1,26 +1,21 @@
 package com.travelingdog.backend.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import com.travelingdog.backend.dto.AIRecommendedItineraryDTO;
 import com.travelingdog.backend.dto.AIRecommendedTravelPlanDTO;
 import com.travelingdog.backend.dto.gemini.GeminiContent;
 import com.travelingdog.backend.dto.gemini.GeminiGenerationConfig;
@@ -40,16 +35,14 @@ import com.travelingdog.backend.exception.ExternalApiException;
 import com.travelingdog.backend.exception.ForbiddenResourceAccessException;
 import com.travelingdog.backend.exception.InvalidRequestException;
 import com.travelingdog.backend.exception.ResourceNotFoundException;
+import com.travelingdog.backend.model.AccommodationType;
+import com.travelingdog.backend.model.Interest;
 import com.travelingdog.backend.model.Itinerary;
 import com.travelingdog.backend.model.PlanLike;
+import com.travelingdog.backend.model.Transportation;
 import com.travelingdog.backend.model.TravelPlan;
 import com.travelingdog.backend.model.TravelStyle;
 import com.travelingdog.backend.model.User;
-import com.travelingdog.backend.model.Interest;
-import com.travelingdog.backend.model.AccommodationType;
-import com.travelingdog.backend.model.Transportation;
-
-import com.travelingdog.backend.repository.ItineraryRepository;
 import com.travelingdog.backend.repository.PlanLikeRepository;
 import com.travelingdog.backend.repository.TravelPlanRepository;
 import com.travelingdog.backend.status.PlanStatus;

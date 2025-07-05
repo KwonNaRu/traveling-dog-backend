@@ -241,16 +241,6 @@ public class TodayActivityService {
         return (fieldNode != null && !fieldNode.isNull()) ? fieldNode.asText() : null;
     }
 
-    private Integer getIntegerValue(JsonNode node, String fieldName) {
-        JsonNode fieldNode = node.get(fieldName);
-        return (fieldNode != null && !fieldNode.isNull()) ? fieldNode.asInt() : null;
-    }
-
-    private Double getDoubleValue(JsonNode node, String fieldName) {
-        JsonNode fieldNode = node.get(fieldName);
-        return (fieldNode != null && !fieldNode.isNull()) ? fieldNode.asDouble() : null;
-    }
-
     /**
      * 활동을 저장합니다.
      */
