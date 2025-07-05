@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.travelingdog.backend.config.FirebaseConfigTest;
+import com.travelingdog.backend.config.WithMockCustomUser;
 
 /**
  * 존재하지 않는 URL 테스트
@@ -34,6 +35,7 @@ public class NotFoundUrlIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockCustomUser
     @DisplayName("존재하지 않는 URL로 요청시 404 응답 확인")
     void testNonExistentUrlReturns404() throws Exception {
         // '/trip' 같은 존재하지 않는 URL 요청
